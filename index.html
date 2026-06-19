@@ -688,6 +688,7 @@
       <div class="tab-bar" role="tablist" aria-label="計算種別">
         <button id="damageTabButton" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="damagePanel">ダメージ計算</button>
         <button id="shieldTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="shieldPanel">シールド量計算</button>
+        <button id="healingTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="healingPanel">回復量計算</button>
       </div>
 
       <section id="damagePanel" class="tab-panel app-shell" role="tabpanel" aria-labelledby="damageTabButton">
@@ -1119,6 +1120,195 @@
           </div>
         </div>
       </section>
+
+      <section id="healingPanel" class="tab-panel" role="tabpanel" aria-labelledby="healingTabButton" hidden>
+        <div class="app-shell">
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-head">
+                <h2>回復側</h2>
+              </div>
+              <div class="panel-body stack">
+                <div class="pokemon-picker">
+                  <label>
+                    ポケモン
+                    <select id="healingPokemonSelect"></select>
+                  </label>
+                  <div class="pokemon-preview" aria-live="polite">
+                    <img id="healingPokemonImage" alt="" width="72" height="66">
+                    <span id="healingPokemonImageName">未選択</span>
+                  </div>
+                </div>
+
+                <label>
+                  レベル
+                  <div class="range-row">
+                    <input id="healingLevelRange" type="range" min="1" max="15" value="15">
+                    <span id="healingLevelValue" class="range-value">15</span>
+                  </div>
+                </label>
+
+                <div>
+                  <label>回復技</label>
+                  <div id="healingMoveChoices" class="move-choice-grid" role="radiogroup" aria-label="回復技"></div>
+                </div>
+
+                <div class="button-row">
+                  <button id="healingApplyBuildButton" type="button">推奨持ち物</button>
+                  <button id="healingClearItemsButton" class="secondary" type="button">持ち物クリア</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>持ち物</h2>
+              </div>
+              <div class="panel-body held-items">
+                <div class="item-row">
+                  <label>
+                    持ち物 1
+                    <select id="healingItemSelect0" data-healing-item-index="0"></select>
+                  </label>
+                  <label class="mini">
+                    <span>持ち物Lv</span>
+                    <input id="healingItemLevel0" data-healing-item-level-index="0" type="number" min="1" max="40" value="40">
+                  </label>
+                </div>
+                <div class="item-row">
+                  <label>
+                    持ち物 2
+                    <select id="healingItemSelect1" data-healing-item-index="1"></select>
+                  </label>
+                  <label class="mini">
+                    <span>持ち物Lv</span>
+                    <input id="healingItemLevel1" data-healing-item-level-index="1" type="number" min="1" max="40" value="40">
+                  </label>
+                </div>
+                <div class="item-row">
+                  <label>
+                    持ち物 3
+                    <select id="healingItemSelect2" data-healing-item-index="2"></select>
+                  </label>
+                  <label class="mini">
+                    <span>持ち物Lv</span>
+                    <input id="healingItemLevel2" data-healing-item-level-index="2" type="number" min="1" max="40" value="40">
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>条件付き効果</h2>
+              </div>
+              <div class="panel-body condition-grid">
+                <div id="healingConditionAttackWeight" class="condition-row" hidden>
+                  <span>もうこうダンベルの回数</span>
+                  <input id="healingAttackWeightStacks" type="number" min="0" max="6" value="0">
+                </div>
+                <div id="healingConditionSpAtkSpecs" class="condition-row" hidden>
+                  <span>しんげきメガネの回数</span>
+                  <input id="healingSpAtkSpecsStacks" type="number" min="0" max="6" value="0">
+                </div>
+                <div id="healingConditionWeaknessPolicy" class="condition-row" hidden>
+                  <span>じゃくてんほけんの段階</span>
+                  <input id="healingWeaknessPolicyStacks" type="number" min="0" max="4" value="0">
+                </div>
+                <div id="healingConditionAccelBracer" class="condition-row" hidden>
+                  <span>アクセルブレーサーの段階</span>
+                  <input id="healingAccelBracerStacks" type="number" min="0" max="20" value="0">
+                </div>
+                <div id="healingConditionDriveLens" class="condition-row" hidden>
+                  <span>ドライブレンズの段階</span>
+                  <input id="healingDriveLensStacks" type="number" min="0" max="20" value="0">
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h2>手動補正</h2>
+              </div>
+              <div class="panel-body stack">
+                <div class="grid-2">
+                  <label>
+                    攻撃 +/-
+                    <input id="healingManualAttack" type="number" value="0" step="0.1">
+                  </label>
+                  <label>
+                    特攻 +/-
+                    <input id="healingManualSpAttack" type="number" value="0" step="0.1">
+                  </label>
+                  <label>
+                    回復対象
+                    <select id="healingTargetType">
+                      <option value="self">自分</option>
+                      <option value="ally">味方</option>
+                    </select>
+                  </label>
+                  <label>
+                    回復量 +%
+                    <input id="manualHealingPercent" type="number" value="0" step="0.1">
+                  </label>
+                  <label>
+                    固定回復量 +/-
+                    <input id="manualHealingFlat" type="number" value="0" step="1">
+                  </label>
+                  <label>
+                    回数/対象数
+                    <input id="healingCount" type="number" min="1" max="48" value="1" step="1">
+                  </label>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="stack">
+            <section class="panel result-panel">
+              <div class="result-head">
+                <h2>回復結果</h2>
+              </div>
+              <div class="result-layout">
+                <div class="damage-total">
+                  <div class="total-box primary">
+                    <span class="total-label">回復量</span>
+                    <strong id="healingAmount" class="total-value">0</strong>
+                    <span id="healingAmountSub" class="total-sub">選択中の回復式</span>
+                  </div>
+                  <div class="stats-grid">
+                    <div class="stat-tile">
+                      <span class="total-label">攻撃</span>
+                      <strong id="healingAttackStat">0</strong>
+                    </div>
+                    <div class="stat-tile">
+                      <span class="total-label">特攻</span>
+                      <strong id="healingSpAttackStat">0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="details">
+                  <div id="healingLearnChipRow"></div>
+                  <div class="formula-line">
+                    <code id="healingFormulaText">-</code>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>項目</th>
+                        <th>値</th>
+                      </tr>
+                    </thead>
+                    <tbody id="healingBreakdownBody"></tbody>
+                  </table>
+                  <div id="healingItemEffects" class="item-effects"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
     </section>
   </main>
 
@@ -1335,8 +1525,11 @@
       moveChoices: [],
       shieldMoveEntries: [],
       shieldMoveChoices: [],
+      healingMoveEntries: [],
+      healingMoveChoices: [],
       selectedMoveSlot: "basic",
       selectedShieldMoveSlot: "",
+      selectedHealingMoveSlot: "",
       activeTab: "damage",
       suppressTargetAutoFill: false
     };
@@ -1394,7 +1587,7 @@
     function bindElements() {
       [
         "loading", "loadingStatus", "loadingDetail", "retryLoadButton",
-        "errorBox", "calculator", "damageTabButton", "shieldTabButton", "damagePanel", "shieldPanel",
+        "errorBox", "calculator", "damageTabButton", "shieldTabButton", "healingTabButton", "damagePanel", "shieldPanel", "healingPanel",
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
         "targetLevelRange", "targetLevelValue", "targetDefense", "targetSpDefense",
@@ -1417,7 +1610,19 @@
         "shieldManualAttack", "shieldManualSpAttack", "manualShieldPercent",
         "manualShieldFlat", "shieldCount", "shieldAmount", "shieldAmountSub",
         "shieldAttackStat", "shieldSpAttackStat", "shieldFormulaText",
-        "shieldBreakdownBody", "shieldItemEffects", "shieldLearnChipRow"
+        "shieldBreakdownBody", "shieldItemEffects", "shieldLearnChipRow",
+        "healingPokemonSelect", "healingPokemonImage", "healingPokemonImageName",
+        "healingLevelRange", "healingLevelValue", "healingMoveChoices",
+        "healingApplyBuildButton", "healingClearItemsButton",
+        "healingConditionAttackWeight", "healingAttackWeightStacks",
+        "healingConditionSpAtkSpecs", "healingSpAtkSpecsStacks",
+        "healingConditionWeaknessPolicy", "healingWeaknessPolicyStacks",
+        "healingConditionAccelBracer", "healingAccelBracerStacks",
+        "healingConditionDriveLens", "healingDriveLensStacks",
+        "healingManualAttack", "healingManualSpAttack", "healingTargetType",
+        "manualHealingPercent", "manualHealingFlat", "healingCount",
+        "healingAmount", "healingAmountSub", "healingAttackStat", "healingSpAttackStat",
+        "healingFormulaText", "healingBreakdownBody", "healingItemEffects", "healingLearnChipRow"
       ].forEach((id) => {
         el[id] = document.getElementById(id);
       });
@@ -1427,6 +1632,8 @@
         el[`itemLevel${i}`] = document.getElementById(`itemLevel${i}`);
         el[`shieldItemSelect${i}`] = document.getElementById(`shieldItemSelect${i}`);
         el[`shieldItemLevel${i}`] = document.getElementById(`shieldItemLevel${i}`);
+        el[`healingItemSelect${i}`] = document.getElementById(`healingItemSelect${i}`);
+        el[`healingItemLevel${i}`] = document.getElementById(`healingItemLevel${i}`);
       }
     }
 
@@ -1451,14 +1658,19 @@
 
     function selectCalculatorTab(tabName) {
       const shieldActive = tabName === "shield";
-      state.activeTab = shieldActive ? "shield" : "damage";
-      el.damagePanel.hidden = shieldActive;
+      const healingActive = tabName === "healing";
+      state.activeTab = shieldActive ? "shield" : healingActive ? "healing" : "damage";
+      el.damagePanel.hidden = shieldActive || healingActive;
       el.shieldPanel.hidden = !shieldActive;
-      el.damageTabButton.classList.toggle("active", !shieldActive);
+      el.healingPanel.hidden = !healingActive;
+      el.damageTabButton.classList.toggle("active", !shieldActive && !healingActive);
       el.shieldTabButton.classList.toggle("active", shieldActive);
-      el.damageTabButton.setAttribute("aria-selected", shieldActive ? "false" : "true");
+      el.healingTabButton.classList.toggle("active", healingActive);
+      el.damageTabButton.setAttribute("aria-selected", shieldActive || healingActive ? "false" : "true");
       el.shieldTabButton.setAttribute("aria-selected", shieldActive ? "true" : "false");
+      el.healingTabButton.setAttribute("aria-selected", healingActive ? "true" : "false");
       if (shieldActive) updateShieldAll();
+      if (healingActive) updateHealingAll();
     }
 
     function number(value, fallback = 0) {
@@ -1597,6 +1809,30 @@
       return String(label || "")
         .toLowerCase()
         .replace(/\b(enhanced|plus)\b/g, "")
+        .replace(/\s*-\s*/g, "-")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function selectedHealingMoveChoice() {
+      return state.healingMoveChoices.find((choice) => choice.slotKey === state.selectedHealingMoveSlot && !choice.disabled)
+        || state.healingMoveChoices.find((choice) => !choice.disabled)
+        || null;
+    }
+
+    function selectedHealingParts(choice = selectedHealingMoveChoice()) {
+      if (!choice || !choice.entries.length) return [];
+      const level = number(el.healingLevelRange.value, 15);
+      const available = choice.entries.filter((entry) => level >= number(entry.minLevel, 1) && isHealingEntry(entry));
+      const enhanced = available.filter((entry) => entry.enhanced);
+      return enhanced.length ? enhanced : available.filter((entry) => !entry.enhanced);
+    }
+
+    function normalizeHealingLabel(label) {
+      return String(label || "")
+        .toLowerCase()
+        .replace(/\b(enhanced|plus)\b/g, "")
+        .replace(/\s*-\s*/g, "-")
         .replace(/\s+/g, " ")
         .trim();
     }
@@ -1621,6 +1857,10 @@
       return state.pokemon.find((pokemon) => pokemon.name === el.shieldPokemonSelect.value);
     }
 
+    function selectedHealingPokemon() {
+      return state.pokemon.find((pokemon) => pokemon.name === el.healingPokemonSelect.value);
+    }
+
     function selectedShieldItems() {
       const rows = [];
       for (let i = 0; i < 3; i += 1) {
@@ -1631,6 +1871,22 @@
         rows.push({
           item,
           level: clamp(number(el[`shieldItemLevel${i}`].value, 40), 1, 40),
+          slot: i
+        });
+      }
+      return rows;
+    }
+
+    function selectedHealingItems() {
+      const rows = [];
+      for (let i = 0; i < 3; i += 1) {
+        const name = el[`healingItemSelect${i}`].value;
+        if (!name) continue;
+        const item = state.heldItems.find((entry) => entry.name === name);
+        if (!item) continue;
+        rows.push({
+          item,
+          level: clamp(number(el[`healingItemLevel${i}`].value, 40), 1, 40),
           slot: i
         });
       }
@@ -1653,6 +1909,10 @@
 
     function hasShieldItem(itemName) {
       return selectedShieldItems().some((entry) => entry.item.name === itemName);
+    }
+
+    function hasHealingItem(itemName) {
+      return selectedHealingItems().some((entry) => entry.item.name === itemName);
     }
 
     function pokemonStats(name, level) {
@@ -1688,6 +1948,7 @@
       updatePokemonPreview(el.pokemonSelect, el.pokemonImage, el.pokemonImageName);
       updatePokemonPreview(el.targetSelect, el.targetImage, el.targetImageName);
       updatePokemonPreview(el.shieldPokemonSelect, el.shieldPokemonImage, el.shieldPokemonImageName);
+      updatePokemonPreview(el.healingPokemonSelect, el.healingPokemonImage, el.healingPokemonImageName);
     }
 
     function fillOptions(select, rows, getValue, getLabel, placeholder) {
@@ -1738,6 +1999,14 @@
         (pokemon) => jpPokemonName(pokemon)
       );
 
+      const healingPokemonRows = pokemonRows.filter(pokemonHasHealingFormula);
+      fillOptions(
+        el.healingPokemonSelect,
+        healingPokemonRows,
+        (pokemon) => pokemon.name,
+        (pokemon) => jpPokemonName(pokemon)
+      );
+
       const itemRows = state.heldItems
         .slice()
         .sort((a, b) => a.display_name.localeCompare(b.display_name));
@@ -1757,6 +2026,13 @@
           (item) => jpItemName(item),
           "なし"
         );
+        fillOptions(
+          el[`healingItemSelect${i}`],
+          itemRows,
+          (item) => item.name,
+          (item) => jpItemName(item),
+          "なし"
+        );
       }
 
       const firstPokemon = pokemonRows.find((pokemon) => pokemon.name === "Pikachu") || pokemonRows[0];
@@ -1764,15 +2040,20 @@
       el.targetSelect.value = firstPokemon ? firstPokemon.name : "";
       const firstShieldPokemon = shieldPokemonRows.find((pokemon) => pokemon.name === "Blastoise") || shieldPokemonRows[0];
       if (firstShieldPokemon) el.shieldPokemonSelect.value = firstShieldPokemon.name;
+      const firstHealingPokemon = healingPokemonRows.find((pokemon) => pokemon.name === "Blissey") || healingPokemonRows[0];
+      if (firstHealingPokemon) el.healingPokemonSelect.value = firstHealingPokemon.name;
 
       updateMoveOptions();
       applyRecommendedBuild();
       syncTargetStats();
       updateShieldMoveOptions();
       applyRecommendedShieldBuild();
+      updateHealingMoveOptions();
+      applyRecommendedHealingBuild();
       updateAllPokemonPreviews();
       updateAll();
       updateShieldAll();
+      updateHealingAll();
     }
 
     function getRsbField(rsb, prefix, key) {
@@ -1811,6 +2092,37 @@
       });
     }
 
+    function isHealingEntry(entry) {
+      const label = String(entry.label || "");
+      return /(heal|healing|recovery)/i.test(label)
+        && !/(overheal shield|damage|percentage of damage)/i.test(label);
+    }
+
+    function pokemonHasHealingFormula(pokemon) {
+      const prefixes = ["", "add1", "add2", "add3", "add4", "add5", "enhanced", "enhanced_add1", "enhanced_add2", "enhanced_add3", "enhanced_add4", "enhanced_add5"];
+      const nodes = [];
+      (pokemon.skills || []).forEach((skill) => {
+        nodes.push(skill, ...(skill.upgrades || []));
+      });
+
+      return nodes.some((node) => {
+        return ["rsb", "boosted_rsb"].some((rsbName) => {
+          const rsb = node[rsbName];
+          if (!rsb) return false;
+          return prefixes.some((prefix) => {
+            const label = String(getRsbField(rsb, prefix, "label") || "");
+            const ratio = getRsbField(rsb, prefix, "ratio");
+            const dmgType = String(getRsbField(rsb, prefix, "dmg_type") || "").trim();
+            const exception = String(getRsbField(rsb, prefix, "exception") || "");
+            return ratio !== "" && ratio !== undefined && ratio !== null
+              && dmgType
+              && exception !== "True"
+              && isHealingEntry({ label });
+          });
+        });
+      });
+    }
+
     function isAutoIncludedDamageEntry(entry) {
       const label = String(entry.label || "").toLowerCase();
       if (/(heal|healing|shield|max hp|defense|sp\.?\s*def|spdef|attack speed|movement speed|cooldown|cdr|increase|reduction)/i.test(label)) {
@@ -1840,10 +2152,29 @@
       return { count: 1, note: "" };
     }
 
+    function inferHealingHitInfo(entry) {
+      const own = inferHitInfo(entry);
+      if (own.count > 1) return own;
+
+      const label = String(entry.label || "");
+      if (!/\bper\b|hit|tick|cream|copy|target|diagonal/i.test(label)) {
+        return own;
+      }
+
+      const context = inferHitCountFromText(entry.contextText || entry.notes, false);
+      if (context.count <= 1) return own;
+      if (/subsequent/i.test(label)) {
+        const count = Math.max(1, context.count - 1);
+        return { count, note: `${formatNumber(count, 0)}回（初回を除く）` };
+      }
+      return { count: context.count, note: context.note.replace("ヒット", "回") };
+    }
+
     function inferHitCountFromText(value, preferLabel) {
       const text = normalizeCountWords(String(value || ""));
-      const units = "(?:hits?|ticks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shuriken|comets?|meteorites?|times)";
+      const units = "(?:hits?|ticks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shuriken|comets?|meteorites?|creams?|copies|targets?|diagonals?|times)";
       const checks = [
+        { regex: /\((?:[^)]*?)(\d+)\s+max[^)]*\)/i, group: 1, suffix: "最大" },
         { regex: new RegExp(`\\\((?:[^)]*?)(\\d+)\\s*-\\s*(\\d+)\\s*${units}[^)]*\\\)`, "i"), group: 2, suffix: "最大" },
         { regex: /\((?:[^)]*?)(?:x|×)\s*(\d+)[^)]*\)/i, group: 1 },
         { regex: /\((?:[^)]*?)(\d+)\s*(?:x|×)[^)]*\)/i, group: 1 },
@@ -2301,6 +2632,139 @@
       });
     }
 
+    function updateHealingMoveOptions() {
+      const pokemon = selectedHealingPokemon();
+      state.healingMoveEntries = [];
+      state.healingMoveChoices = [];
+      if (!pokemon) {
+        renderHealingMoveChoices();
+        return;
+      }
+
+      const level = number(el.healingLevelRange.value, 15);
+      const skills = pokemon.skills || [];
+      const passive = skills.find((skill) => skill.ability === "Passive" || skill.ability === "Passive Ability");
+      const basic = skills.find((skill) => skill.ability === "Basic");
+      const move1 = skills.find((skill) => skill.ability === "Move 1");
+      const move2 = skills.find((skill) => skill.ability === "Move 2");
+      const unite = skills.find((skill) => skill.ability === "Unite Move");
+
+      const createChoices = ({ slotKey, slotLabel, node, rsb, groupName, minLevel, iconName }) => {
+        if (!node || !rsb) return;
+        const displayName = slotKey === "basic" ? "通常攻撃" : slotKey === "boosted" ? "強化攻撃" : node.name || slotLabel;
+        const iconUrl = skillIconUrl(pokemon.name, iconName || node.name || "Attack");
+        const entries = [];
+        addRsbEntries(entries, rsb, displayName, groupName || node.ability || "", minLevel || node.level1 || node.level || 1, "", {
+          slotKey,
+          slotLabel,
+          displayName,
+          iconUrl,
+          enhancedMinLevel: node.level2 || minLevel || node.level1 || node.level || 1
+        });
+        const healingEntries = entries.filter(isHealingEntry);
+        if (!healingEntries.length) return;
+
+        const groups = new Map();
+        healingEntries.forEach((entry) => {
+          const key = normalizeHealingLabel(entry.label);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(entry);
+        });
+
+        [...groups.values()].forEach((groupEntries, variantIndex) => {
+          const variantSlotKey = `${slotKey}-${variantIndex}`;
+          groupEntries.forEach((entry, index) => {
+            entry.id = `healing-${variantSlotKey}-${index}`;
+            entry.slotKey = variantSlotKey;
+            entry.slotLabel = slotLabel;
+            entry.displayName = displayName;
+            entry.iconUrl = iconUrl;
+            entry.contextText = [node.description, rsb.true_desc, rsb.notes, rsb.rsb_info].filter(Boolean).join(" ");
+          });
+          const learnLevel = Math.min(...groupEntries.map((entry) => number(entry.minLevel, 1)));
+          const choice = {
+            slotKey: variantSlotKey,
+            slotLabel,
+            displayName,
+            iconUrl,
+            minLevel: learnLevel,
+            entries: groupEntries,
+            variantLabel: groupEntries[0].label,
+            disabled: !groupEntries.some((entry) => level >= number(entry.minLevel, 1))
+          };
+          state.healingMoveChoices.push(choice);
+          state.healingMoveEntries.push(...groupEntries);
+        });
+      };
+
+      createChoices({ slotKey: "passive", slotLabel: "特性", node: passive, rsb: passive && passive.rsb, groupName: "Passive", minLevel: 1 });
+      createChoices({ slotKey: "basic", slotLabel: "通常", node: basic, rsb: basic && basic.rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
+      createChoices({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
+
+      [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
+        createChoices({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: node.level1 || node.level || 1 });
+      });
+      [move2, ...((move2 && move2.upgrades) || [])].filter(Boolean).forEach((node, index) => {
+        createChoices({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: node.level1 || node.level || 1 });
+      });
+      createChoices({ slotKey: "unite", slotLabel: "ユナイト技", node: unite, rsb: unite && unite.rsb, groupName: "Unite Move", minLevel: unite && unite.level || 1 });
+
+      if (!state.healingMoveChoices.some((choice) => choice.slotKey === state.selectedHealingMoveSlot && !choice.disabled)) {
+        state.selectedHealingMoveSlot = (state.healingMoveChoices.find((choice) => !choice.disabled) || {}).slotKey || "";
+      }
+      renderHealingMoveChoices();
+    }
+
+    function renderHealingMoveChoices() {
+      el.healingMoveChoices.innerHTML = "";
+      if (!state.healingMoveChoices.length) {
+        const message = document.createElement("div");
+        message.className = "effect-note";
+        message.textContent = "現在のレベルで計算できる回復技がありません。";
+        el.healingMoveChoices.appendChild(message);
+        return;
+      }
+
+      state.healingMoveChoices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `move-choice${choice.slotKey === state.selectedHealingMoveSlot ? " active" : ""}`;
+        button.dataset.slot = choice.slotKey;
+        button.disabled = choice.disabled;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", choice.slotKey === state.selectedHealingMoveSlot ? "true" : "false");
+
+        const img = document.createElement("img");
+        img.src = choice.iconUrl || brokenImageUrl();
+        img.alt = "";
+        img.onerror = () => {
+          img.onerror = null;
+          img.src = brokenImageUrl();
+        };
+
+        const text = document.createElement("span");
+        text.className = "move-choice-text";
+        const slot = document.createElement("span");
+        slot.className = "move-choice-slot";
+        slot.textContent = choice.slotLabel;
+        const name = document.createElement("span");
+        name.className = "move-choice-name";
+        name.textContent = jpMoveName(choice.displayName);
+        const note = document.createElement("span");
+        note.className = "move-choice-note";
+        note.textContent = choice.disabled ? `Lv${choice.minLevel}以降` : jpMoveLabel(choice.variantLabel);
+
+        text.append(slot, name, note);
+        button.append(img, text);
+        button.addEventListener("click", () => {
+          state.selectedHealingMoveSlot = choice.slotKey;
+          renderHealingMoveChoices();
+          updateHealingAll();
+        });
+        el.healingMoveChoices.appendChild(button);
+      });
+    }
+
     function applyRecommendedBuild() {
       const pokemon = selectedPokemon();
       const build = pokemon && Array.isArray(pokemon.builds) ? pokemon.builds.find((entry) => Array.isArray(entry.held_items)) : null;
@@ -2337,6 +2801,25 @@
         el[`shieldItemLevel${i}`].value = 40;
       }
       updateShieldAll();
+    }
+
+    function applyRecommendedHealingBuild() {
+      const pokemon = selectedHealingPokemon();
+      const build = pokemon && Array.isArray(pokemon.builds) ? pokemon.builds.find((entry) => Array.isArray(entry.held_items)) : null;
+      const items = build ? build.held_items.slice(0, 3) : [];
+      for (let i = 0; i < 3; i += 1) {
+        el[`healingItemSelect${i}`].value = items[i] || "";
+        el[`healingItemLevel${i}`].value = 40;
+      }
+      updateHealingAll();
+    }
+
+    function clearHealingItems() {
+      for (let i = 0; i < 3; i += 1) {
+        el[`healingItemSelect${i}`].value = "";
+        el[`healingItemLevel${i}`].value = 40;
+      }
+      updateHealingAll();
     }
 
     function conditionNumber(id, min, max) {
@@ -2379,6 +2862,20 @@
       });
     }
 
+    function updateHealingConditionVisibility() {
+      const names = new Set(selectedHealingItems().map((entry) => entry.item.name));
+      const map = {
+        healingConditionAttackWeight: "Attack Weight",
+        healingConditionSpAtkSpecs: "Sp. Atk Specs",
+        healingConditionWeaknessPolicy: "Weakness Policy",
+        healingConditionAccelBracer: "Accel Bracer",
+        healingConditionDriveLens: "Drive Lens"
+      };
+      Object.entries(map).forEach(([id, itemName]) => {
+        el[id].hidden = !names.has(itemName);
+      });
+    }
+
     function effectTierFor(itemName) {
       const row = selectedItems().find((entry) => entry.item.name === itemName);
       if (!row) return 0;
@@ -2389,6 +2886,14 @@
 
     function shieldEffectTierFor(itemName) {
       const row = selectedShieldItems().find((entry) => entry.item.name === itemName);
+      if (!row) return 0;
+      const item = row.item;
+      const raw = row.level < 10 ? item.level1 : row.level < 20 ? item.level10 : item.level20;
+      return number(String(raw || "").replace("%", ""), 0);
+    }
+
+    function healingEffectTierFor(itemName) {
+      const row = selectedHealingItems().find((entry) => entry.item.name === itemName);
       if (!row) return 0;
       const item = row.item;
       const raw = row.level < 10 ? item.level1 : row.level < 20 ? item.level10 : item.level20;
@@ -2535,6 +3040,70 @@
       };
     }
 
+    function computeHealingStats() {
+      const level = number(el.healingLevelRange.value, 15);
+      const pokemon = selectedHealingPokemon();
+      const baseStats = pokemon ? pokemonStats(pokemon.name, level) : null;
+      const baseAttack = number(baseStats && baseStats.attack, 0);
+      const baseSpAttack = number(baseStats && baseStats.sp_attack, 0);
+      const bonuses = {
+        attackFlat: 0,
+        spAttackFlat: 0,
+        itemLines: []
+      };
+
+      selectedHealingItems().forEach(({ item, level: itemLevel }) => {
+        (item.stats || []).forEach((stat) => {
+          const value = itemLevelValue(itemLevel, stat);
+          const label = stat.label;
+          if (label === "Attack") bonuses.attackFlat += value;
+          if (label === "Sp. Attack") bonuses.spAttackFlat += value;
+          if (value) {
+            const unit = stat.percent ? "%" : "";
+            bonuses.itemLines.push(`${jpItemName(item)}: ${jpStat(label)} +${formatNumber(value, 2)}${unit}`);
+          }
+        });
+      });
+
+      let attackFlat = bonuses.attackFlat + number(el.healingManualAttack.value, 0);
+      let spAttackFlat = bonuses.spAttackFlat + number(el.healingManualSpAttack.value, 0);
+      let attackPercent = 0;
+      let spAttackPercent = 0;
+
+      if (hasHealingItem("Attack Weight")) {
+        attackFlat += conditionNumber("healingAttackWeightStacks", 0, 6) * healingEffectTierFor("Attack Weight");
+      }
+      if (hasHealingItem("Sp. Atk Specs")) {
+        spAttackFlat += conditionNumber("healingSpAtkSpecsStacks", 0, 6) * healingEffectTierFor("Sp. Atk Specs");
+      }
+      if (hasHealingItem("Weakness Policy")) {
+        attackPercent += conditionNumber("healingWeaknessPolicyStacks", 0, 4) * healingEffectTierFor("Weakness Policy");
+      }
+      if (hasHealingItem("Accel Bracer")) {
+        attackPercent += conditionNumber("healingAccelBracerStacks", 0, 20) * healingEffectTierFor("Accel Bracer");
+      }
+      if (hasHealingItem("Drive Lens")) {
+        spAttackPercent += conditionNumber("healingDriveLensStacks", 0, 20) * healingEffectTierFor("Drive Lens");
+      }
+      if (hasHealingItem("Wise Glasses")) {
+        spAttackPercent += healingEffectTierFor("Wise Glasses");
+      }
+
+      const attack = (baseAttack + attackFlat) * (1 + attackPercent / 100);
+      const spAttack = (baseSpAttack + spAttackFlat) * (1 + spAttackPercent / 100);
+      return {
+        baseAttack,
+        baseSpAttack,
+        attack,
+        spAttack,
+        attackFlat,
+        spAttackFlat,
+        attackPercent,
+        spAttackPercent,
+        itemLines: bonuses.itemLines
+      };
+    }
+
     function computeExtraDamages(stats) {
       const extras = [];
 
@@ -2613,6 +3182,18 @@
         const effect = item.description3 && tier ? `（${jpStat(item.description3)}: ${tier}）` : "";
         note.textContent = `${jpItemName(item)}${effect}: ${jpItemEffect(item)}`;
         el.shieldItemEffects.appendChild(note);
+      });
+    }
+
+    function renderHealingItemEffects() {
+      el.healingItemEffects.innerHTML = "";
+      selectedHealingItems().forEach(({ item, level }) => {
+        const note = document.createElement("div");
+        note.className = "effect-note";
+        const tier = level < 10 ? item.level1 : level < 20 ? item.level10 : item.level20;
+        const effect = item.description3 && tier ? `（${jpStat(item.description3)}: ${tier}）` : "";
+        note.textContent = `${jpItemName(item)}${effect}: ${jpItemEffect(item)}`;
+        el.healingItemEffects.appendChild(note);
       });
     }
 
@@ -2712,6 +3293,122 @@
 
       el.shieldBreakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
       renderShieldItemEffects();
+    }
+
+    function updateHealingAll() {
+      if (!el.healingPokemonSelect) return;
+      updatePokemonPreview(el.healingPokemonSelect, el.healingPokemonImage, el.healingPokemonImageName);
+      updateHealingConditionVisibility();
+      el.healingLevelValue.textContent = el.healingLevelRange.value;
+
+      const choice = selectedHealingMoveChoice();
+      const parts = selectedHealingParts(choice);
+      const level = number(el.healingLevelRange.value, 15);
+      const stats = computeHealingStats();
+      const manualCount = clamp(number(el.healingCount.value, 1), 1, 48);
+      const targetType = el.healingTargetType.value === "ally" ? "ally" : "self";
+      const itemPercent = targetType === "self" && hasHealingItem("Big Root")
+        ? healingEffectTierFor("Big Root")
+        : targetType === "ally" && hasHealingItem("Rescue Hood")
+          ? healingEffectTierFor("Rescue Hood")
+          : 0;
+      const manualPercent = number(el.manualHealingPercent.value, 0);
+      const healingMultiplier = Math.max(0, 1 + (itemPercent + manualPercent) / 100);
+      const healingFlat = number(el.manualHealingFlat.value, 0);
+
+      el.healingAttackStat.textContent = formatNumber(stats.attack, 1);
+      el.healingSpAttackStat.textContent = formatNumber(stats.spAttack, 1);
+
+      if (!choice || !parts.length) {
+        el.healingAmount.textContent = "0";
+        el.healingAmountSub.textContent = "現在のレベルで計算できる回復式なし";
+        el.healingFormulaText.textContent = "-";
+        el.healingBreakdownBody.innerHTML = "";
+        el.healingLearnChipRow.innerHTML = "";
+        renderHealingItemEffects();
+        return;
+      }
+
+      const results = parts.map((part) => {
+        const typeLabel = jpDamageType(part.dmgType);
+        const moveStat = String(part.dmgType).trim() === "Atk" ? stats.attack : stats.spAttack;
+        const statComponent = Math.floor(part.ratio * moveStat / 100);
+        const levelComponent = part.slider * (level - 1);
+        const baseComponent = part.base;
+        const baseValue = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
+        const hitInfo = inferHealingHitInfo(part);
+        const adjustedValue = Math.max(0, Math.floor(baseValue * healingMultiplier + healingFlat));
+        const total = adjustedValue * hitInfo.count;
+        return {
+          part,
+          typeLabel,
+          moveStat,
+          statComponent,
+          levelComponent,
+          baseComponent,
+          baseValue,
+          adjustedValue,
+          hitCount: hitInfo.count,
+          hitNote: hitInfo.note,
+          total
+        };
+      });
+
+      const perApplication = results.reduce((sum, result) => sum + result.total, 0);
+      const totalHealing = perApplication * manualCount;
+      const moveTitle = `${choice.slotLabel}${choice.displayName ? ` - ${jpMoveName(choice.displayName)}` : ""}`;
+      const targetLabel = targetType === "ally" ? "味方" : "自分";
+
+      el.healingAmount.textContent = totalHealing;
+      el.healingAmountSub.textContent = manualCount > 1
+        ? `1対象あたり ${perApplication} × ${formatNumber(manualCount, 0)}回/対象`
+        : `${targetLabel}への回復 / 補正後 ${perApplication}`;
+
+      if (results.length === 1) {
+        const result = results[0];
+        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回` : "";
+        el.healingFormulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}（小数点以下は切り捨て）`;
+      } else {
+        el.healingFormulaText.textContent = `${moveTitle}: ${results.length}項目を合算 = ${perApplication}（各項目で小数点以下は切り捨て）`;
+      }
+
+      el.healingLearnChipRow.innerHTML = "";
+      const learnChip = document.createElement("span");
+      learnChip.className = level >= choice.minLevel ? "chip good" : "chip warn";
+      learnChip.textContent = level >= choice.minLevel ? `使用可能: Lv${choice.minLevel}以降` : `未習得: Lv${choice.minLevel}以降`;
+      el.healingLearnChipRow.appendChild(learnChip);
+      const typeChip = document.createElement("span");
+      typeChip.className = "chip";
+      typeChip.style.marginLeft = "8px";
+      typeChip.textContent = `${moveTitle} / ${targetLabel}を回復`;
+      el.healingLearnChipRow.appendChild(typeChip);
+
+      const partRows = results.map((result, index) => {
+        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回 = ${result.total}` : "";
+        return [
+          `回復式 ${index + 1}`,
+          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}`
+        ];
+      });
+
+      const itemEffectName = targetType === "self" ? "おおきなねっこ" : "レスキューフード";
+      const rows = [
+        ["計算対象", `${moveTitle} / ${jpMoveLabel(results[0].part.label)}`],
+        ...partRows,
+        ["回復対象", targetLabel],
+        ["持ち物の回復補正", itemPercent ? `${itemEffectName} +${formatNumber(itemPercent, 1)}%` : "なし"],
+        ["回復補正", `×${formatNumber(healingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
+        ["1回/1対象あたり", formatNumber(perApplication, 0)],
+        ["回数/対象数", formatNumber(manualCount, 0)],
+        ["合計回復量", formatNumber(totalHealing, 0)]
+      ];
+
+      if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
+        rows.splice(1, 0, ["能力補正", `攻撃 +${formatNumber(stats.attackFlat, 1)} / 攻撃 +${formatNumber(stats.attackPercent, 1)}% / 特攻 +${formatNumber(stats.spAttackFlat, 1)} / 特攻 +${formatNumber(stats.spAttackPercent, 1)}%`]);
+      }
+
+      el.healingBreakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
+      renderHealingItemEffects();
     }
 
     function updateAll() {
@@ -2852,6 +3549,7 @@
     function wireEvents() {
       el.damageTabButton.addEventListener("click", () => selectCalculatorTab("damage"));
       el.shieldTabButton.addEventListener("click", () => selectCalculatorTab("shield"));
+      el.healingTabButton.addEventListener("click", () => selectCalculatorTab("healing"));
 
       el.pokemonSelect.addEventListener("change", () => {
         updateMoveOptions();
@@ -2877,6 +3575,18 @@
       el.shieldApplyBuildButton.addEventListener("click", applyRecommendedShieldBuild);
       el.shieldClearItemsButton.addEventListener("click", clearShieldItems);
 
+      el.healingPokemonSelect.addEventListener("change", () => {
+        updateHealingMoveOptions();
+        applyRecommendedHealingBuild();
+        updateHealingAll();
+      });
+      el.healingLevelRange.addEventListener("input", () => {
+        updateHealingMoveOptions();
+        updateHealingAll();
+      });
+      el.healingApplyBuildButton.addEventListener("click", applyRecommendedHealingBuild);
+      el.healingClearItemsButton.addEventListener("click", clearHealingItems);
+
       for (let i = 0; i < 3; i += 1) {
         el[`itemSelect${i}`].addEventListener("change", updateAll);
         el[`itemLevel${i}`].addEventListener("input", (event) => {
@@ -2887,6 +3597,11 @@
         el[`shieldItemLevel${i}`].addEventListener("input", (event) => {
           event.target.value = clamp(number(event.target.value, 40), 1, 40);
           updateShieldAll();
+        });
+        el[`healingItemSelect${i}`].addEventListener("change", updateHealingAll);
+        el[`healingItemLevel${i}`].addEventListener("input", (event) => {
+          event.target.value = clamp(number(event.target.value, 40), 1, 40);
+          updateHealingAll();
         });
       }
 
@@ -2925,6 +3640,17 @@
       ].forEach((id) => {
         el[id].addEventListener("input", updateShieldAll);
         el[id].addEventListener("change", updateShieldAll);
+      });
+
+      [
+        "healingManualAttack", "healingManualSpAttack", "healingTargetType",
+        "manualHealingPercent", "manualHealingFlat", "healingCount",
+        "healingAttackWeightStacks", "healingSpAtkSpecsStacks",
+        "healingWeaknessPolicyStacks", "healingAccelBracerStacks",
+        "healingDriveLensStacks"
+      ].forEach((id) => {
+        el[id].addEventListener("input", updateHealingAll);
+        el[id].addEventListener("change", updateHealingAll);
       });
 
       el.retryLoadButton.addEventListener("click", () => {
