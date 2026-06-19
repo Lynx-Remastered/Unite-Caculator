@@ -1263,18 +1263,61 @@
 
     function selectedMove() {
       const choice = selectedMoveChoice();
-      if (!choice || !choice.entries.length) return null;
-      const level = number(el.levelRange.value, 15);
-      return choice.entries.find((entry) => entry.enhanced && level >= entry.minLevel)
-        || choice.entries.find((entry) => level >= entry.minLevel)
-        || choice.entries[0]
-        || null;
+      const parts = selectedMoveParts(choice);
+      if (!choice || !parts.length) return null;
+      const primary = parts[0];
+
+      return {
+        ...primary,
+        parts,
+        choice,
+        label: parts.map((part) => part.label).join(" + "),
+        minLevel: Math.min(...parts.map((part) => number(part.minLevel, 1))),
+        displayName: choice.displayName,
+        slotLabel: choice.slotLabel,
+        iconUrl: choice.iconUrl
+      };
     }
 
     function selectedMoveChoice() {
       return state.moveChoices.find((choice) => choice.slotKey === state.selectedMoveSlot && !choice.disabled)
         || state.moveChoices.find((choice) => !choice.disabled)
         || null;
+    }
+
+    function selectedMoveParts(choice = selectedMoveChoice()) {
+      if (!choice || !choice.entries.length) return [];
+      const level = number(el.levelRange.value, 15);
+      const activeEntries = activeEntriesForLevel(choice.entries, level);
+      const damageEntries = activeEntries.filter(isAutoIncludedDamageEntry);
+      const usableEntries = damageEntries.length ? damageEntries : activeEntries.slice(0, 1);
+      return usableEntries.map((entry) => {
+        const hitInfo = inferHitInfo(entry);
+        return {
+          ...entry,
+          hitCount: hitInfo.count,
+          hitNote: hitInfo.note
+        };
+      });
+    }
+
+    function activeEntriesForLevel(entries, level) {
+      const available = entries.filter((entry) => level >= number(entry.minLevel, 1));
+      const regularEntries = available.filter((entry) => !entry.enhanced);
+      const enhancedEntries = available.filter((entry) => entry.enhanced);
+      if (!enhancedEntries.length) return regularEntries;
+
+      const enhancedByPart = new Map(enhancedEntries.map((entry) => [entry.basePartKey, entry]));
+      const selected = [];
+      regularEntries.forEach((entry) => {
+        selected.push(enhancedByPart.get(entry.basePartKey) || entry);
+      });
+      enhancedEntries.forEach((entry) => {
+        if (!regularEntries.some((regular) => regular.basePartKey === entry.basePartKey)) {
+          selected.push(entry);
+        }
+      });
+      return Array.from(new Map(selected.map((entry) => [entry.partKey, entry])).values());
     }
 
     function selectedItems() {
@@ -1405,6 +1448,90 @@
       return prefix ? rsb[`${prefix}_${key}`] : rsb[key];
     }
 
+    function isAutoIncludedDamageEntry(entry) {
+      const label = String(entry.label || "").toLowerCase();
+      if (/(heal|healing|shield|max hp|defense|sp\.?\s*def|spdef|attack speed|movement speed|cooldown|cdr|increase|reduction)/i.test(label)) {
+        return false;
+      }
+
+      if (entry.partKey !== "base" && /(execute|missing hp|backstab|single target bonus|interrupted|counter|marked|marker|secondary target|against wild|against player|light screen|queenly|empowered|boosted|manual return|automatic return|ally|snorlax|percentage of damage|far|side)/i.test(label)) {
+        return false;
+      }
+
+      return /(damage|hit|slash|burn|dot|tick|wave|bolt|projectile|quill|star|seed|leaf|flame|comet|meteor|punch|kick|slap|shuriken|blade|pulse|shockwave|whirlpool|stream|field|flurry|eruption)/i.test(label)
+        || entry.partKey === "base";
+    }
+
+    function inferHitInfo(entry) {
+      const label = String(entry.label || "");
+      const notes = String(entry.notes || "");
+      const labelCount = inferHitCountFromText(label, true);
+      if (labelCount.count > 1) return labelCount;
+
+      if (!/\bper\b|hit|tick|wave|bolt|pulse|shockwave|projectile|quill|star|seed|leaf|flame|comet|meteor|shuriken|blade|slash|punch|kick|slap/i.test(label)) {
+        return { count: 1, note: "" };
+      }
+
+      const textCount = inferHitCountFromText(notes, false);
+      if (textCount.count > 1) return textCount;
+      return { count: 1, note: "" };
+    }
+
+    function inferHitCountFromText(value, preferLabel) {
+      const text = normalizeCountWords(String(value || ""));
+      const units = "(?:hits?|ticks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shuriken|comets?|meteorites?|times)";
+      const checks = [
+        { regex: new RegExp(`\\\((?:[^)]*?)(\\d+)\\s*-\\s*(\\d+)\\s*${units}[^)]*\\\)`, "i"), group: 2, suffix: "最大" },
+        { regex: /\((?:[^)]*?)(?:x|×)\s*(\d+)[^)]*\)/i, group: 1 },
+        { regex: /\((?:[^)]*?)(\d+)\s*(?:x|×)[^)]*\)/i, group: 1 },
+        { regex: new RegExp(`\\\((?:[^)]*?)(\\d+)\\s*${units}[^)]*\\\)`, "i"), group: 1 },
+        { regex: new RegExp(`\\bfirst\\s+(\\d+)\\s+${units}\\b`, "i"), group: 1 },
+        { regex: new RegExp(`\\b(?:up to|maximum of|max(?:imum)?)\\s+(\\d+)\\s+${units}\\b`, "i"), group: 1, suffix: "最大" },
+        { regex: new RegExp(`\\b(\\d+)\\s+${units}\\b`, "i"), group: 1 }
+      ];
+
+      for (const check of checks) {
+        const match = text.match(check.regex);
+        if (!match) continue;
+        const count = Math.max(1, number(match[check.group], 1));
+        if (count > 1) {
+          const note = `${formatNumber(count, 0)}ヒット${check.suffix ? `（${check.suffix}）` : ""}`;
+          return { count, note };
+        }
+      }
+
+      if (!preferLabel) {
+        const duration = text.match(/\bevery\s+(\d+(?:\.\d+)?)s\s+over\s+(\d+(?:\.\d+)?)s\b/i);
+        if (duration) {
+          const count = Math.max(1, Math.floor(number(duration[2], 0) / number(duration[1], 1)));
+          if (count > 1) return { count, note: `${formatNumber(count, 0)}ヒット（最大）` };
+        }
+      }
+
+      return { count: 1, note: "" };
+    }
+
+    function normalizeCountWords(value) {
+      const words = {
+        one: "1",
+        two: "2",
+        three: "3",
+        four: "4",
+        five: "5",
+        six: "6",
+        seven: "7",
+        eight: "8",
+        nine: "9",
+        ten: "10",
+        eleven: "11",
+        twelve: "12"
+      };
+
+      return String(value || "").replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b/gi, (match) => {
+        return words[match.toLowerCase()] || match;
+      });
+    }
+
     function skillIconUrl(pokemonName, skillName) {
       if (!skillName || skillName === "Attack") {
         return "https://d275t8dp8rxb42.cloudfront.net/skills/Attack.png";
@@ -1482,6 +1609,8 @@
           minLevel: enhanced ? number(meta.enhancedMinLevel, minLevel) : number(minLevel, 1),
           notes,
           enhanced,
+          partKey: prefix.key || "base",
+          basePartKey: prefix.key.replace(/^enhanced_?/, "") || "base",
           slotKey: meta.slotKey || "",
           slotLabel: meta.slotLabel || "",
           displayName: meta.displayName || ownerName,
@@ -1858,12 +1987,6 @@
         return;
       }
 
-      const moveStat = String(move.dmgType).trim() === "Atk" ? stats.attack : stats.spAttack;
-      const statComponent = Math.floor(move.ratio * moveStat / 100);
-      const levelComponent = move.slider * (level - 1);
-      const baseComponent = move.base;
-      const moveBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
-      const moveAfterCrit = el.criticalHit.checked ? Math.floor(moveBase * stats.critDamageMultiplier) : moveBase;
       const extras = computeExtraDamages(stats);
       let damageMultiplier = 1 + number(el.manualDamagePercent.value, 0) / 100;
 
@@ -1871,10 +1994,42 @@
         damageMultiplier += effectTierFor("Energy Amplifier") / 100;
       }
 
-      const rawBeforeMultiplier = moveAfterCrit + extras.reduce((sum, entry) => sum + entry.raw, 0);
-      const totalRaw = Math.max(0, Math.floor(rawBeforeMultiplier * damageMultiplier));
+      const moveResults = move.parts.map((part) => {
+        const typeLabel = jpDamageType(part.dmgType);
+        const moveStat = String(part.dmgType).trim() === "Atk" ? stats.attack : stats.spAttack;
+        const statComponent = Math.floor(part.ratio * moveStat / 100);
+        const levelComponent = part.slider * (level - 1);
+        const baseComponent = part.base;
+        const hitCount = Math.max(1, number(part.hitCount, 1));
+        const perHitBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
+        const perHitAfterCrit = el.criticalHit.checked ? Math.floor(perHitBase * stats.critDamageMultiplier) : perHitBase;
+        const perHitAfterMultiplier = Math.max(0, Math.floor(perHitAfterCrit * damageMultiplier));
+        const totalAfterCrit = perHitAfterCrit * hitCount;
+        const totalRaw = perHitAfterMultiplier * hitCount;
+        const totalReduced = reduceByDefense(perHitAfterMultiplier, part.dmgType) * hitCount;
 
-      const moveReduced = reduceByDefense(Math.floor(moveAfterCrit * damageMultiplier), move.dmgType);
+        return {
+          part,
+          typeLabel,
+          moveStat,
+          statComponent,
+          levelComponent,
+          baseComponent,
+          hitCount,
+          perHitBase,
+          perHitAfterCrit,
+          perHitAfterMultiplier,
+          totalAfterCrit,
+          totalRaw,
+          totalReduced
+        };
+      });
+
+      const moveRaw = moveResults.reduce((sum, result) => sum + result.totalRaw, 0);
+      const moveReduced = moveResults.reduce((sum, result) => sum + result.totalReduced, 0);
+      const extrasRaw = extras.reduce((sum, entry) => sum + Math.floor(entry.raw * damageMultiplier), 0);
+      const totalRaw = Math.max(0, moveRaw + extrasRaw);
+
       const extrasReduced = extras.reduce((sum, entry) => {
         return sum + reduceByDefense(Math.floor(entry.raw * damageMultiplier), entry.type);
       }, 0);
@@ -1882,14 +2037,20 @@
 
       el.rawDamage.textContent = totalRaw;
       el.finalDamage.textContent = totalReduced;
-      el.rawDamageSub.textContent = `技本体 ${moveAfterCrit} / 追加 ${extras.reduce((sum, entry) => sum + entry.raw, 0)} / 倍率 ×${formatNumber(damageMultiplier, 3)}`;
+      el.rawDamageSub.textContent = `技本体 ${moveRaw} / 追加 ${extrasRaw} / 倍率 ×${formatNumber(damageMultiplier, 3)}`;
       el.finalDamageSub.textContent = el.targetSelect.value
         ? `${el.targetSelect.options[el.targetSelect.selectedIndex].textContent} Lv${el.targetLevelRange.value} への推定`
         : "相手未選択時は防御0として計算";
 
-      const typeLabel = jpDamageType(move.dmgType);
       const moveTitle = `${move.slotLabel}${move.displayName ? ` - ${jpMoveName(move.displayName)}` : ""}`;
-      el.formulaText.textContent = `${moveTitle}: ${typeLabel}${formatNumber(moveStat, 1)} × ${move.ratio}% + ${move.slider} × (Lv${level} - 1) + ${move.base}（小数点以下は切り捨て）`;
+      if (moveResults.length === 1) {
+        const result = moveResults[0];
+        const hitText = result.hitCount > 1 ? ` × ${formatNumber(result.hitCount, 0)}ヒット = ${formatNumber(result.totalAfterCrit, 0)}` : "";
+        el.formulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base} = ${result.perHitBase}${hitText}（各ヒットで小数点以下は切り捨て）`;
+      } else {
+        const totalHits = moveResults.reduce((sum, result) => sum + result.hitCount, 0);
+        el.formulaText.textContent = `${moveTitle}: ${moveResults.length}項目 / ${formatNumber(totalHits, 0)}ヒットを合算（各ヒットで小数点以下は切り捨て）`;
+      }
 
       el.learnChipRow.innerHTML = "";
       const learnChip = document.createElement("span");
@@ -1899,19 +2060,27 @@
       const typeChip = document.createElement("span");
       typeChip.className = "chip";
       typeChip.style.marginLeft = "8px";
-      typeChip.textContent = `${moveTitle} / ${typeLabel}参照`;
+      typeChip.textContent = `${moveTitle} / 全ヒット想定`;
       el.learnChipRow.appendChild(typeChip);
 
+      const partRows = moveResults.map((result, index) => {
+        const hitText = result.hitCount > 1
+          ? ` × ${formatNumber(result.hitCount, 0)}ヒット`
+          : "";
+        const critText = el.criticalHit.checked ? ` / 急所後 ${result.perHitAfterCrit}` : "";
+        return [
+          `技本体 ${index + 1}`,
+          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.perHitBase}${critText}${hitText} -> ${formatNumber(result.totalRaw, 0)}`
+        ];
+      });
+
       const rows = [
-        ["計算対象", `${moveTitle} / ${jpMoveLabel(move.label)}`],
-        ["参照ステータス", `${typeLabel} ${formatNumber(moveStat, 1)}`],
-        ["ステータス項", `${typeLabel}${formatNumber(moveStat, 1)} × ${move.ratio}% = ${statComponent}（切り捨て）`],
-        ["レベル補正", `${move.slider} × (${level} - 1) = ${formatNumber(levelComponent, 2)}`],
-        ["固定値", formatNumber(baseComponent, 2)],
-        ["技本体", `${moveBase}${el.criticalHit.checked ? ` -> 急所 ${moveAfterCrit}` : ""}`],
-        ["追加効果", extras.length ? extras.map((entry) => `${entry.name}: ${formatNumber(entry.raw, 1)}`).join(" / ") : "0"],
+        ["計算対象", `${moveTitle} / ${moveResults.length > 1 ? "複数項目を合算" : jpMoveLabel(moveResults[0].part.label)}`],
+        ...partRows,
+        ["技本体合計", `${formatNumber(moveRaw, 0)}（倍率適用後・防御前）`],
+        ["追加効果", extras.length ? extras.map((entry) => `${entry.name}: ${formatNumber(Math.floor(entry.raw * damageMultiplier), 1)}`).join(" / ") : "0"],
         ["ダメージ倍率", `×${formatNumber(damageMultiplier, 3)}`],
-        ["防御参照", `${move.dmgType.trim() === "Atk" ? "防御" : "特防"} ${formatNumber(targetDefenseFor(move.dmgType), 1)}`]
+        ["防御参照", moveResults.map((result) => `${result.part.dmgType.trim() === "Atk" ? "防御" : "特防"} ${formatNumber(targetDefenseFor(result.part.dmgType), 1)}`).filter((value, index, rows) => rows.indexOf(value) === index).join(" / ")]
       ];
 
       if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
