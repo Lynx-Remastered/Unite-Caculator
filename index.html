@@ -1342,6 +1342,7 @@
     <footer class="source site-footer">
       データ元: <a href="https://unite-db.com/" target="_blank" rel="noreferrer">UniteDB</a>（2026年6月24日取得）<br>
       特殊ポケモン撃破バフ: <a href="https://wikiwiki.jp/poke-unite/%E3%83%86%E3%82%A4%E3%82%A2%E8%92%BC%E7%A9%BA%E9%81%BA%E8%B7%A1%28%E3%82%B0%E3%83%A9%E3%83%BC%E3%83%89%E3%83%B3%29" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a><br>
+      デフォルト持ち物: <a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得、各ポケモンの先頭掲載ビルド）<br>
       式: 計算値 = 能力値 × 倍率 + レベル補正 + 固定値（小数点以下は切り捨て）
     </footer>
   </main>
@@ -1557,6 +1558,101 @@
       regirock: { name: "レジロック", attackPercent: 0, spAttackPercent: 0, description: "防御+30%・特防+25%（与ダメージ変化なし）" },
       regice: { name: "レジアイス", attackPercent: 0, spAttackPercent: 0, description: "最大HPの5%を3秒ごとに回復（与ダメージ変化なし）" },
       registeel: { name: "レジスチル", attackPercent: 15, spAttackPercent: 15, description: "攻撃+15%・特攻+15%" }
+    };
+
+    const DAMAGE_RECOMMENDED_ITEMS = {
+      "Absol": ["Scope Lens", "Razor Claw", "Charging Charm"],
+      "Aegislash": ["Razor Claw", "Muscle Band", "Focus Band"],
+      "Alcremie": ["Buddy Barrier", "Resonant Guard", "Rescue Hood"],
+      "Armarouge": ["Choice Specs", "Slick Spoon", "Curse Incense"],
+      "Articuno": ["Muscle Band", "Buddy Barrier", "Curse Incense"],
+      "Azumarill": ["Scope Lens", "Attack Weight", "Weakness Policy"],
+      "Blastoise": ["Focus Band", "Vanguard Bell", "Resonant Guard"],
+      "Blaziken": ["Razor Claw", "Attack Weight", "Weakness Policy"],
+      "Blissey": ["Buddy Barrier", "Sp. Atk Specs", "Exp Share"],
+      "Buzzwole": ["Focus Band", "Attack Weight", "Muscle Band"],
+      "Ceruledge": ["Razor Claw", "Muscle Band", "Attack Weight"],
+      "Chandelure": ["Choice Specs", "Slick Spoon", "Curse Incense"],
+      "Charizard": ["Scope Lens", "Attack Weight", "Curse Bangle"],
+      "Cinderace": ["Muscle Band", "Scope Lens", "Rapid Fire Scarf"],
+      "Clefable": ["Buddy Barrier", "Sp. Atk Specs", "Exp Share"],
+      "Comfey": ["Rescue Hood", "Buddy Barrier", "Resonant Guard"],
+      "Cramorant": ["Choice Specs", "Energy Amplifier", "Curse Incense"],
+      "Crustle": ["Focus Band", "Resonant Guard", "Razor Claw"],
+      "Darkrai": ["Sp. Atk Specs", "Slick Spoon", "Focus Band"],
+      "Decidueye": ["Muscle Band", "Curse Bangle", "Float Stone"],
+      "Delphox": ["Energy Amplifier", "Choice Specs", "Slick Spoon"],
+      "Dhelmise": ["Razor Claw", "Attack Weight", "Weakness Policy"],
+      "Dodrio": ["Razor Claw", "Attack Weight", "Charging Charm"],
+      "Dragapult": ["Muscle Band", "Scope Lens", "Rapid Fire Scarf"],
+      "Dragonite": ["Muscle Band", "Razor Claw", "Scope Lens"],
+      "Duraludon": ["Muscle Band", "Scope Lens", "Rapid Fire Scarf"],
+      "Eldegoss": ["Muscle Band", "Resonant Guard", "Buddy Barrier"],
+      "Empoleon": ["Slick Spoon", "Wise Glasses", "Sp. Atk Specs"],
+      "Espeon": ["Choice Specs", "Slick Spoon", "Wise Glasses"],
+      "Falinks": ["Focus Band", "Attack Weight", "Weakness Policy"],
+      "Feraligatr": ["Razor Claw", "Attack Weight", "Weakness Policy"],
+      "Garchomp": ["Muscle Band", "Scope Lens", "Focus Band"],
+      "Gardevoir": ["Choice Specs", "Curse Incense", "Energy Amplifier"],
+      "Gengar": ["Choice Specs", "Sp. Atk Specs", "Drive Lens"],
+      "Glaceon": ["Slick Spoon", "Wise Glasses", "Curse Incense"],
+      "Goodra": ["Muscle Band", "Razor Claw", "Focus Band"],
+      "Greedent": ["Attack Weight", "Resonant Guard", "Aeos Cookie"],
+      "Greninja": ["Muscle Band", "Attack Weight", "Curse Bangle"],
+      "Gyarados": ["Razor Claw", "Attack Weight", "Weakness Policy"],
+      "Ho-Oh": ["Curse Bangle", "Focus Band", "Attack Weight"],
+      "Hoopa": ["Muscle Band", "Curse Incense", "Resonant Guard"],
+      "Inteleon": ["Choice Specs", "Slick Spoon", "Wise Glasses"],
+      "Lapras": ["Focus Band", "Curse Incense", "Muscle Band"],
+      "Latias": ["Wise Glasses", "Sp. Atk Specs", "Curse Incense"],
+      "Latios": ["Choice Specs", "Slick Spoon", "Wise Glasses"],
+      "Leafeon": ["Razor Claw", "Attack Weight", "Energy Amplifier"],
+      "Lucario": ["Attack Weight", "Razor Claw", "Muscle Band"],
+      "Machamp": ["Razor Claw", "Attack Weight", "Weakness Policy"],
+      "Mamoswine": ["Focus Band", "Vanguard Bell", "Resonant Guard"],
+      "Mega-Charizard-X": ["Charizardite X", "Attack Weight", "Weakness Policy"],
+      "Mega-Charizard-Y": ["Charizardite Y", "Attack Weight", "Curse Bangle"],
+      "Mega-Gyarados": ["Gyaradosite", "Focus Band", "Attack Weight"],
+      "Mega-Lucario": ["Lucarionite", "Attack Weight", "Focus Band"],
+      "Meowscarada": ["Razor Claw", "Attack Weight", "Energy Amplifier"],
+      "Meowth": ["Razor Claw", "Attack Weight", "Accel Bracer"],
+      "Metagross": ["Muscle Band", "Razor Claw", "Weakness Policy"],
+      "Mew": ["Choice Specs", "Wise Glasses", "Slick Spoon"],
+      "MewtwoX": ["Mewtwonite X", "Razor Claw", "Focus Band"],
+      "MewtwoY": ["Mewtwonite Y", "Choice Specs", "Muscle Band"],
+      "Mimikyu": ["Razor Claw", "Attack Weight", "Charging Charm"],
+      "Miraidon": ["Choice Specs", "Curse Incense", "Slick Spoon"],
+      "Moltres": ["Slick Spoon", "Sp. Atk Specs", "Wise Glasses"],
+      "Mr.Mime": ["Choice Specs", "Buddy Barrier", "Exp Share"],
+      "Ninetales": ["Choice Specs", "Curse Incense", "Energy Amplifier"],
+      "Pawmot": ["Razor Claw", "Attack Weight", "Focus Band"],
+      "Pikachu": ["Energy Amplifier", "Choice Specs", "Slick Spoon"],
+      "Psyduck": ["Vanguard Bell", "Curse Incense", "Buddy Barrier"],
+      "Quaquaval": ["Razor Claw", "Muscle Band", "Focus Band"],
+      "Raichu": ["Wise Glasses", "Curse Incense", "Choice Specs"],
+      "Rapidash": ["Sp. Atk Specs", "Wise Glasses", "Shell Bell"],
+      "Sableye": ["Float Stone", "Leftovers", "Exp Share"],
+      "Scizor": ["Razor Claw", "Muscle Band", "Energy Amplifier"],
+      "Sirfetchd": ["Scope Lens", "Razor Claw", "Attack Weight"],
+      "Slowbro": ["Focus Band", "Curse Incense", "Resonant Guard"],
+      "Snorlax": ["Buddy Barrier", "Exp Share", "Focus Band"],
+      "Suicune": ["Curse Incense", "Slick Spoon", "Choice Specs"],
+      "Sylveon": ["Muscle Band", "Resonant Guard", "Curse Incense"],
+      "Talonflame": ["Razor Claw", "Charging Charm", "Attack Weight"],
+      "Tinkaton": ["Focus Band", "Rocky Helmet", "Attack Weight"],
+      "Trevenant": ["Focus Band", "Aeos Cookie", "Rocky Helmet"],
+      "Tsareena": ["Focus Band", "Attack Weight", "Weakness Policy"],
+      "Typhlosion": ["Choice Specs", "Slick Spoon", "Wise Glasses"],
+      "Tyranitar": ["Focus Band", "Muscle Band", "Attack Weight"],
+      "Umbreon": ["Focus Band", "Resonant Guard", "Aeos Cookie"],
+      "Urshifu": ["Razor Claw", "Muscle Band", "Accel Bracer"],
+      "Vaporeon": ["Sp. Atk Specs", "Buddy Barrier", "Wise Glasses"],
+      "Venusaur": ["Slick Spoon", "Energy Amplifier", "Choice Specs"],
+      "Wigglytuff": ["Focus Band", "Buddy Barrier", "Rapid Fire Scarf"],
+      "Zacian": ["Rusted Sword", "Muscle Band", "Razor Claw"],
+      "Zapdos": ["Choice Specs", "Wise Glasses", "Slick Spoon"],
+      "Zeraora": ["Focus Band", "Muscle Band", "Razor Claw"],
+      "Zoroark": ["Muscle Band", "Rapid Fire Scarf", "Attack Weight"]
     };
 
     const state = {
@@ -2906,7 +3002,8 @@
     function applyRecommendedBuild() {
       const pokemon = selectedPokemon();
       const build = pokemon && Array.isArray(pokemon.builds) ? pokemon.builds.find((entry) => Array.isArray(entry.held_items)) : null;
-      const items = build ? build.held_items.slice(0, 3) : [];
+      const wikiItems = pokemon ? DAMAGE_RECOMMENDED_ITEMS[pokemon.name] : null;
+      const items = wikiItems || (build ? build.held_items.slice(0, 3) : []);
       for (let i = 0; i < 3; i += 1) {
         el[`itemSelect${i}`].value = items[i] || "";
         el[`itemLevel${i}`].value = 40;
