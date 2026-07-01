@@ -5,10 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ダメージ・シールド・回復量計算</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%230d1016%22/%3E%3Ccircle%20cx=%2232%22%20cy=%2232%22%20r=%2222%22%20fill=%22%23f2b33d%22/%3E%3Cpath%20d=%22M14%2032h36%22%20stroke=%22%230d1016%22%20stroke-width=%226%22/%3E%3Ccircle%20cx=%2232%22%20cy=%2232%22%20r=%228%22%20fill=%22%23eef3f8%22%20stroke=%22%230d1016%22%20stroke-width=%225%22/%3E%3C/svg%3E">
+  <script>
+    (() => {
+      try {
+        const theme = localStorage.getItem("uniteCalculatorTheme");
+        if (["standard", "ocean", "forest", "rose"].includes(theme)) {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch (error) {
+        // Storage can be unavailable in privacy-restricted browsers.
+      }
+    })();
+  </script>
   <style>
     :root {
       color-scheme: dark;
       --bg: #0d1016;
+      --bg-top: #10151d;
       --surface: #151b24;
       --surface-2: #1d2530;
       --surface-3: #10161f;
@@ -17,12 +30,74 @@
       --muted: #a8b4c4;
       --accent: #f2b33d;
       --accent-2: #34c3ba;
+      --accent-rgb: 242, 179, 61;
+      --accent-2-rgb: 52, 195, 186;
+      --accent-border: #d79c24;
+      --accent-ink: #211805;
+      --link: #72ddd5;
       --danger: #ff7a68;
       --success: #60d394;
       --input-bg: #0f151d;
       --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
       --radius: 8px;
       font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    :root[data-theme="ocean"] {
+      --bg: #09111a;
+      --bg-top: #0d1824;
+      --surface: #121e2a;
+      --surface-2: #1a2a39;
+      --surface-3: #0c1721;
+      --line: #2d465b;
+      --ink: #edf6fc;
+      --muted: #a8bdcc;
+      --accent: #5aaaff;
+      --accent-2: #f0bd55;
+      --accent-rgb: 90, 170, 255;
+      --accent-2-rgb: 240, 189, 85;
+      --accent-border: #3d8bd8;
+      --accent-ink: #07182a;
+      --link: #76c5ff;
+      --input-bg: #09141e;
+    }
+
+    :root[data-theme="forest"] {
+      --bg: #0a120f;
+      --bg-top: #101b17;
+      --surface: #14211c;
+      --surface-2: #1c2e27;
+      --surface-3: #0d1814;
+      --line: #304a40;
+      --ink: #eef8f3;
+      --muted: #adc2b9;
+      --accent: #65cf96;
+      --accent-2: #efbd58;
+      --accent-rgb: 101, 207, 150;
+      --accent-2-rgb: 239, 189, 88;
+      --accent-border: #43a874;
+      --accent-ink: #071c12;
+      --link: #78dfaa;
+      --input-bg: #0a1511;
+    }
+
+    :root[data-theme="rose"] {
+      --bg: #130d12;
+      --bg-top: #1c121a;
+      --surface: #241821;
+      --surface-2: #32232e;
+      --surface-3: #180f16;
+      --line: #503748;
+      --ink: #fbf1f7;
+      --muted: #c8afbf;
+      --accent: #f07eac;
+      --accent-2: #54c9c0;
+      --accent-rgb: 240, 126, 172;
+      --accent-2-rgb: 84, 201, 192;
+      --accent-border: #ca5e8a;
+      --accent-ink: #2b0917;
+      --link: #72ddd5;
+      --input-bg: #160d14;
     }
 
     * {
@@ -35,7 +110,7 @@
 
     body {
       margin: 0;
-      background: linear-gradient(180deg, #10151d 0%, var(--bg) 32%);
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 32%);
       color: var(--ink);
       min-height: 100vh;
     }
@@ -60,7 +135,16 @@
     }
 
     a {
-      color: #72ddd5;
+      color: var(--link);
+    }
+
+    .calculator-toolbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--line);
     }
 
     .app-shell {
@@ -72,9 +156,9 @@
 
     .tab-bar {
       display: flex;
+      flex: 1 1 auto;
       gap: 8px;
-      margin-bottom: 10px;
-      border-bottom: 1px solid var(--line);
+      margin-bottom: 0;
     }
 
     .tab-button {
@@ -91,8 +175,57 @@
     .tab-button.active {
       border-bottom-color: var(--accent);
       color: var(--ink);
-      background: rgba(242, 179, 61, 0.08);
+      background: rgba(var(--accent-rgb), 0.08);
     }
+
+    .theme-picker {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 3px 2px 5px;
+    }
+
+    .theme-picker-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .theme-option {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .theme-option input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .theme-swatch {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.34);
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .theme-option input:focus-visible + .theme-swatch,
+    .theme-option input:checked + .theme-swatch {
+      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink);
+    }
+
+    .theme-option.standard { --swatch: #f2b33d; }
+    .theme-option.ocean { --swatch: #5aaaff; }
+    .theme-option.forest { --swatch: #65cf96; }
+    .theme-option.rose { --swatch: #f07eac; }
 
     .tab-panel {
       width: 100%;
@@ -109,6 +242,40 @@
     .result-head {
       padding: 12px 14px 8px;
       border-bottom: 1px solid var(--line);
+    }
+
+    .collapsible-panel > summary.panel-head {
+      position: relative;
+      padding-right: 42px;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .collapsible-panel > summary.panel-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .collapsible-panel > summary.panel-head::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 17px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: translateY(-65%) rotate(45deg);
+      transition: transform 150ms ease;
+    }
+
+    .collapsible-panel[open] > summary.panel-head::after {
+      transform: translateY(-35%) rotate(225deg);
+    }
+
+    .collapsible-panel > summary.panel-head:focus-visible {
+      outline: 3px solid rgba(var(--accent-2-rgb), 0.24);
+      outline-offset: -3px;
     }
 
     .panel h2 {
@@ -158,7 +325,7 @@
     select:focus,
     input:focus,
     button:focus {
-      outline: 3px solid rgba(52, 195, 186, 0.24);
+      outline: 3px solid rgba(var(--accent-2-rgb), 0.24);
       outline-offset: 1px;
       border-color: var(--accent-2);
     }
@@ -247,14 +414,14 @@
     }
 
     .move-choice:hover:not(:disabled) {
-      border-color: rgba(52, 195, 186, 0.72);
+      border-color: rgba(var(--accent-2-rgb), 0.72);
       background: #121b25;
     }
 
     .move-choice.active {
       border-color: var(--accent-2);
-      background: rgba(52, 195, 186, 0.14);
-      box-shadow: inset 0 0 0 1px rgba(52, 195, 186, 0.32);
+      background: rgba(var(--accent-2-rgb), 0.14);
+      box-shadow: inset 0 0 0 1px rgba(var(--accent-2-rgb), 0.32);
     }
 
     .move-choice:disabled {
@@ -360,10 +527,10 @@
 
     button {
       min-height: 36px;
-      border: 1px solid #d79c24;
+      border: 1px solid var(--accent-border);
       border-radius: 6px;
       background: var(--accent);
-      color: #211805;
+      color: var(--accent-ink);
       padding: 6px 10px;
       font: inherit;
       font-weight: 800;
@@ -411,8 +578,8 @@
     }
 
     .total-box.primary {
-      border-color: rgba(52, 195, 186, 0.48);
-      background: rgba(52, 195, 186, 0.10);
+      border-color: rgba(var(--accent-2-rgb), 0.48);
+      background: rgba(var(--accent-2-rgb), 0.10);
     }
 
     .total-label {
@@ -495,7 +662,7 @@
     }
 
     .chip.warn {
-      background: rgba(242, 179, 61, 0.18);
+      background: rgba(var(--accent-rgb), 0.18);
       color: #ffd98a;
     }
 
@@ -544,7 +711,7 @@
 
     .effect-note {
       border-left: 4px solid var(--accent-2);
-      background: rgba(52, 195, 186, 0.08);
+      background: rgba(var(--accent-2-rgb), 0.08);
       border-radius: 6px;
       padding: 7px 8px;
       color: #dbe5ef;
@@ -661,6 +828,26 @@
         gap: 4px;
       }
 
+      .calculator-toolbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+      }
+
+      .calculator-toolbar .tab-bar {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+      }
+
+      .theme-picker {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: end;
+        min-height: 30px;
+        padding-bottom: 2px;
+      }
+
       .tab-button {
         padding-inline: 4px;
         font-size: 13px;
@@ -693,10 +880,31 @@
     <div id="errorBox" class="error" hidden></div>
 
     <section id="calculator" hidden>
-      <div class="tab-bar" role="tablist" aria-label="計算種別">
-        <button id="damageTabButton" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="damagePanel">ダメージ計算</button>
-        <button id="shieldTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="shieldPanel">シールド量計算</button>
-        <button id="healingTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="healingPanel">回復量計算</button>
+      <div class="calculator-toolbar">
+        <div class="tab-bar" role="tablist" aria-label="計算種別">
+          <button id="damageTabButton" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="damagePanel">ダメージ計算</button>
+          <button id="shieldTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="shieldPanel">シールド量計算</button>
+          <button id="healingTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="healingPanel">回復量計算</button>
+        </div>
+        <div class="theme-picker" role="radiogroup" aria-label="画面の配色">
+          <span class="theme-picker-label">配色</span>
+          <label class="theme-option standard" title="標準">
+            <input type="radio" name="theme" value="standard" aria-label="標準" checked>
+            <span class="theme-swatch" aria-hidden="true"></span>
+          </label>
+          <label class="theme-option ocean" title="オーシャン">
+            <input type="radio" name="theme" value="ocean" aria-label="オーシャン">
+            <span class="theme-swatch" aria-hidden="true"></span>
+          </label>
+          <label class="theme-option forest" title="フォレスト">
+            <input type="radio" name="theme" value="forest" aria-label="フォレスト">
+            <span class="theme-swatch" aria-hidden="true"></span>
+          </label>
+          <label class="theme-option rose" title="ローズ">
+            <input type="radio" name="theme" value="rose" aria-label="ローズ">
+            <span class="theme-swatch" aria-hidden="true"></span>
+          </label>
+        </div>
       </div>
 
       <section id="damagePanel" class="tab-panel app-shell" role="tabpanel" aria-labelledby="damageTabButton">
@@ -891,10 +1099,10 @@
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-head">
+        <details class="panel collapsible-panel">
+          <summary class="panel-head">
             <h2>手動補正</h2>
-          </div>
+          </summary>
           <div class="panel-body stack">
             <div class="grid-2">
               <label>
@@ -915,7 +1123,7 @@
               </label>
             </div>
           </div>
-        </section>
+        </details>
       </div>
 
       <div class="stack">
@@ -1120,10 +1328,10 @@
               </div>
             </section>
 
-            <section class="panel">
-              <div class="panel-head">
+            <details class="panel collapsible-panel">
+              <summary class="panel-head">
                 <h2>手動補正</h2>
-              </div>
+              </summary>
               <div class="panel-body stack">
                 <div class="grid-2">
                   <label>
@@ -1159,7 +1367,7 @@
                   </label>
                 </div>
               </div>
-            </section>
+            </details>
           </div>
 
           <div class="stack">
@@ -1322,10 +1530,10 @@
               </div>
             </section>
 
-            <section class="panel">
-              <div class="panel-head">
+            <details class="panel collapsible-panel">
+              <summary class="panel-head">
                 <h2>手動補正</h2>
-              </div>
+              </summary>
               <div class="panel-body stack">
                 <div class="grid-2">
                   <label>
@@ -1357,7 +1565,7 @@
                   </label>
                 </div>
               </div>
-            </section>
+            </details>
           </div>
 
           <div class="stack">
@@ -1766,6 +1974,24 @@
     };
 
     const el = {};
+    const THEME_STORAGE_KEY = "uniteCalculatorTheme";
+    const THEMES = ["standard", "ocean", "forest", "rose"];
+
+    function applyTheme(theme, persist = true) {
+      const selectedTheme = THEMES.includes(theme) ? theme : "standard";
+      document.documentElement.dataset.theme = selectedTheme;
+      (el.themeOptions || []).forEach((option) => {
+        option.checked = option.value === selectedTheme;
+      });
+
+      if (persist) {
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+        } catch (error) {
+          // Keep the active theme even when storage is unavailable.
+        }
+      }
+    }
 
     function jpItemName(itemOrName) {
       const name = typeof itemOrName === "string" ? itemOrName : itemOrName.name;
@@ -1860,6 +2086,8 @@
       ].forEach((id) => {
         el[id] = document.getElementById(id);
       });
+
+      el.themeOptions = Array.from(document.querySelectorAll('input[name="theme"]'));
 
       for (let i = 0; i < 3; i += 1) {
         el[`itemSelect${i}`] = document.getElementById(`itemSelect${i}`);
@@ -4084,6 +4312,11 @@
       el.damageTabButton.addEventListener("click", () => selectCalculatorTab("damage"));
       el.shieldTabButton.addEventListener("click", () => selectCalculatorTab("shield"));
       el.healingTabButton.addEventListener("click", () => selectCalculatorTab("healing"));
+      el.themeOptions.forEach((option) => {
+        option.addEventListener("change", () => {
+          if (option.checked) applyTheme(option.value);
+        });
+      });
 
       el.pokemonSelect.addEventListener("change", () => {
         updateMoveOptions();
@@ -4264,6 +4497,7 @@
     async function init() {
       try {
         bindElements();
+        applyTheme(document.documentElement.dataset.theme || "standard", false);
         wireEvents();
         await loadData();
         populateControls();
