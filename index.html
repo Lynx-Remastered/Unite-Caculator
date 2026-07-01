@@ -832,10 +832,15 @@
       font-size: 11px;
     }
 
-    .emblem-slot select {
+    .emblem-slot select,
+    .emblem-slot input[type="text"] {
       min-height: 34px;
       padding: 5px 7px;
       font-size: 13px;
+    }
+
+    .emblem-slot input[aria-invalid="true"] {
+      border-color: var(--danger);
     }
 
     .emblem-grade-row {
@@ -3535,13 +3540,6 @@
         || "不明";
     }
 
-    function emblemColorText(emblem) {
-      return [emblem && emblem.color1, emblem && emblem.color2]
-        .filter(Boolean)
-        .map((color) => EMBLEM_COLOR_LABELS[color] || color)
-        .join("・");
-    }
-
     function emblemIconUrl(emblem) {
       return emblem
         ? `https://d275t8dp8rxb42.cloudfront.net/emblems/pokedex/${encodeURIComponent(emblem.name)}.png`
@@ -3563,7 +3561,7 @@
       const clearButton = el[`emblemClearButton${index}`];
       if (!speciesSelect || !gradeSelect || !row || !visual || !icon || !placeholder || !colorIcons || !clearButton) return;
 
-      const emblem = emblemForSelection(speciesSelect.value, gradeSelect.value);
+      const emblem = emblemForSelection(selectedEmblemPokedex(index), gradeSelect.value);
       row.classList.toggle("selected", Boolean(emblem));
       clearButton.disabled = !emblem;
       colorIcons.innerHTML = "";
@@ -3606,6 +3604,33 @@
       return Array.from(rows.values()).sort((a, b) => number(a.pokedex, 0) - number(b.pokedex, 0));
     }
 
+    function emblemSpeciesLabel(emblem) {
+      return emblem ? `${emblem.pokedex}：${emblemJapaneseName(emblem)}` : "";
+    }
+
+    function emblemSpeciesFromInput(value) {
+      const text = String(value || "").trim().replace(":", "：");
+      if (!text) return null;
+      const rows = emblemSpeciesRows();
+      return rows.find((emblem) => emblemSpeciesLabel(emblem) === text)
+        || rows.find((emblem) => emblemJapaneseName(emblem) === text)
+        || (/^\d+$/.test(text) ? rows.find((emblem) => number(emblem.pokedex, -1) === number(text, -2)) : null)
+        || null;
+    }
+
+    function selectedEmblemPokedex(index) {
+      const input = el[`emblemSpeciesSelect${index}`];
+      return input ? input.dataset.pokedex || "" : "";
+    }
+
+    function setEmblemSpeciesInput(index, emblem) {
+      const input = el[`emblemSpeciesSelect${index}`];
+      if (!input) return;
+      input.dataset.pokedex = emblem ? emblem.pokedex : "";
+      input.value = emblemSpeciesLabel(emblem);
+      input.setAttribute("aria-invalid", "false");
+    }
+
     function emblemForSelection(pokedex, grade) {
       return state.emblems.find((emblem) => emblem.pokedex === pokedex && emblem.grade === grade) || null;
     }
@@ -3615,7 +3640,7 @@
       const gradeSelect = el[`emblemGradeSelect${index}`];
       if (!speciesSelect || !gradeSelect) return;
 
-      const pokedex = speciesSelect.value;
+      const pokedex = selectedEmblemPokedex(index);
       gradeSelect.innerHTML = "";
       if (!pokedex) {
         const option = document.createElement("option");
@@ -3647,16 +3672,46 @@
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
         if (i === changedIndex) continue;
         const speciesSelect = el[`emblemSpeciesSelect${i}`];
-        if (speciesSelect && speciesSelect.value === pokedex) {
-          speciesSelect.value = "";
+        if (speciesSelect && selectedEmblemPokedex(i) === pokedex) {
+          setEmblemSpeciesInput(i, null);
           populateEmblemGradeSelect(i);
         }
       }
     }
 
+    function syncEmblemSpeciesInput(index, normalize = false) {
+      const input = el[`emblemSpeciesSelect${index}`];
+      const gradeSelect = el[`emblemGradeSelect${index}`];
+      if (!input || !gradeSelect) return;
+
+      const previousPokedex = selectedEmblemPokedex(index);
+      const emblem = emblemSpeciesFromInput(input.value);
+      const pokedex = emblem ? emblem.pokedex : "";
+      input.dataset.pokedex = pokedex;
+      input.setAttribute("aria-invalid", String(Boolean(input.value.trim()) && !emblem));
+      if (emblem && (normalize || !/^\d+$/.test(input.value.trim()))) {
+        input.value = emblemSpeciesLabel(emblem);
+      }
+      if (pokedex) clearDuplicateEmblemSpecies(index, pokedex);
+
+      const preferredGrade = pokedex && pokedex === previousPokedex ? gradeSelect.value : "A";
+      populateEmblemGradeSelect(index, preferredGrade);
+      state.emblemFallback = null;
+      el.emblemBuildName.textContent = "個別設定";
+      updateAll();
+    }
+
     function renderEmblemSlots() {
       el.emblemSlots.innerHTML = "";
       const speciesRows = emblemSpeciesRows();
+      const speciesOptions = document.createElement("datalist");
+      speciesOptions.id = "emblemSpeciesOptions";
+      speciesRows.forEach((emblem) => {
+        const option = document.createElement("option");
+        option.value = emblemSpeciesLabel(emblem);
+        speciesOptions.appendChild(option);
+      });
+      el.emblemSlots.appendChild(speciesOptions);
 
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
         const row = document.createElement("div");
@@ -3692,19 +3747,15 @@
         controls.className = "emblem-slot-controls";
 
         const speciesLabel = document.createElement("label");
-        speciesLabel.textContent = "ポケモン";
-        const speciesSelect = document.createElement("select");
-        speciesSelect.setAttribute("aria-label", `メダル${i + 1} ポケモン`);
-        const emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.textContent = "なし";
-        speciesSelect.appendChild(emptyOption);
-        speciesRows.forEach((emblem) => {
-          const option = document.createElement("option");
-          option.value = emblem.pokedex;
-          option.textContent = `${emblemJapaneseName(emblem)} [${emblemColorText(emblem)}]`;
-          speciesSelect.appendChild(option);
-        });
+        speciesLabel.textContent = "メダル検索";
+        const speciesSelect = document.createElement("input");
+        speciesSelect.type = "text";
+        speciesSelect.setAttribute("list", speciesOptions.id);
+        speciesSelect.setAttribute("autocomplete", "off");
+        speciesSelect.setAttribute("spellcheck", "false");
+        speciesSelect.setAttribute("placeholder", "図鑑番号・名前で検索");
+        speciesSelect.setAttribute("aria-label", `メダル${i + 1} ポケモン検索`);
+        speciesSelect.dataset.pokedex = "";
         speciesLabel.appendChild(speciesSelect);
 
         const gradeRow = document.createElement("div");
@@ -3748,13 +3799,9 @@
           icon.hidden = true;
           placeholder.hidden = false;
         });
-        speciesSelect.addEventListener("change", () => {
-          state.emblemFallback = null;
-          clearDuplicateEmblemSpecies(i, speciesSelect.value);
-          populateEmblemGradeSelect(i, "A");
-          el.emblemBuildName.textContent = "個別設定";
-          updateAll();
-        });
+        speciesSelect.addEventListener("input", () => syncEmblemSpeciesInput(i));
+        speciesSelect.addEventListener("change", () => syncEmblemSpeciesInput(i, true));
+        speciesSelect.addEventListener("blur", () => syncEmblemSpeciesInput(i, true));
         gradeSelect.addEventListener("change", () => {
           state.emblemFallback = null;
           updateEmblemSlotVisual(i);
@@ -3763,7 +3810,7 @@
         });
         clearButton.addEventListener("click", () => {
           state.emblemFallback = null;
-          speciesSelect.value = "";
+          setEmblemSpeciesInput(i, null);
           populateEmblemGradeSelect(i);
           el.emblemBuildName.textContent = "個別設定";
           updateAll();
@@ -3775,7 +3822,7 @@
       const rows = [];
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
         const emblem = emblemForSelection(
-          el[`emblemSpeciesSelect${i}`] && el[`emblemSpeciesSelect${i}`].value,
+          selectedEmblemPokedex(i),
           el[`emblemGradeSelect${i}`] && el[`emblemGradeSelect${i}`].value
         );
         if (emblem) rows.push(emblem);
@@ -3846,7 +3893,7 @@
         const emblem = state.emblems.find((entry) => entry.name === ids[i]);
         const speciesSelect = el[`emblemSpeciesSelect${i}`];
         if (!speciesSelect) continue;
-        speciesSelect.value = emblem ? emblem.pokedex : "";
+        setEmblemSpeciesInput(i, emblem || null);
         populateEmblemGradeSelect(i, emblem ? emblem.grade : "");
       }
       el.emblemBuildName.textContent = label || "メダルなし";
