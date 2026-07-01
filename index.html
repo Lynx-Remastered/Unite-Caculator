@@ -736,6 +736,74 @@
     .color-swatch.brown { background: #a66d3f; }
     .color-swatch.green { background: #43a96b; }
 
+    .emblem-slots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .emblem-slot {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) 74px;
+      gap: 6px;
+      align-items: end;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-3);
+    }
+
+    .emblem-slot-number {
+      align-self: center;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .emblem-slot label {
+      gap: 3px;
+      font-size: 11px;
+    }
+
+    .emblem-slot select {
+      min-height: 34px;
+      padding: 5px 7px;
+      font-size: 13px;
+    }
+
+    .emblem-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .emblem-summary-item {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-3);
+    }
+
+    .emblem-summary-item span,
+    .emblem-summary-item strong {
+      display: block;
+    }
+
+    .emblem-summary-item span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .emblem-summary-item strong {
+      margin-top: 2px;
+      overflow-wrap: anywhere;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
     .loading {
       min-height: 420px;
       display: grid;
@@ -854,6 +922,14 @@
       }
 
       .button-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .emblem-slots {
+        grid-template-columns: 1fr;
+      }
+
+      .emblem-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -993,27 +1069,32 @@
               <button id="clearEmblemButton" class="secondary" type="button">エンブレムなし</button>
             </div>
             <div id="emblemBuildName" class="effect-note">エンブレムなし</div>
-            <div class="grid-2">
-              <label>
-                <span class="color-label"><span class="color-swatch brown" aria-hidden="true"></span>ブラウン枚数</span>
-                <input id="emblemBrownCount" type="number" min="0" max="10" value="0" step="1">
-              </label>
-              <label>
-                <span class="color-label"><span class="color-swatch green" aria-hidden="true"></span>グリーン枚数</span>
-                <input id="emblemGreenCount" type="number" min="0" max="10" value="0" step="1">
-              </label>
-              <label>
-                攻撃 +/-
-                <input id="emblemAttack" type="number" value="0" step="0.1">
-              </label>
-              <label>
-                特攻 +/-
-                <input id="emblemSpAttack" type="number" value="0" step="0.1">
-              </label>
-              <label>
-                急所率 +/-（%）
-                <input id="emblemCritRate" type="number" value="0" step="0.1">
-              </label>
+            <div id="emblemSlots" class="emblem-slots" aria-label="個別エンブレム"></div>
+            <div class="emblem-summary-grid" aria-label="エンブレム集計">
+              <div class="emblem-summary-item">
+                <span>選択枚数</span>
+                <strong id="emblemSlotCount">0 / 10</strong>
+              </div>
+              <div class="emblem-summary-item">
+                <span class="color-label"><span class="color-swatch brown" aria-hidden="true"></span>ブラウン</span>
+                <strong id="emblemBrownCount">0枚</strong>
+              </div>
+              <div class="emblem-summary-item">
+                <span class="color-label"><span class="color-swatch green" aria-hidden="true"></span>グリーン</span>
+                <strong id="emblemGreenCount">0枚</strong>
+              </div>
+              <div class="emblem-summary-item">
+                <span>攻撃補正</span>
+                <strong id="emblemAttack">0</strong>
+              </div>
+              <div class="emblem-summary-item">
+                <span>特攻補正</span>
+                <strong id="emblemSpAttack">0</strong>
+              </div>
+              <div class="emblem-summary-item">
+                <span>急所率補正</span>
+                <strong id="emblemCritRate">0%</strong>
+              </div>
             </div>
             <div id="emblemEffectNote" class="effect-note">ダメージに関係する補正はありません</div>
           </div>
@@ -1620,6 +1701,7 @@
       特殊ポケモン撃破バフ: <a href="https://wikiwiki.jp/poke-unite/%E3%83%86%E3%82%A4%E3%82%A2%E8%92%BC%E7%A9%BA%E9%81%BA%E8%B7%A1%28%E3%82%B0%E3%83%A9%E3%83%BC%E3%83%89%E3%83%B3%29" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a><br>
       デフォルト持ち物: <a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得、各ポケモンの先頭掲載ビルド）<br>
       サポートメダル: <a href="https://unite-db.com/boost-emblems" target="_blank" rel="noreferrer">UniteDB</a> / <a href="https://wikiwiki.jp/poke-unite/%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%83%A1%E3%83%80%E3%83%AB" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得）<br>
+      エンブレムの日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a><br>
       式: 計算値 = 能力値 × 倍率 + レベル補正 + 固定値（小数点以下は切り捨て）
     </footer>
   </main>
@@ -1630,7 +1712,8 @@
       stats: ["./data/stats.json"],
       heldItems: ["./data/held_items.json"],
       emblems: ["./data/emblems.json"],
-      emblemSets: ["./data/emblem_sets.json"]
+      emblemSets: ["./data/emblem_sets.json"],
+      emblemNamesJa: ["./data/emblem_names_ja.json"]
     };
 
     const DATA_FETCH_TIMEOUT_MS = 15000;
@@ -1842,6 +1925,7 @@
     const WIKI_EMBLEM_PRESETS = {
       Quaquaval: {
         name: "茶6・白6（ポケモンユナイトWiki*）",
+        equippedCount: 10,
         brownCount: 6,
         greenCount: 0,
         attack: 0,
@@ -1850,6 +1934,7 @@
       },
       Zapdos: {
         name: "緑6・黒7（ポケモンユナイトWiki*）",
+        equippedCount: 10,
         brownCount: 0,
         greenCount: 6,
         attack: 0,
@@ -1959,6 +2044,8 @@
       heldItems: [],
       emblems: [],
       emblemSets: [],
+      emblemNamesJa: {},
+      emblemFallback: null,
       moveEntries: [],
       moveChoices: [],
       shieldMoveEntries: [],
@@ -2055,7 +2142,7 @@
         "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
-        "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemBrownCount",
+        "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemSlots", "emblemSlotCount", "emblemBrownCount",
         "emblemGreenCount", "emblemAttack", "emblemSpAttack", "emblemCritRate", "emblemEffectNote",
         "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff", "specialPokemonBuffNote",
         "pokemonImage", "pokemonImageName", "targetImage", "targetImageName",
@@ -2539,6 +2626,8 @@
           "なし"
         );
       }
+
+      renderEmblemSlots();
 
       const firstPokemon = pokemonRows.find((pokemon) => pokemon.name === "Pikachu") || pokemonRows[0];
       if (firstPokemon) el.pokemonSelect.value = firstPokemon.name;
@@ -3343,6 +3432,167 @@
       }
     }
 
+    const EMBLEM_SLOT_COUNT = 10;
+    const EMBLEM_GRADE_LABELS = { A: "金", B: "銀", C: "銅" };
+    const EMBLEM_COLOR_LABELS = {
+      Black: "黒", Blue: "青", Brown: "茶", Gray: "灰", Green: "緑", Navy: "紺",
+      Pink: "桃", Purple: "紫", Red: "赤", White: "白", Yellow: "黄"
+    };
+
+    function emblemJapaneseName(emblem) {
+      return state.emblemNamesJa[String(number(emblem && emblem.pokedex, 0))]
+        || (emblem && emblem.display_name)
+        || "不明";
+    }
+
+    function emblemColorText(emblem) {
+      return [emblem && emblem.color1, emblem && emblem.color2]
+        .filter(Boolean)
+        .map((color) => EMBLEM_COLOR_LABELS[color] || color)
+        .join("・");
+    }
+
+    function emblemSpeciesRows() {
+      const rows = new Map();
+      state.emblems.forEach((emblem) => {
+        if (!rows.has(emblem.pokedex)) rows.set(emblem.pokedex, emblem);
+      });
+      return Array.from(rows.values()).sort((a, b) => number(a.pokedex, 0) - number(b.pokedex, 0));
+    }
+
+    function emblemForSelection(pokedex, grade) {
+      return state.emblems.find((emblem) => emblem.pokedex === pokedex && emblem.grade === grade) || null;
+    }
+
+    function populateEmblemGradeSelect(index, preferredGrade = "") {
+      const speciesSelect = el[`emblemSpeciesSelect${index}`];
+      const gradeSelect = el[`emblemGradeSelect${index}`];
+      if (!speciesSelect || !gradeSelect) return;
+
+      const pokedex = speciesSelect.value;
+      gradeSelect.innerHTML = "";
+      if (!pokedex) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "-";
+        gradeSelect.appendChild(option);
+        gradeSelect.disabled = true;
+        return;
+      }
+
+      const grades = state.emblems
+        .filter((emblem) => emblem.pokedex === pokedex)
+        .map((emblem) => emblem.grade)
+        .filter((grade, position, all) => all.indexOf(grade) === position);
+      grades.forEach((grade) => {
+        const option = document.createElement("option");
+        option.value = grade;
+        option.textContent = EMBLEM_GRADE_LABELS[grade] || grade;
+        gradeSelect.appendChild(option);
+      });
+      gradeSelect.disabled = false;
+      gradeSelect.value = grades.includes(preferredGrade) ? preferredGrade : (grades[0] || "");
+    }
+
+    function clearDuplicateEmblemSpecies(changedIndex, pokedex) {
+      if (!pokedex) return;
+      for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
+        if (i === changedIndex) continue;
+        const speciesSelect = el[`emblemSpeciesSelect${i}`];
+        if (speciesSelect && speciesSelect.value === pokedex) {
+          speciesSelect.value = "";
+          populateEmblemGradeSelect(i);
+        }
+      }
+    }
+
+    function renderEmblemSlots() {
+      el.emblemSlots.innerHTML = "";
+      const speciesRows = emblemSpeciesRows();
+
+      for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
+        const row = document.createElement("div");
+        row.className = "emblem-slot";
+
+        const numberLabel = document.createElement("span");
+        numberLabel.className = "emblem-slot-number";
+        numberLabel.textContent = i + 1;
+
+        const speciesLabel = document.createElement("label");
+        speciesLabel.textContent = "ポケモン";
+        const speciesSelect = document.createElement("select");
+        speciesSelect.setAttribute("aria-label", `メダル${i + 1} ポケモン`);
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "なし";
+        speciesSelect.appendChild(emptyOption);
+        speciesRows.forEach((emblem) => {
+          const option = document.createElement("option");
+          option.value = emblem.pokedex;
+          option.textContent = `${emblemJapaneseName(emblem)} [${emblemColorText(emblem)}]`;
+          speciesSelect.appendChild(option);
+        });
+        speciesLabel.appendChild(speciesSelect);
+
+        const gradeLabel = document.createElement("label");
+        gradeLabel.textContent = "等級";
+        const gradeSelect = document.createElement("select");
+        gradeSelect.setAttribute("aria-label", `メダル${i + 1} 等級`);
+        gradeLabel.appendChild(gradeSelect);
+
+        el[`emblemSpeciesSelect${i}`] = speciesSelect;
+        el[`emblemGradeSelect${i}`] = gradeSelect;
+        populateEmblemGradeSelect(i);
+
+        speciesSelect.addEventListener("change", () => {
+          state.emblemFallback = null;
+          clearDuplicateEmblemSpecies(i, speciesSelect.value);
+          populateEmblemGradeSelect(i, "A");
+          el.emblemBuildName.textContent = "個別設定";
+          updateAll();
+        });
+        gradeSelect.addEventListener("change", () => {
+          state.emblemFallback = null;
+          el.emblemBuildName.textContent = "個別設定";
+          updateAll();
+        });
+
+        row.append(numberLabel, speciesLabel, gradeLabel);
+        el.emblemSlots.appendChild(row);
+      }
+    }
+
+    function selectedEmblemRows() {
+      const rows = [];
+      for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
+        const emblem = emblemForSelection(
+          el[`emblemSpeciesSelect${i}`] && el[`emblemSpeciesSelect${i}`].value,
+          el[`emblemGradeSelect${i}`] && el[`emblemGradeSelect${i}`].value
+        );
+        if (emblem) rows.push(emblem);
+      }
+      return rows;
+    }
+
+    function summarizeEmblemRows(emblems) {
+      const colors = { Brown: new Set(), Green: new Set() };
+      const totals = { equippedCount: emblems.length, brownCount: 0, greenCount: 0, attack: 0, spAttack: 0, critRate: 0 };
+      emblems.forEach((emblem) => {
+        const stats = emblem.stats && emblem.stats[0] ? emblem.stats[0] : {};
+        totals.attack += number(stats.attack, 0);
+        totals.spAttack += number(stats.sp_attack, 0);
+        totals.critRate += number(stats.crit, 0);
+        Object.keys(colors).forEach((color) => {
+          if (emblem.color1 === color || emblem.color2 === color) {
+            colors[color].add(emblem.display_name || emblem.name);
+          }
+        });
+      });
+      totals.brownCount = colors.Brown.size;
+      totals.greenCount = colors.Green.size;
+      return totals;
+    }
+
     function emblemPresetFromBuild(pokemon) {
       if (!pokemon || !Array.isArray(pokemon.builds)) return null;
       const build = pokemon.builds.find((entry) => Array.isArray(entry.emblem_link) && entry.emblem_link[0]);
@@ -3370,47 +3620,38 @@
         .filter(Boolean);
       if (!emblems.length) return WIKI_EMBLEM_PRESETS[pokemon.name] || null;
 
-      const colors = { Brown: new Set(), Green: new Set() };
-      const totals = { attack: 0, spAttack: 0, critRate: 0 };
-      emblems.forEach((emblem) => {
-        const stats = emblem.stats && emblem.stats[0] ? emblem.stats[0] : {};
-        totals.attack += number(stats.attack, 0);
-        totals.spAttack += number(stats.sp_attack, 0);
-        totals.critRate += number(stats.crit, 0);
-        Object.keys(colors).forEach((color) => {
-          if (emblem.color1 === color || emblem.color2 === color) {
-            colors[color].add(emblem.display_name || emblem.name);
-          }
-        });
-      });
+      const totals = summarizeEmblemRows(emblems);
 
       return {
         name: `UniteDB推奨（${emblems.length}枚）`,
-        brownCount: colors.Brown.size,
-        greenCount: colors.Green.size,
-        attack: totals.attack,
-        spAttack: totals.spAttack,
-        critRate: totals.critRate
+        ids: emblems.map((emblem) => emblem.name),
+        ...totals
       };
     }
 
     function setEmblemControls(preset, label) {
       const values = preset || {};
-      el.emblemBrownCount.value = clamp(number(values.brownCount, 0), 0, 10);
-      el.emblemGreenCount.value = clamp(number(values.greenCount, 0), 0, 10);
-      el.emblemAttack.value = formatNumber(number(values.attack, 0), 2);
-      el.emblemSpAttack.value = formatNumber(number(values.spAttack, 0), 2);
-      el.emblemCritRate.value = formatNumber(number(values.critRate, 0), 2);
+      const ids = Array.isArray(values.ids) ? values.ids.slice(0, EMBLEM_SLOT_COUNT) : [];
+      state.emblemFallback = preset && !ids.length ? { ...values } : null;
+      for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
+        const emblem = state.emblems.find((entry) => entry.name === ids[i]);
+        const speciesSelect = el[`emblemSpeciesSelect${i}`];
+        if (!speciesSelect) continue;
+        speciesSelect.value = emblem ? emblem.pokedex : "";
+        populateEmblemGradeSelect(i, emblem ? emblem.grade : "");
+      }
       el.emblemBuildName.textContent = label || "エンブレムなし";
     }
 
     function applyRecommendedEmblems() {
       const preset = emblemPresetFromBuild(selectedPokemon());
-      setEmblemControls(preset, preset ? `推奨構成: ${preset.name}` : "推奨構成なし");
+      const detail = preset && (!Array.isArray(preset.ids) || !preset.ids.length) ? "（個別内訳なし）" : "";
+      setEmblemControls(preset, preset ? `推奨構成: ${preset.name}${detail}` : "推奨構成なし");
       updateAll();
     }
 
     function clearEmblems() {
+      state.emblemFallback = null;
       setEmblemControls(null, "エンブレムなし");
       updateAll();
     }
@@ -3582,11 +3823,13 @@
     }
 
     function selectedEmblemBonuses(baseAttack, baseSpAttack) {
-      const brownCount = clamp(number(el.emblemBrownCount.value, 0), 0, 10);
-      const greenCount = clamp(number(el.emblemGreenCount.value, 0), 0, 10);
-      const attackFlat = number(el.emblemAttack.value, 0);
-      const spAttackFlat = number(el.emblemSpAttack.value, 0);
-      const critRate = number(el.emblemCritRate.value, 0);
+      const summary = state.emblemFallback || summarizeEmblemRows(selectedEmblemRows());
+      const equippedCount = clamp(number(summary.equippedCount, 0), 0, EMBLEM_SLOT_COUNT);
+      const brownCount = clamp(number(summary.brownCount, 0), 0, EMBLEM_SLOT_COUNT);
+      const greenCount = clamp(number(summary.greenCount, 0), 0, EMBLEM_SLOT_COUNT);
+      const attackFlat = number(summary.attack, 0);
+      const spAttackFlat = number(summary.spAttack, 0);
+      const critRate = number(summary.critRate, 0);
       const attackPercent = emblemSetPercent("Brown", brownCount);
       const spAttackPercent = emblemSetPercent("Green", greenCount);
       const attackSetBonus = baseAttack * attackPercent / 100;
@@ -3604,6 +3847,7 @@
       }
 
       return {
+        equippedCount,
         brownCount,
         greenCount,
         attackFlat,
@@ -3615,6 +3859,17 @@
         spAttackSetBonus,
         lines
       };
+    }
+
+    function renderEmblemSummary(emblem) {
+      el.emblemSlotCount.textContent = state.emblemFallback
+        ? "内訳なし"
+        : `${formatNumber(emblem.equippedCount, 0)} / ${EMBLEM_SLOT_COUNT}`;
+      el.emblemBrownCount.textContent = `${formatNumber(emblem.brownCount, 0)}枚`;
+      el.emblemGreenCount.textContent = `${formatNumber(emblem.greenCount, 0)}枚`;
+      el.emblemAttack.textContent = signedNumber(emblem.attackFlat, 1);
+      el.emblemSpAttack.textContent = signedNumber(emblem.spAttackFlat, 1);
+      el.emblemCritRate.textContent = `${signedNumber(emblem.critRate, 1)}%`;
     }
 
     function computeAttackerStats() {
@@ -4169,6 +4424,7 @@
       el.spAttackStat.textContent = formatNumber(stats.spAttack, 1);
       el.critRateStat.textContent = `${formatNumber(stats.critRate, 1)}%`;
       el.critDamageStat.textContent = `${formatNumber(stats.critDamageMultiplier * 100, 1)}%`;
+      renderEmblemSummary(stats.emblem);
       el.emblemEffectNote.textContent = stats.emblemLines.length
         ? stats.emblemLines.join(" / ")
         : "ダメージに関係する補正はありません";
@@ -4332,14 +4588,6 @@
       el.clearItemsButton.addEventListener("click", clearItems);
       el.applyEmblemButton.addEventListener("click", applyRecommendedEmblems);
       el.clearEmblemButton.addEventListener("click", clearEmblems);
-      ["emblemBrownCount", "emblemGreenCount", "emblemAttack", "emblemSpAttack", "emblemCritRate"].forEach((id) => {
-        ["input", "change"].forEach((eventName) => {
-          el[id].addEventListener(eventName, () => {
-            el.emblemBuildName.textContent = "手動設定";
-            updateAll();
-          });
-        });
-      });
 
       el.shieldPokemonSelect.addEventListener("change", () => {
         updateShieldMoveOptions();
@@ -4486,12 +4734,14 @@
       const heldItems = await fetchJson("held_items.json", DATA_SOURCES.heldItems, "持ち物データ");
       const emblems = await fetchJson("emblems.json", DATA_SOURCES.emblems, "サポートメダルデータ");
       const emblemSets = await fetchJson("emblem_sets.json", DATA_SOURCES.emblemSets, "メダル色効果データ");
+      const emblemNamesJa = await fetchJson("emblem_names_ja.json", DATA_SOURCES.emblemNamesJa, "メダル日本語名データ");
 
       state.pokemon = pokemon;
       state.stats = stats;
       state.heldItems = heldItems;
       state.emblems = emblems;
       state.emblemSets = emblemSets;
+      state.emblemNamesJa = emblemNamesJa;
     }
 
     async function init() {
