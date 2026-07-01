@@ -743,22 +743,88 @@
     }
 
     .emblem-slot {
+      position: relative;
       display: grid;
-      grid-template-columns: 24px minmax(0, 1fr) 74px;
+      grid-template-columns: 56px minmax(0, 1fr);
       gap: 6px;
-      align-items: end;
+      align-items: center;
       padding: 7px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--surface-3);
     }
 
+    .emblem-slot.selected {
+      border-color: rgba(var(--accent-2-rgb), 0.5);
+    }
+
+    .emblem-visual {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      min-height: 52px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--ink);
+    }
+
+    .emblem-visual:hover {
+      border-color: var(--accent-2);
+    }
+
+    .emblem-icon {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .emblem-placeholder {
+      color: var(--muted);
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
     .emblem-slot-number {
-      align-self: center;
-      color: var(--accent-2);
-      font-size: 12px;
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      min-width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--surface-2);
+      color: var(--ink);
+      font-size: 10px;
       font-weight: 900;
       text-align: center;
+    }
+
+    .emblem-color-icons {
+      position: absolute;
+      right: -4px;
+      bottom: -4px;
+      display: flex;
+      gap: 1px;
+    }
+
+    .emblem-color-icons img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.75));
+    }
+
+    .emblem-slot-controls {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
     }
 
     .emblem-slot label {
@@ -770,6 +836,30 @@
       min-height: 34px;
       padding: 5px 7px;
       font-size: 13px;
+    }
+
+    .emblem-grade-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 32px;
+      gap: 4px;
+      align-items: end;
+    }
+
+    .emblem-clear-button {
+      width: 32px;
+      min-height: 34px;
+      padding: 0;
+      border-color: var(--line);
+      background: var(--input-bg);
+      color: var(--muted);
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .emblem-clear-button:hover:not(:disabled) {
+      border-color: var(--danger);
+      color: var(--danger);
     }
 
     .emblem-summary-grid {
@@ -3452,6 +3542,62 @@
         .join("・");
     }
 
+    function emblemIconUrl(emblem) {
+      return emblem
+        ? `https://d275t8dp8rxb42.cloudfront.net/emblems/pokedex/${encodeURIComponent(emblem.name)}.png`
+        : "";
+    }
+
+    function emblemSetIconUrl(color) {
+      return `https://d275t8dp8rxb42.cloudfront.net/emblems/sets/${encodeURIComponent(color)}.png`;
+    }
+
+    function updateEmblemSlotVisual(index) {
+      const speciesSelect = el[`emblemSpeciesSelect${index}`];
+      const gradeSelect = el[`emblemGradeSelect${index}`];
+      const row = el[`emblemSlot${index}`];
+      const visual = el[`emblemVisual${index}`];
+      const icon = el[`emblemIcon${index}`];
+      const placeholder = el[`emblemPlaceholder${index}`];
+      const colorIcons = el[`emblemColorIcons${index}`];
+      const clearButton = el[`emblemClearButton${index}`];
+      if (!speciesSelect || !gradeSelect || !row || !visual || !icon || !placeholder || !colorIcons || !clearButton) return;
+
+      const emblem = emblemForSelection(speciesSelect.value, gradeSelect.value);
+      row.classList.toggle("selected", Boolean(emblem));
+      clearButton.disabled = !emblem;
+      colorIcons.innerHTML = "";
+
+      if (!emblem) {
+        visual.setAttribute("aria-label", `メダル${index + 1}を選択`);
+        visual.title = "メダルを選択";
+        icon.hidden = true;
+        icon.removeAttribute("src");
+        icon.alt = "";
+        placeholder.hidden = false;
+        return;
+      }
+
+      const gradeLabel = EMBLEM_GRADE_LABELS[emblem.grade] || emblem.grade;
+      const pokemonName = emblemJapaneseName(emblem);
+      visual.setAttribute("aria-label", `${pokemonName} ${gradeLabel}エンブレムを変更`);
+      visual.title = `${pokemonName}（${gradeLabel}）`;
+      icon.hidden = false;
+      icon.alt = `${pokemonName} ${gradeLabel}エンブレム`;
+      icon.src = emblemIconUrl(emblem);
+      placeholder.hidden = true;
+
+      [emblem.color1, emblem.color2].filter(Boolean).forEach((color) => {
+        const image = document.createElement("img");
+        image.src = emblemSetIconUrl(color);
+        image.alt = "";
+        image.title = EMBLEM_COLOR_LABELS[color] || color;
+        image.loading = "lazy";
+        image.onerror = () => image.remove();
+        colorIcons.appendChild(image);
+      });
+    }
+
     function emblemSpeciesRows() {
       const rows = new Map();
       state.emblems.forEach((emblem) => {
@@ -3477,6 +3623,7 @@
         option.textContent = "-";
         gradeSelect.appendChild(option);
         gradeSelect.disabled = true;
+        updateEmblemSlotVisual(index);
         return;
       }
 
@@ -3492,6 +3639,7 @@
       });
       gradeSelect.disabled = false;
       gradeSelect.value = grades.includes(preferredGrade) ? preferredGrade : (grades[0] || "");
+      updateEmblemSlotVisual(index);
     }
 
     function clearDuplicateEmblemSpecies(changedIndex, pokedex) {
@@ -3514,9 +3662,34 @@
         const row = document.createElement("div");
         row.className = "emblem-slot";
 
+        const visual = document.createElement("button");
+        visual.type = "button";
+        visual.className = "emblem-visual";
+        visual.setAttribute("aria-label", `メダル${i + 1}を選択`);
+        visual.title = "メダルを選択";
+
         const numberLabel = document.createElement("span");
         numberLabel.className = "emblem-slot-number";
         numberLabel.textContent = i + 1;
+
+        const icon = document.createElement("img");
+        icon.className = "emblem-icon";
+        icon.width = 48;
+        icon.height = 48;
+        icon.hidden = true;
+
+        const placeholder = document.createElement("span");
+        placeholder.className = "emblem-placeholder";
+        placeholder.textContent = "+";
+        placeholder.setAttribute("aria-hidden", "true");
+
+        const colorIcons = document.createElement("span");
+        colorIcons.className = "emblem-color-icons";
+        colorIcons.setAttribute("aria-hidden", "true");
+        visual.append(numberLabel, icon, placeholder, colorIcons);
+
+        const controls = document.createElement("div");
+        controls.className = "emblem-slot-controls";
 
         const speciesLabel = document.createElement("label");
         speciesLabel.textContent = "ポケモン";
@@ -3534,16 +3707,47 @@
         });
         speciesLabel.appendChild(speciesSelect);
 
+        const gradeRow = document.createElement("div");
+        gradeRow.className = "emblem-grade-row";
         const gradeLabel = document.createElement("label");
         gradeLabel.textContent = "等級";
         const gradeSelect = document.createElement("select");
         gradeSelect.setAttribute("aria-label", `メダル${i + 1} 等級`);
         gradeLabel.appendChild(gradeSelect);
 
+        const clearButton = document.createElement("button");
+        clearButton.type = "button";
+        clearButton.className = "emblem-clear-button";
+        clearButton.textContent = "×";
+        clearButton.title = "このメダルを外す";
+        clearButton.setAttribute("aria-label", `メダル${i + 1}を外す`);
+        gradeRow.append(gradeLabel, clearButton);
+        controls.append(speciesLabel, gradeRow);
+
+        el[`emblemSlot${i}`] = row;
+        el[`emblemVisual${i}`] = visual;
+        el[`emblemIcon${i}`] = icon;
+        el[`emblemPlaceholder${i}`] = placeholder;
+        el[`emblemColorIcons${i}`] = colorIcons;
+        el[`emblemClearButton${i}`] = clearButton;
         el[`emblemSpeciesSelect${i}`] = speciesSelect;
         el[`emblemGradeSelect${i}`] = gradeSelect;
+        row.append(visual, controls);
+        el.emblemSlots.appendChild(row);
         populateEmblemGradeSelect(i);
 
+        visual.addEventListener("click", () => {
+          try {
+            if (typeof speciesSelect.showPicker === "function") speciesSelect.showPicker();
+            else speciesSelect.focus();
+          } catch (error) {
+            speciesSelect.focus();
+          }
+        });
+        icon.addEventListener("error", () => {
+          icon.hidden = true;
+          placeholder.hidden = false;
+        });
         speciesSelect.addEventListener("change", () => {
           state.emblemFallback = null;
           clearDuplicateEmblemSpecies(i, speciesSelect.value);
@@ -3553,12 +3757,17 @@
         });
         gradeSelect.addEventListener("change", () => {
           state.emblemFallback = null;
+          updateEmblemSlotVisual(i);
           el.emblemBuildName.textContent = "個別設定";
           updateAll();
         });
-
-        row.append(numberLabel, speciesLabel, gradeLabel);
-        el.emblemSlots.appendChild(row);
+        clearButton.addEventListener("click", () => {
+          state.emblemFallback = null;
+          speciesSelect.value = "";
+          populateEmblemGradeSelect(i);
+          el.emblemBuildName.textContent = "個別設定";
+          updateAll();
+        });
       }
     }
 
