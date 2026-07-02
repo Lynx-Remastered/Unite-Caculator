@@ -2059,6 +2059,7 @@
       デフォルト持ち物: <a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得、各ポケモンの先頭掲載ビルド）<br>
       サポートメダル: <a href="https://unite-db.com/boost-emblems" target="_blank" rel="noreferrer">UniteDB</a> / <a href="https://wikiwiki.jp/poke-unite/%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%83%A1%E3%83%80%E3%83%AB" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得）<br>
       メダルの日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a><br>
+      技の日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a> / <a href="https://gamewith.jp/pokemon-unite/article/show/284186" target="_blank" rel="noreferrer">GameWith</a>（2026年7月2日取得）<br>
       式: 計算値 = 能力値 × 倍率 + レベル補正 + 固定値（小数点以下は切り捨て）
     </footer>
   </main>
@@ -2070,7 +2071,8 @@
       heldItems: ["./data/held_items.json"],
       emblems: ["./data/emblems.json"],
       emblemSets: ["./data/emblem_sets.json"],
-      emblemNamesJa: ["./data/emblem_names_ja.json"]
+      emblemNamesJa: ["./data/emblem_names_ja.json"],
+      moveNamesJa: ["./data/move_names_ja.json"]
     };
 
     const DATA_FETCH_TIMEOUT_MS = 15000;
@@ -2402,6 +2404,7 @@
       emblems: [],
       emblemSets: [],
       emblemNamesJa: {},
+      moveNamesJa: {},
       emblemFallback: null,
       emblemSelections: Array.from({ length: 10 }, () => ({ pokedex: "", grade: "" })),
       activeEmblemSlot: null,
@@ -2476,7 +2479,7 @@
 
     function jpMoveName(name) {
       if (name === "Attack") return "通常攻撃";
-      return name || "技";
+      return state.moveNamesJa[name] || name || "技";
     }
 
     function pokemonThumbUrl(name) {
@@ -5493,6 +5496,7 @@
       const emblems = await fetchJson("emblems.json", DATA_SOURCES.emblems, "サポートメダルデータ");
       const emblemSets = await fetchJson("emblem_sets.json", DATA_SOURCES.emblemSets, "メダル色効果データ");
       const emblemNamesJa = await fetchJson("emblem_names_ja.json", DATA_SOURCES.emblemNamesJa, "メダル日本語名データ");
+      const moveNamesJa = await fetchJson("move_names_ja.json", DATA_SOURCES.moveNamesJa, "技の日本語名データ");
 
       state.pokemon = pokemon;
       state.stats = stats;
@@ -5500,6 +5504,7 @@
       state.emblems = emblems;
       state.emblemSets = emblemSets;
       state.emblemNamesJa = emblemNamesJa;
+      state.moveNamesJa = moveNamesJa;
     }
 
     async function init() {
