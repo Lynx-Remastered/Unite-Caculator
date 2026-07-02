@@ -927,6 +927,73 @@
       border-color: var(--danger);
     }
 
+    .medal-autocomplete {
+      position: relative;
+      display: block;
+    }
+
+    .medal-autocomplete > input {
+      width: 100%;
+    }
+
+    .emblem-suggestions {
+      position: absolute;
+      z-index: 30;
+      top: calc(100% + 4px);
+      right: 0;
+      left: 0;
+      max-height: 224px;
+      overflow-y: auto;
+      padding: 4px;
+      border: 1px solid rgba(var(--accent-2-rgb), 0.65);
+      border-radius: 6px;
+      background: var(--surface-2);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+    }
+
+    .emblem-suggestion {
+      width: 100%;
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      padding: 4px 7px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .emblem-suggestion:hover,
+    .emblem-suggestion.active {
+      background: rgba(var(--accent-2-rgb), 0.16);
+    }
+
+    .emblem-suggestion img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .emblem-suggestion-label {
+      min-width: 0;
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .emblem-suggestion-empty {
+      display: block;
+      padding: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
     .medal-editor-grade-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 36px;
@@ -1341,7 +1408,6 @@
               <button id="clearEmblemButton" class="secondary" type="button">メダルなし</button>
             </div>
             <div id="emblemBuildName" class="effect-note">メダルなし</div>
-            <datalist id="emblemSpeciesOptions"></datalist>
             <div class="medal-ring" aria-label="選択中のメダル">
               <div id="emblemSlots" class="medal-ring-slots"></div>
               <div class="medal-ring-center" aria-live="polite">
@@ -1363,7 +1429,10 @@
                 <div class="medal-editor-controls">
                   <label>
                     メダル検索
-                    <input id="emblemEditorSpecies" type="text" list="emblemSpeciesOptions" autocomplete="off" spellcheck="false" placeholder="図鑑番号・名前で検索">
+                    <span class="medal-autocomplete">
+                      <input id="emblemEditorSpecies" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="emblemEditorSuggestions" autocomplete="off" spellcheck="false" placeholder="図鑑番号・名前で検索">
+                      <span id="emblemEditorSuggestions" class="emblem-suggestions" role="listbox" hidden></span>
+                    </span>
                   </label>
                   <div class="medal-editor-grade-row">
                     <label>
@@ -2336,6 +2405,7 @@
       emblemFallback: null,
       emblemSelections: Array.from({ length: 10 }, () => ({ pokedex: "", grade: "" })),
       activeEmblemSlot: null,
+      activeEmblemSuggestion: -1,
       moveEntries: [],
       moveChoices: [],
       shieldMoveEntries: [],
@@ -2432,9 +2502,9 @@
         "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
-        "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemSpeciesOptions", "emblemSlots", "emblemSlotCount",
+        "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemSlots", "emblemSlotCount",
         "emblemEditor", "emblemEditorTitle", "emblemEditorDone", "emblemEditorIcon", "emblemEditorPlaceholder",
-        "emblemEditorColors", "emblemEditorSpecies", "emblemEditorGrade", "emblemEditorClear",
+        "emblemEditorColors", "emblemEditorSpecies", "emblemEditorSuggestions", "emblemEditorGrade", "emblemEditorClear",
         "emblemStatEffects", "emblemColorEffects",
         "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff", "specialPokemonBuffNote",
         "pokemonImage", "pokemonImageName", "targetImage", "targetImageName",
@@ -3786,6 +3856,118 @@
         || null;
     }
 
+    function normalizeEmblemSearchText(value) {
+      return String(value || "")
+        .normalize("NFKC")
+        .trim()
+        .toLocaleLowerCase("ja")
+        .replace(/\s+/g, "")
+        .replace(":", "：");
+    }
+
+    function emblemSpeciesSuggestions(value, showAll = false) {
+      const query = showAll ? "" : normalizeEmblemSearchText(value);
+      const numericQuery = /^\d+$/.test(query) ? String(number(query, -1)) : "";
+      const rows = emblemSpeciesRows()
+        .filter((emblem) => {
+          if (!query) return true;
+          const label = normalizeEmblemSearchText(emblemSpeciesLabel(emblem));
+          const japaneseName = normalizeEmblemSearchText(emblemJapaneseName(emblem));
+          const englishName = normalizeEmblemSearchText(emblem.display_name);
+          const pokedex = String(number(emblem.pokedex, -2));
+          return label.includes(query)
+            || japaneseName.includes(query)
+            || englishName.includes(query)
+            || (numericQuery && pokedex.startsWith(numericQuery));
+        });
+      if (!query && state.activeEmblemSlot !== null) {
+        const selectedPokedex = selectedEmblemPokedex(state.activeEmblemSlot);
+        rows.sort((a, b) => {
+          if (a.pokedex === selectedPokedex) return -1;
+          if (b.pokedex === selectedPokedex) return 1;
+          return number(a.pokedex, 0) - number(b.pokedex, 0);
+        });
+      }
+      return query ? rows.slice(0, 8) : rows;
+    }
+
+    function hideEmblemSuggestions() {
+      state.activeEmblemSuggestion = -1;
+      el.emblemEditorSuggestions.hidden = true;
+      el.emblemEditorSuggestions.innerHTML = "";
+      el.emblemEditorSpecies.setAttribute("aria-expanded", "false");
+      el.emblemEditorSpecies.removeAttribute("aria-activedescendant");
+    }
+
+    function selectEmblemSuggestion(emblem) {
+      el.emblemEditorSpecies.value = emblemSpeciesLabel(emblem);
+      syncEmblemEditorInput(true);
+      hideEmblemSuggestions();
+    }
+
+    function renderEmblemSuggestions(showAll = false) {
+      if (state.activeEmblemSlot === null || el.emblemEditor.hidden) {
+        hideEmblemSuggestions();
+        return;
+      }
+
+      const suggestions = emblemSpeciesSuggestions(el.emblemEditorSpecies.value, showAll);
+      state.activeEmblemSuggestion = -1;
+      el.emblemEditorSuggestions.innerHTML = "";
+      if (!suggestions.length) {
+        const empty = document.createElement("span");
+        empty.className = "emblem-suggestion-empty";
+        empty.textContent = "一致するメダルがありません";
+        el.emblemEditorSuggestions.appendChild(empty);
+      } else {
+        suggestions.forEach((emblem, position) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.id = `emblemSuggestion${position}`;
+          button.className = "emblem-suggestion";
+          button.setAttribute("role", "option");
+          button.setAttribute("aria-selected", "false");
+
+          const icon = document.createElement("img");
+          icon.src = emblemIconUrl(emblem);
+          icon.alt = "";
+          icon.loading = "lazy";
+          icon.onerror = () => icon.remove();
+          const label = document.createElement("span");
+          label.className = "emblem-suggestion-label";
+          label.textContent = emblemSpeciesLabel(emblem);
+          button.append(icon, label);
+          button.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+          });
+          button.addEventListener("click", () => {
+            selectEmblemSuggestion(emblem);
+          });
+          el.emblemEditorSuggestions.appendChild(button);
+        });
+      }
+
+      el.emblemEditorSuggestions.hidden = false;
+      el.emblemEditorSpecies.setAttribute("aria-expanded", "true");
+    }
+
+    function moveEmblemSuggestion(direction) {
+      const suggestions = Array.from(el.emblemEditorSuggestions.querySelectorAll(".emblem-suggestion"));
+      if (!suggestions.length) return;
+      const nextIndex = state.activeEmblemSuggestion < 0
+        ? (direction > 0 ? 0 : suggestions.length - 1)
+        : (state.activeEmblemSuggestion + direction + suggestions.length) % suggestions.length;
+      state.activeEmblemSuggestion = nextIndex;
+      suggestions.forEach((suggestion, index) => {
+        const active = index === nextIndex;
+        suggestion.classList.toggle("active", active);
+        suggestion.setAttribute("aria-selected", String(active));
+      });
+      const activeSuggestion = suggestions[nextIndex];
+      el.emblemEditorSpecies.setAttribute("aria-activedescendant", activeSuggestion.id);
+      activeSuggestion.scrollIntoView({ block: "nearest" });
+    }
+
     function selectedEmblemPokedex(index) {
       return state.emblemSelections[index] ? state.emblemSelections[index].pokedex : "";
     }
@@ -3905,6 +4087,7 @@
     }
 
     function closeEmblemEditor() {
+      hideEmblemSuggestions();
       el.emblemEditor.hidden = true;
       state.activeEmblemSlot = null;
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) updateEmblemSlotVisual(i);
@@ -3916,6 +4099,7 @@
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) updateEmblemSlotVisual(i);
       updateEmblemEditorVisual();
       el.emblemEditorSpecies.focus();
+      renderEmblemSuggestions(true);
     }
 
     function clearDuplicateEmblemSpecies(changedIndex, pokedex) {
@@ -3932,6 +4116,12 @@
       if (index === null) return;
       const previousPokedex = selectedEmblemPokedex(index);
       const matchedSpecies = emblemSpeciesFromInput(el.emblemEditorSpecies.value);
+      if (!matchedSpecies) {
+        el.emblemEditorSpecies.setAttribute("aria-invalid", "false");
+        if (normalize) updateEmblemEditorVisual();
+        return;
+      }
+
       const pokedex = matchedSpecies ? matchedSpecies.pokedex : "";
       if (pokedex) clearDuplicateEmblemSpecies(index, pokedex);
 
@@ -3955,12 +4145,6 @@
 
     function renderEmblemSlots() {
       el.emblemSlots.innerHTML = "";
-      el.emblemSpeciesOptions.innerHTML = "";
-      emblemSpeciesRows().forEach((emblem) => {
-        const option = document.createElement("option");
-        option.value = emblemSpeciesLabel(emblem);
-        el.emblemSpeciesOptions.appendChild(option);
-      });
 
       for (let i = 0; i < EMBLEM_SLOT_COUNT; i += 1) {
         const button = document.createElement("button");
@@ -3998,9 +4182,41 @@
         updateEmblemSlotVisual(i);
       }
 
-      el.emblemEditorSpecies.addEventListener("input", () => syncEmblemEditorInput());
-      el.emblemEditorSpecies.addEventListener("change", () => syncEmblemEditorInput(true));
-      el.emblemEditorSpecies.addEventListener("blur", () => syncEmblemEditorInput(true));
+      el.emblemEditorSpecies.addEventListener("focus", () => renderEmblemSuggestions(true));
+      el.emblemEditorSpecies.addEventListener("click", () => renderEmblemSuggestions(true));
+      el.emblemEditorSpecies.addEventListener("input", () => {
+        syncEmblemEditorInput();
+        renderEmblemSuggestions();
+      });
+      el.emblemEditorSpecies.addEventListener("blur", (event) => {
+        if (el.emblemEditorSuggestions.contains(event.relatedTarget)) return;
+        syncEmblemEditorInput(true);
+        hideEmblemSuggestions();
+      });
+      el.emblemEditorSpecies.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          if (el.emblemEditorSuggestions.hidden) renderEmblemSuggestions();
+          moveEmblemSuggestion(event.key === "ArrowDown" ? 1 : -1);
+          return;
+        }
+        if (event.key === "Enter") {
+          const suggestions = Array.from(el.emblemEditorSuggestions.querySelectorAll(".emblem-suggestion"));
+          if (!el.emblemEditorSuggestions.hidden && state.activeEmblemSuggestion >= 0 && suggestions[state.activeEmblemSuggestion]) {
+            event.preventDefault();
+            const selected = emblemSpeciesFromInput(suggestions[state.activeEmblemSuggestion].textContent.trim());
+            if (selected) selectEmblemSuggestion(selected);
+          } else {
+            syncEmblemEditorInput(true);
+            hideEmblemSuggestions();
+          }
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          hideEmblemSuggestions();
+        }
+      });
       el.emblemEditorGrade.addEventListener("change", () => {
         const index = state.activeEmblemSlot;
         if (index === null) return;
