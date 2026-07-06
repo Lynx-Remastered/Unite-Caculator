@@ -796,6 +796,16 @@
       gap: 10px;
     }
 
+    .target-total-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .target-total-grid .total-value {
+      font-size: 36px;
+    }
+
     .total-box {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -1432,6 +1442,7 @@
 
       .grid-2,
       .stats-grid,
+      .target-total-grid,
       .item-row,
       .pokemon-picker,
       .condition-row,
@@ -1989,13 +2000,6 @@
                   <span>ドライブレンズの段階</span>
                   <input id="shieldDriveLensStacks" type="number" min="0" max="20" value="0">
                 </div>
-                <label class="condition-row">
-                  <span>シールドを受ける対象</span>
-                  <select id="shieldTargetType">
-                    <option value="self">自分</option>
-                    <option value="ally">味方</option>
-                  </select>
-                </label>
               </div>
             </section>
 
@@ -2041,10 +2045,17 @@
               </div>
               <div class="result-layout">
                 <div class="damage-total">
-                  <div class="total-box primary">
-                    <span class="total-label">シールド量</span>
-                    <strong id="shieldAmount" class="total-value">0</strong>
-                    <span id="shieldAmountSub" class="total-sub">選択中のシールド式</span>
+                  <div class="target-total-grid">
+                    <div class="total-box primary">
+                      <span class="total-label">自分へのシールド</span>
+                      <strong id="shieldSelfAmount" class="total-value">0</strong>
+                      <span id="shieldSelfAmountSub" class="total-sub">選択中のシールド式</span>
+                    </div>
+                    <div class="total-box primary">
+                      <span class="total-label">味方へのシールド</span>
+                      <strong id="shieldAllyAmount" class="total-value">0</strong>
+                      <span id="shieldAllyAmountSub" class="total-sub">選択中のシールド式</span>
+                    </div>
                   </div>
                   <div class="stats-grid">
                     <div class="stat-tile">
@@ -2209,13 +2220,6 @@
                     <input id="healingManualSpAttack" type="number" value="0" step="0.1">
                   </label>
                   <label>
-                    回復対象
-                    <select id="healingTargetType">
-                      <option value="self">自分</option>
-                      <option value="ally">味方</option>
-                    </select>
-                  </label>
-                  <label>
                     回復量 +%
                     <input id="manualHealingPercent" type="number" value="0" step="0.1">
                   </label>
@@ -2239,10 +2243,17 @@
               </div>
               <div class="result-layout">
                 <div class="damage-total">
-                  <div class="total-box primary">
-                    <span class="total-label">回復量</span>
-                    <strong id="healingAmount" class="total-value">0</strong>
-                    <span id="healingAmountSub" class="total-sub">選択中の回復式</span>
+                  <div class="target-total-grid">
+                    <div class="total-box primary">
+                      <span class="total-label">自分への回復</span>
+                      <strong id="healingSelfAmount" class="total-value">0</strong>
+                      <span id="healingSelfAmountSub" class="total-sub">選択中の回復式</span>
+                    </div>
+                    <div class="total-box primary">
+                      <span class="total-label">味方への回復</span>
+                      <strong id="healingAllyAmount" class="total-value">0</strong>
+                      <span id="healingAllyAmountSub" class="total-sub">選択中の回復式</span>
+                    </div>
                   </div>
                   <div class="stats-grid">
                     <div class="stat-tile">
@@ -2891,8 +2902,8 @@
         "shieldConditionWeaknessPolicy", "shieldWeaknessPolicyStacks",
         "shieldConditionAccelBracer", "shieldAccelBracerStacks",
         "shieldConditionDriveLens", "shieldDriveLensStacks",
-        "shieldManualAttack", "shieldManualSpAttack", "shieldManualHp", "shieldTargetType", "manualShieldPercent",
-        "manualShieldFlat", "shieldCount", "shieldAmount", "shieldAmountSub",
+        "shieldManualAttack", "shieldManualSpAttack", "shieldManualHp", "manualShieldPercent",
+        "manualShieldFlat", "shieldCount", "shieldSelfAmount", "shieldSelfAmountSub", "shieldAllyAmount", "shieldAllyAmountSub",
         "shieldAttackStat", "shieldSpAttackStat", "shieldHpStat", "shieldFormulaText",
         "shieldBreakdownBody", "shieldItemEffects", "shieldLearnChipRow",
         "healingPokemonSelect", "healingPokemonImage", "healingPokemonImageName",
@@ -2903,9 +2914,9 @@
         "healingConditionWeaknessPolicy", "healingWeaknessPolicyStacks",
         "healingConditionAccelBracer", "healingAccelBracerStacks",
         "healingConditionDriveLens", "healingDriveLensStacks",
-        "healingManualAttack", "healingManualSpAttack", "healingTargetType",
+        "healingManualAttack", "healingManualSpAttack",
         "manualHealingPercent", "manualHealingFlat", "healingCount",
-        "healingAmount", "healingAmountSub", "healingAttackStat", "healingSpAttackStat",
+        "healingSelfAmount", "healingSelfAmountSub", "healingAllyAmount", "healingAllyAmountSub", "healingAttackStat", "healingSpAttackStat",
         "healingFormulaText", "healingBreakdownBody", "healingItemEffects", "healingLearnChipRow"
       ].forEach((id) => {
         el[id] = document.getElementById(id);
@@ -5340,13 +5351,13 @@
       const level = number(el.shieldLevelRange.value, 15);
       const stats = computeShieldStats();
       const count = clamp(number(el.shieldCount.value, 1), 1, 20);
-      const targetType = el.shieldTargetType.value === "ally" ? "ally" : "self";
       const hasRescueHood = hasShieldItem("Rescue Hood");
-      const rescueHoodPercent = targetType === "ally" && hasRescueHood
+      const rescueHoodPercent = hasRescueHood
         ? shieldEffectTierFor("Rescue Hood")
         : 0;
       const manualShieldPercent = number(el.manualShieldPercent.value, 0);
-      const shieldMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualShieldPercent) / 100);
+      const selfShieldMultiplier = Math.max(0, 1 + manualShieldPercent / 100);
+      const allyShieldMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualShieldPercent) / 100);
       const shieldFlat = number(el.manualShieldFlat.value, 0);
 
       el.shieldAttackStat.textContent = formatNumber(stats.attack, 1);
@@ -5354,8 +5365,10 @@
       el.shieldHpStat.textContent = formatNumber(stats.maxHp, 0);
 
       if (!choice || !parts.length) {
-        el.shieldAmount.textContent = "0";
-        el.shieldAmountSub.textContent = "現在のレベルで計算できるシールド式なし";
+        el.shieldSelfAmount.textContent = "0";
+        el.shieldSelfAmountSub.textContent = "現在のレベルで計算できるシールド式なし";
+        el.shieldAllyAmount.textContent = "0";
+        el.shieldAllyAmountSub.textContent = "現在のレベルで計算できるシールド式なし";
         el.shieldFormulaText.textContent = "-";
         el.shieldBreakdownBody.innerHTML = "";
         el.shieldLearnChipRow.innerHTML = "";
@@ -5383,20 +5396,21 @@
       });
 
       const baseShield = results.reduce((sum, result) => sum + result.value, 0);
-      const perApplication = Math.max(0, Math.floor(baseShield * shieldMultiplier + shieldFlat));
-      const totalShield = perApplication * count;
+      const selfPerApplication = Math.max(0, Math.floor(baseShield * selfShieldMultiplier + shieldFlat));
+      const allyPerApplication = Math.max(0, Math.floor(baseShield * allyShieldMultiplier + shieldFlat));
+      const selfTotalShield = selfPerApplication * count;
+      const allyTotalShield = allyPerApplication * count;
       const moveTitle = `${choice.slotLabel}${choice.displayName ? ` - ${jpMoveName(choice.displayName)}` : ""}`;
-      const targetLabel = targetType === "ally" ? "味方" : "自分";
-      const rescueHoodSummary = hasRescueHood
-        ? targetType === "ally"
-          ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%`
-          : " / レスキューフード対象外"
-        : "";
+      const rescueHoodSummary = rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : "";
 
-      el.shieldAmount.textContent = totalShield;
-      el.shieldAmountSub.textContent = count > 1
-        ? `1回あたり ${perApplication} × ${formatNumber(count, 0)}回/対象${rescueHoodSummary}`
-        : `${targetLabel}へのシールド / 基礎 ${baseShield} / 補正後 ${perApplication}${rescueHoodSummary}`;
+      el.shieldSelfAmount.textContent = selfTotalShield;
+      el.shieldSelfAmountSub.textContent = count > 1
+        ? `1回あたり ${selfPerApplication} × ${formatNumber(count, 0)}回/対象`
+        : `基礎 ${baseShield} / 補正後 ${selfPerApplication}`;
+      el.shieldAllyAmount.textContent = allyTotalShield;
+      el.shieldAllyAmountSub.textContent = count > 1
+        ? `1回あたり ${allyPerApplication} × ${formatNumber(count, 0)}回/対象${rescueHoodSummary}`
+        : `基礎 ${baseShield} / 補正後 ${allyPerApplication}${rescueHoodSummary}`;
 
       if (results.length === 1) {
         const result = results[0];
@@ -5413,7 +5427,7 @@
       const typeChip = document.createElement("span");
       typeChip.className = "chip";
       typeChip.style.marginLeft = "8px";
-      typeChip.textContent = `${moveTitle} / ${targetLabel}へシールド`;
+      typeChip.textContent = `${moveTitle} / 自分・味方を個別計算`;
       el.shieldLearnChipRow.appendChild(typeChip);
 
       const partRows = results.map((result, index) => {
@@ -5426,13 +5440,15 @@
       const rows = [
         ["計算対象", `${moveTitle} / ${results.length > 1 ? "複数項目を合算" : jpMoveLabel(results[0].part.label)}`],
         ...partRows,
-        ["シールド対象", targetLabel],
-        ["レスキューフード補正", rescueHoodPercent ? `+${formatNumber(rescueHoodPercent, 1)}%` : hasRescueHood ? "自分には適用されません" : "なし"],
         ["基礎シールド", formatNumber(baseShield, 0)],
-        ["シールド補正", `×${formatNumber(shieldMultiplier, 3)} / 固定 ${formatNumber(shieldFlat, 1)}`],
-        ["1回あたり", formatNumber(perApplication, 0)],
+        ["自分: シールド補正", `×${formatNumber(selfShieldMultiplier, 3)} / 固定 ${formatNumber(shieldFlat, 1)}`],
+        ["自分: 1回あたり", formatNumber(selfPerApplication, 0)],
+        ["自分: 合計シールド", formatNumber(selfTotalShield, 0)],
+        ["味方: レスキューフード補正", rescueHoodPercent ? `+${formatNumber(rescueHoodPercent, 1)}%` : "なし"],
+        ["味方: シールド補正", `×${formatNumber(allyShieldMultiplier, 3)} / 固定 ${formatNumber(shieldFlat, 1)}`],
+        ["味方: 1回あたり", formatNumber(allyPerApplication, 0)],
+        ["味方: 合計シールド", formatNumber(allyTotalShield, 0)],
         ["回数/対象数", formatNumber(count, 0)],
-        ["合計シールド", formatNumber(totalShield, 0)]
       ];
 
       if (stats.hpFlat || stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
@@ -5454,22 +5470,21 @@
       const level = number(el.healingLevelRange.value, 15);
       const stats = computeHealingStats();
       const manualCount = clamp(number(el.healingCount.value, 1), 1, 48);
-      const targetType = el.healingTargetType.value === "ally" ? "ally" : "self";
-      const itemPercent = targetType === "self" && hasHealingItem("Big Root")
-        ? healingEffectTierFor("Big Root")
-        : targetType === "ally" && hasHealingItem("Rescue Hood")
-          ? healingEffectTierFor("Rescue Hood")
-          : 0;
+      const bigRootPercent = hasHealingItem("Big Root") ? healingEffectTierFor("Big Root") : 0;
+      const rescueHoodPercent = hasHealingItem("Rescue Hood") ? healingEffectTierFor("Rescue Hood") : 0;
       const manualPercent = number(el.manualHealingPercent.value, 0);
-      const healingMultiplier = Math.max(0, 1 + (itemPercent + manualPercent) / 100);
+      const selfHealingMultiplier = Math.max(0, 1 + (bigRootPercent + manualPercent) / 100);
+      const allyHealingMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualPercent) / 100);
       const healingFlat = number(el.manualHealingFlat.value, 0);
 
       el.healingAttackStat.textContent = formatNumber(stats.attack, 1);
       el.healingSpAttackStat.textContent = formatNumber(stats.spAttack, 1);
 
       if (!choice || !parts.length) {
-        el.healingAmount.textContent = "0";
-        el.healingAmountSub.textContent = "現在のレベルで計算できる回復式なし";
+        el.healingSelfAmount.textContent = "0";
+        el.healingSelfAmountSub.textContent = "現在のレベルで計算できる回復式なし";
+        el.healingAllyAmount.textContent = "0";
+        el.healingAllyAmountSub.textContent = "現在のレベルで計算できる回復式なし";
         el.healingFormulaText.textContent = "-";
         el.healingBreakdownBody.innerHTML = "";
         el.healingLearnChipRow.innerHTML = "";
@@ -5485,8 +5500,6 @@
         const baseComponent = part.base;
         const baseValue = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
         const hitInfo = inferHealingHitInfo(part);
-        const adjustedValue = Math.max(0, Math.floor(baseValue * healingMultiplier + healingFlat));
-        const total = adjustedValue * hitInfo.count;
         return {
           part,
           typeLabel,
@@ -5495,29 +5508,47 @@
           levelComponent,
           baseComponent,
           baseValue,
-          adjustedValue,
           hitCount: hitInfo.count,
-          hitNote: hitInfo.note,
-          total
+          hitNote: hitInfo.note
         };
       });
 
-      const perApplication = results.reduce((sum, result) => sum + result.total, 0);
-      const totalHealing = perApplication * manualCount;
+      const calculateTargetHealing = (multiplier) => {
+        const targetResults = results.map((result) => {
+          const adjustedValue = Math.max(0, Math.floor(result.baseValue * multiplier + healingFlat));
+          return {
+            ...result,
+            adjustedValue,
+            total: adjustedValue * result.hitCount
+          };
+        });
+        const perApplication = targetResults.reduce((sum, result) => sum + result.total, 0);
+        return {
+          results: targetResults,
+          perApplication,
+          total: perApplication * manualCount
+        };
+      };
+      const selfHealing = calculateTargetHealing(selfHealingMultiplier);
+      const allyHealing = calculateTargetHealing(allyHealingMultiplier);
+      const basePerApplication = results.reduce((sum, result) => sum + result.baseValue * result.hitCount, 0);
       const moveTitle = `${choice.slotLabel}${choice.displayName ? ` - ${jpMoveName(choice.displayName)}` : ""}`;
-      const targetLabel = targetType === "ally" ? "味方" : "自分";
 
-      el.healingAmount.textContent = totalHealing;
-      el.healingAmountSub.textContent = manualCount > 1
-        ? `1対象あたり ${perApplication} × ${formatNumber(manualCount, 0)}回/対象`
-        : `${targetLabel}への回復 / 補正後 ${perApplication}`;
+      el.healingSelfAmount.textContent = selfHealing.total;
+      el.healingSelfAmountSub.textContent = manualCount > 1
+        ? `1対象あたり ${selfHealing.perApplication} × ${formatNumber(manualCount, 0)}回/対象${bigRootPercent ? ` / おおきなねっこ +${formatNumber(bigRootPercent, 1)}%` : ""}`
+        : `基礎 ${basePerApplication} / 補正後 ${selfHealing.perApplication}${bigRootPercent ? ` / おおきなねっこ +${formatNumber(bigRootPercent, 1)}%` : ""}`;
+      el.healingAllyAmount.textContent = allyHealing.total;
+      el.healingAllyAmountSub.textContent = manualCount > 1
+        ? `1対象あたり ${allyHealing.perApplication} × ${formatNumber(manualCount, 0)}回/対象${rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : ""}`
+        : `基礎 ${basePerApplication} / 補正後 ${allyHealing.perApplication}${rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : ""}`;
 
       if (results.length === 1) {
         const result = results[0];
         const countText = result.hitCount > 1 ? ` × ${result.hitCount}回` : "";
         el.healingFormulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}（小数点以下は切り捨て）`;
       } else {
-        el.healingFormulaText.textContent = `${moveTitle}: ${results.length}項目を合算 = ${perApplication}（各項目で小数点以下は切り捨て）`;
+        el.healingFormulaText.textContent = `${moveTitle}: ${results.length}項目を合算 = ${basePerApplication}（各項目で小数点以下は切り捨て）`;
       }
 
       el.healingLearnChipRow.innerHTML = "";
@@ -5528,27 +5559,30 @@
       const typeChip = document.createElement("span");
       typeChip.className = "chip";
       typeChip.style.marginLeft = "8px";
-      typeChip.textContent = `${moveTitle} / ${targetLabel}を回復`;
+      typeChip.textContent = `${moveTitle} / 自分・味方を個別計算`;
       el.healingLearnChipRow.appendChild(typeChip);
 
       const partRows = results.map((result, index) => {
-        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回 = ${result.total}` : "";
+        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回 = ${result.baseValue * result.hitCount}` : "";
         return [
           `回復式 ${index + 1}`,
           `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}`
         ];
       });
 
-      const itemEffectName = targetType === "self" ? "おおきなねっこ" : "レスキューフード";
       const rows = [
         ["計算対象", `${moveTitle} / ${jpMoveLabel(results[0].part.label)}`],
         ...partRows,
-        ["回復対象", targetLabel],
-        ["持ち物の回復補正", itemPercent ? `${itemEffectName} +${formatNumber(itemPercent, 1)}%` : "なし"],
-        ["回復補正", `×${formatNumber(healingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
-        ["1回/1対象あたり", formatNumber(perApplication, 0)],
+        ["基礎回復量", formatNumber(basePerApplication, 0)],
+        ["自分: おおきなねっこ補正", bigRootPercent ? `+${formatNumber(bigRootPercent, 1)}%` : "なし"],
+        ["自分: 回復補正", `×${formatNumber(selfHealingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
+        ["自分: 1回/1対象あたり", formatNumber(selfHealing.perApplication, 0)],
+        ["自分: 合計回復量", formatNumber(selfHealing.total, 0)],
+        ["味方: レスキューフード補正", rescueHoodPercent ? `+${formatNumber(rescueHoodPercent, 1)}%` : "なし"],
+        ["味方: 回復補正", `×${formatNumber(allyHealingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
+        ["味方: 1回/1対象あたり", formatNumber(allyHealing.perApplication, 0)],
+        ["味方: 合計回復量", formatNumber(allyHealing.total, 0)],
         ["回数/対象数", formatNumber(manualCount, 0)],
-        ["合計回復量", formatNumber(totalHealing, 0)]
       ];
 
       if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
@@ -5849,7 +5883,7 @@
       });
 
       [
-        "shieldManualAttack", "shieldManualSpAttack", "shieldManualHp", "shieldTargetType", "manualShieldPercent",
+        "shieldManualAttack", "shieldManualSpAttack", "shieldManualHp", "manualShieldPercent",
         "manualShieldFlat", "shieldCount", "shieldAttackWeightStacks",
         "shieldSpAtkSpecsStacks", "shieldWeaknessPolicyStacks",
         "shieldAccelBracerStacks", "shieldDriveLensStacks"
@@ -5859,7 +5893,7 @@
       });
 
       [
-        "healingManualAttack", "healingManualSpAttack", "healingTargetType",
+        "healingManualAttack", "healingManualSpAttack",
         "manualHealingPercent", "manualHealingFlat", "healingCount",
         "healingAttackWeightStacks", "healingSpAtkSpecsStacks",
         "healingWeaknessPolicyStacks", "healingAccelBracerStacks",
