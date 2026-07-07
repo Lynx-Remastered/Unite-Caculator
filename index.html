@@ -764,6 +764,19 @@
       gap: 8px;
     }
 
+    .defense-effect-controls {
+      display: grid;
+      grid-column: 1 / -1;
+      gap: 8px;
+      padding-top: 2px;
+    }
+
+    .defense-effect-heading {
+      color: var(--label);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
     .condition-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 92px;
@@ -1780,6 +1793,11 @@
               <span>はかいカウンタ（計算前）</span>
               <input id="yveltalMarkStacks" type="number" min="0" max="5" value="0">
             </div>
+            <div id="defenseEffectControls" class="defense-effect-controls" hidden>
+              <span class="defense-effect-heading">防御・特防への効果</span>
+              <div id="defenseEffectList" class="condition-grid"></div>
+              <div id="defenseEffectNote" class="effect-note"></div>
+            </div>
             <label class="check-row">
               <span>技本体を急所として計算</span>
               <input id="criticalHit" type="checkbox">
@@ -1840,6 +1858,38 @@
               <label>
                 固定ダメージ +/-
                 <input id="manualExtraDamage" type="number" value="0" step="1">
+              </label>
+              <label>
+                防御低下 %
+                <input id="manualDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
+              </label>
+              <label>
+                特防低下 %
+                <input id="manualSpDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
+              </label>
+              <label>
+                防御固定低下
+                <input id="manualDefenseReductionFlat" type="number" value="0" min="0" step="1">
+              </label>
+              <label>
+                特防固定低下
+                <input id="manualSpDefenseReductionFlat" type="number" value="0" min="0" step="1">
+              </label>
+              <label>
+                防御無視 %
+                <input id="manualDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
+              </label>
+              <label>
+                特防無視 %
+                <input id="manualSpDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
+              </label>
+              <label>
+                防御固定貫通
+                <input id="manualDefensePenetrationFlat" type="number" value="0" min="0" step="1">
+              </label>
+              <label>
+                特防固定貫通
+                <input id="manualSpDefensePenetrationFlat" type="number" value="0" min="0" step="1">
               </label>
             </div>
           </div>
@@ -2343,6 +2393,7 @@
       サポートメダル: <a href="https://unite-db.com/boost-emblems" target="_blank" rel="noreferrer">UniteDB</a> / <a href="https://wikiwiki.jp/poke-unite/%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%83%A1%E3%83%80%E3%83%AB" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得）<br>
       メダルの日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a><br>
       技の日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a> / <a href="https://gamewith.jp/pokemon-unite/article/show/284186" target="_blank" rel="noreferrer">GameWith</a>（2026年7月6日取得）<br>
+      防御・特防計算: <a href="https://wikiwiki.jp/poke-unite/%E3%83%90%E3%83%88%E3%83%AB%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E4%BB%95%E6%A7%98" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年7月7日取得）<br>
       式: 計算値 = 能力値 × 倍率 + レベル補正 + 固定値（小数点以下は切り捨て）
     </footer>
   </main>
@@ -2558,6 +2609,104 @@
       "Unite Move": "ユナイトわざ"
     };
 
+    const DEFENSE_EFFECTS = {
+      Absol: [
+        { id: "boosted", label: "強化攻撃命中後", maxStacks: 1, defenseReductionPercent: 15 }
+      ],
+      Aegislash: [
+        { id: "sacred-sword", label: "せいなるつるぎ命中後", minLevel: 5, maxStacks: 1, defenseIgnorePercent: 25 }
+      ],
+      Ceruledge: [
+        { id: "psycho-cut", label: "サイコカッター命中後", minLevel: 5, maxStacks: 1, defenseReductionFlat: (level) => level >= 11 ? 3 * (level - 1) + 15 : 2 * (level - 1) + 10 }
+      ],
+      Chandelure: [
+        { id: "infiltrator", label: "すりぬけの段階", maxStacks: 6, spDefenseIgnorePercent: 5 }
+      ],
+      Cramorant: [
+        { id: "arrokuda", label: "強化攻撃（サシカマス）命中後", maxStacks: 1, defenseReductionPercent: 20, spDefenseReductionPercent: 5 }
+      ],
+      Decidueye: [
+        { id: "shadow-sneak", label: "かげうち命中後", minLevel: 8, maxStacks: 1, defenseReductionPercent: (level) => level >= 13 ? 60 : 40 }
+      ],
+      Empoleon: [
+        { id: "aqua-jet", label: "激流強化アクアジェット命中後", minLevel: 7, maxStacks: 1, spDefenseReductionPercent: 60 }
+      ],
+      Feraligatr: [
+        { id: "destructive-fangs", label: "破壊のキバ強化攻撃命中後", minLevel: 5, maxStacks: 1, defenseReductionPercent: 30 }
+      ],
+      Gardevoir: [
+        { id: "boosted", label: "強化攻撃命中後", maxStacks: 1, spDefenseReductionPercent: 10 },
+        { id: "psychic", label: "サイコキネシスの段階", minLevel: 7, maxStacks: 3, spDefenseReductionPercent: 20 }
+      ],
+      Gengar: [
+        { id: "shadow-ball", label: "シャドーボール命中後", minLevel: 5, maxStacks: 1, spDefenseReductionFlat: (level) => 5 * (level - 1) + 80 }
+      ],
+      Glaceon: [
+        { id: "tail-whip", label: "しっぽをふる命中後", maxStacks: 1, defenseReductionPercent: 30, spDefenseReductionPercent: 30 }
+      ],
+      Hoopa: [
+        { id: "shadow-ball", label: "シャドーボール命中後", minLevel: 4, maxStacks: 1, spDefenseReductionPercent: 30 }
+      ],
+      Latias: [
+        { id: "dragon-breath", label: "りゅうのいぶき命中後", minLevel: 7, maxStacks: 1, spDefenseReductionPercent: 30 }
+      ],
+      MewtwoX: [
+        { id: "unite", label: "ユナイト技命中後", minLevel: 9, maxStacks: 1, defenseReductionPercent: 20 }
+      ],
+      MewtwoY: [
+        { id: "unite", label: "ユナイト技命中後", minLevel: 9, maxStacks: 1, spDefenseReductionPercent: 15 }
+      ],
+      "Mr.Mime": [
+        { id: "psychic", label: "サイコキネシスの段階", minLevel: 4, maxStacks: 8, spDefenseReductionPercent: 5 }
+      ],
+      Quaquaval: [
+        { id: "liquidation", label: "アクアブレイク命中後", minLevel: 7, maxStacks: 1, defenseReductionPercent: 30 }
+      ],
+      Psyduck: [
+        { id: "tail-whip", label: "しっぽをふる命中後", maxLevel: 5, maxStacks: 1, spDefenseReductionPercent: 20 },
+        { id: "psychic-plus", label: "サイコキネシス+命中後", minLevel: 13, maxStacks: 1, spDefenseReductionPercent: 25 }
+      ],
+      Raichu: [
+        { id: "stored-power", label: "アシストパワー+の段階", minLevel: 11, maxStacks: 3, spDefenseReductionPercent: 10 }
+      ],
+      Skeledirge: [
+        { id: "blaze", label: "もうか発動中（次の技）", maxStacks: 1, spDefenseIgnorePercent: 35 }
+      ],
+      Slowbro: [
+        { id: "oblivious", label: "どんかんの段階", maxStacks: 5, spDefenseReductionPercent: 4 }
+      ],
+      Sylveon: [
+        { id: "hyper-voice", label: "ハイパーボイスの段階", minLevel: 4, maxStacks: 4, spDefenseReductionPercent: 20 }
+      ],
+      Talonflame: [
+        { id: "flame-charge", label: "ニトロチャージ+命中後", minLevel: 11, maxStacks: 1, defensePenetrationFlat: (level) => 3 * (level - 1) + 60 }
+      ],
+      Tinkaton: [
+        { id: "thief", label: "どろぼう強化攻撃命中後", minLevel: 7, maxStacks: 1, defenseReductionPercent: (level) => level >= 13 ? 25 : 10, spDefenseReductionPercent: (level) => level >= 13 ? 25 : 10 }
+      ],
+      Tsareena: [
+        { id: "boosted", label: "強化攻撃命中後", maxStacks: 1, defenseReductionPercent: 20 }
+      ],
+      Tyranitar: [
+        { id: "piercing-strength", label: "貫通力の発動中", minLevel: 5, maxStacks: 1, defenseIgnorePercent: 100 }
+      ],
+      Umbreon: [
+        { id: "fake-tears", label: "うそなき命中後", maxStacks: 1, defenseReductionPercent: 20, spDefenseReductionPercent: 20 }
+      ],
+      Urshifu: [
+        { id: "liquidation", label: "アクアブレイク命中後", minLevel: 7, maxStacks: 1, defenseReductionPercent: 30 }
+      ],
+      Venusaur: [
+        { id: "sludge-bomb", label: "ヘドロばくだん命中後", minLevel: 5, maxStacks: 1, spDefenseReductionPercent: 50 }
+      ],
+      Wigglytuff: [
+        { id: "sing", label: "うたうで眠り中", minLevel: 4, maxStacks: 1, defenseReductionPercent: 25, spDefenseReductionPercent: 25 }
+      ],
+      Zacian: [
+        { id: "sacred-sword", label: "せいなるつるぎ発動後", minLevel: 5, maxStacks: 1, defenseIgnorePercent: 10 }
+      ]
+    };
+
     const REGI_BUFFS = {
       none: { name: "", attackPercent: 0, spAttackPercent: 0, description: "" },
       regirock: { name: "レジロック", attackPercent: 0, spAttackPercent: 0, description: "与ダメージ変化なし" },
@@ -2705,6 +2854,7 @@
       selectedHealingMoveSlot: "",
       selectedHealingEffectKey: "all",
       activeTab: "damage",
+      defenseEffectValues: {},
       suppressTargetAutoFill: false
     };
 
@@ -2929,6 +3079,9 @@
         "spAttackStat", "critRateStat", "critDamageStat", "formulaText",
         "breakdownBody", "itemEffects", "learnChipRow", "manualAttack",
         "manualSpAttack", "manualDamagePercent", "manualExtraDamage", "criticalHit",
+        "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
+        "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
+        "defenseEffectControls", "defenseEffectList", "defenseEffectNote",
         "conditionYveltalMarks", "yveltalMarkStacks",
         "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
@@ -4839,6 +4992,128 @@
       return new Set(selectedItems().map((entry) => entry.item.name));
     }
 
+    function emptyDefenseModifiers() {
+      return {
+        defenseReductionPercent: 0,
+        spDefenseReductionPercent: 0,
+        defenseReductionFlat: 0,
+        spDefenseReductionFlat: 0,
+        defenseIgnorePercent: 0,
+        spDefenseIgnorePercent: 0,
+        defensePenetrationFlat: 0,
+        spDefensePenetrationFlat: 0
+      };
+    }
+
+    function addDefenseModifiers(target, source) {
+      Object.keys(target).forEach((key) => {
+        target[key] += number(source && source[key], 0);
+      });
+      return target;
+    }
+
+    function defenseEffectAmount(effect, key, level) {
+      const raw = effect[key];
+      return typeof raw === "function" ? number(raw(level), 0) : number(raw, 0);
+    }
+
+    function selectedDefenseEffectRows() {
+      const pokemon = selectedPokemon();
+      const level = number(el.levelRange.value, 15);
+      return (pokemon ? DEFENSE_EFFECTS[pokemon.name] || [] : [])
+        .filter((effect) => level >= number(effect.minLevel, 1) && level <= number(effect.maxLevel, 30));
+    }
+
+    function defenseEffectStateKey(effect) {
+      return `${selectedPokemon()?.name || ""}:${effect.id}`;
+    }
+
+    function renderDefenseEffectControls() {
+      const effects = selectedDefenseEffectRows();
+      el.defenseEffectList.innerHTML = "";
+      el.defenseEffectControls.hidden = effects.length === 0;
+      if (!effects.length) return;
+
+      effects.forEach((effect) => {
+        const stateKey = defenseEffectStateKey(effect);
+        const current = clamp(number(state.defenseEffectValues[stateKey], 0), 0, effect.maxStacks);
+        if (effect.maxStacks > 1) {
+          const row = document.createElement("label");
+          row.className = "condition-row";
+          const label = document.createElement("span");
+          label.textContent = effect.label;
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.max = String(effect.maxStacks);
+          input.value = String(current);
+          input.addEventListener("input", () => {
+            state.defenseEffectValues[stateKey] = clamp(number(input.value, 0), 0, effect.maxStacks);
+            updateAll();
+          });
+          row.append(label, input);
+          el.defenseEffectList.appendChild(row);
+        } else {
+          const row = document.createElement("label");
+          row.className = "check-row";
+          const label = document.createElement("span");
+          label.textContent = effect.label;
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = current > 0;
+          input.addEventListener("change", () => {
+            state.defenseEffectValues[stateKey] = input.checked ? 1 : 0;
+            updateAll();
+          });
+          row.append(label, input);
+          el.defenseEffectList.appendChild(row);
+        }
+      });
+
+      el.defenseEffectNote.textContent = "命中後・発動中の効果を指定します。多段技内で段階が進む効果と技固有の防御無視は自動計算されます。";
+    }
+
+    function activeDefenseModifiers() {
+      const modifiers = emptyDefenseModifiers();
+      const level = number(el.levelRange.value, 15);
+      selectedDefenseEffectRows().forEach((effect) => {
+        const stacks = clamp(number(state.defenseEffectValues[defenseEffectStateKey(effect)], 0), 0, effect.maxStacks);
+        if (!stacks) return;
+        Object.keys(modifiers).forEach((key) => {
+          modifiers[key] += defenseEffectAmount(effect, key, level) * stacks;
+        });
+      });
+
+      modifiers.defenseReductionPercent += number(el.manualDefenseReductionPercent.value, 0);
+      modifiers.spDefenseReductionPercent += number(el.manualSpDefenseReductionPercent.value, 0);
+      modifiers.defenseReductionFlat += number(el.manualDefenseReductionFlat.value, 0);
+      modifiers.spDefenseReductionFlat += number(el.manualSpDefenseReductionFlat.value, 0);
+      modifiers.defenseIgnorePercent += number(el.manualDefenseIgnorePercent.value, 0);
+      modifiers.spDefenseIgnorePercent += number(el.manualSpDefenseIgnorePercent.value, 0);
+      modifiers.defensePenetrationFlat += number(el.manualDefensePenetrationFlat.value, 0);
+      modifiers.spDefensePenetrationFlat += number(el.manualSpDefensePenetrationFlat.value, 0);
+      if (hasItem("Slick Spoon")) {
+        modifiers.spDefenseIgnorePercent += effectTierFor("Slick Spoon");
+      }
+      if (selectedPokemon()?.name === "Mega-Gyarados") {
+        modifiers.defenseIgnorePercent += 30;
+      }
+      return modifiers;
+    }
+
+    function defenseModifierSummary(modifiers) {
+      const rows = [];
+      if (modifiers.defenseReductionPercent) rows.push(`防御低下 ${formatNumber(Math.min(100, modifiers.defenseReductionPercent), 1)}%`);
+      if (modifiers.spDefenseReductionPercent) rows.push(`特防低下 ${formatNumber(Math.min(100, modifiers.spDefenseReductionPercent), 1)}%`);
+      if (modifiers.defenseReductionFlat) rows.push(`防御固定低下 ${formatNumber(modifiers.defenseReductionFlat, 1)}`);
+      if (modifiers.spDefenseReductionFlat) rows.push(`特防固定低下 ${formatNumber(modifiers.spDefenseReductionFlat, 1)}`);
+      if (modifiers.defenseIgnorePercent) rows.push(`防御無視 ${formatNumber(Math.min(100, modifiers.defenseIgnorePercent), 1)}%`);
+      if (modifiers.spDefenseIgnorePercent) rows.push(`特防無視 ${formatNumber(Math.min(100, modifiers.spDefenseIgnorePercent), 1)}%`);
+      if (modifiers.defensePenetrationFlat) rows.push(`防御固定貫通 ${formatNumber(modifiers.defensePenetrationFlat, 1)}`);
+      if (modifiers.spDefensePenetrationFlat) rows.push(`特防固定貫通 ${formatNumber(modifiers.spDefensePenetrationFlat, 1)}`);
+      return rows;
+    }
+
     function updateConditionVisibility() {
       const names = selectedItemNames();
       const map = {
@@ -4856,6 +5131,7 @@
         document.getElementById(id).hidden = !names.has(itemName);
       });
       el.conditionYveltalMarks.hidden = selectedPokemon()?.name !== "Yveltal";
+      renderDefenseEffectControls();
     }
 
     function selectedSpecialPokemonBuffLines() {
@@ -5329,18 +5605,107 @@
       return extras;
     }
 
-    function targetDefenseFor(type) {
-      const isPhysical = String(type).trim() === "Atk";
-      let value = isPhysical ? number(el.targetDefense.value, 0) : number(el.targetSpDefense.value, 0);
-      if (!isPhysical && hasItem("Slick Spoon")) {
-        const ignore = effectTierFor("Slick Spoon");
-        value *= 1 - ignore / 100;
-      }
-      return Math.max(-599, value);
+    function currentDefenseEffectStacks(effectId) {
+      const effect = selectedDefenseEffectRows().find((entry) => entry.id === effectId);
+      if (!effect) return 0;
+      return clamp(number(state.defenseEffectValues[defenseEffectStateKey(effect)], 0), 0, effect.maxStacks);
     }
 
-    function reduceByDefense(raw, type) {
-      const defense = targetDefenseFor(type);
+    function intrinsicDefenseModifiers(part) {
+      const modifiers = emptyDefenseModifiers();
+      const pokemonName = selectedPokemon()?.name || "";
+      const moveName = selectedMoveChoice()?.displayName || "";
+      const label = String(part && part.label || "");
+
+      if ((pokemonName === "Absol" && moveName === "Feint")
+        || (pokemonName === "Armarouge" && moveName === "Psyshock")
+        || (pokemonName === "Ceruledge" && moveName === "Phantom Force")
+        || (pokemonName === "Azumarill" && moveName === "Aqua Tail" && /Long Range/i.test(label))
+        || (pokemonName === "Tyranitar" && moveName === "Sand Tomb" && /AoE|Tick/i.test(label))
+        || (pokemonName === "Tyranitar" && moveName === "Ancient Power" && /Second Hit/i.test(label))) {
+        if (pokemonName === "Armarouge") modifiers.spDefenseIgnorePercent = 35;
+        else modifiers.defenseIgnorePercent = 100;
+      }
+      if (pokemonName === "Inteleon" && moveName === "Snipe Shot") {
+        modifiers.spDefenseIgnorePercent = /Far/i.test(label) ? 25 : /Mid/i.test(label) ? 20 : 15;
+      }
+      return modifiers;
+    }
+
+    function automaticDefenseEffectNotes() {
+      const pokemonName = selectedPokemon()?.name || "";
+      const moveName = selectedMoveChoice()?.displayName || "";
+      const notes = [];
+      if (pokemonName === "Absol" && moveName === "Feint") notes.push("フェイント: 防御を100%無視");
+      if (pokemonName === "Armarouge" && moveName === "Psyshock") notes.push("サイコショック: 特防を35%無視");
+      if (pokemonName === "Ceruledge" && moveName === "Phantom Force") notes.push("ゴーストダイブ: 防御を100%無視");
+      if (pokemonName === "Inteleon" && moveName === "Snipe Shot") notes.push("ねらいうち: 距離に応じて特防を15% / 20% / 25%無視");
+      if (pokemonName === "Azumarill" && moveName === "Aqua Tail") notes.push("アクアテール: 遠距離ヒットは防御を100%無視");
+      if (pokemonName === "Tyranitar" && moveName === "Sand Tomb") notes.push("すなじごく: 砂塵の継続ダメージは防御を100%無視");
+      if (pokemonName === "Tyranitar" && moveName === "Ancient Power") notes.push("げんしのちから: 2段目は防御を100%無視");
+      if (pokemonName === "Sylveon" && moveName === "Hyper Voice") notes.push("ハイパーボイス: 命中ごとに特防-20%（最大80%）");
+      if (pokemonName === "Gardevoir" && moveName === "Psychic") notes.push("サイコキネシス: 命中ごとに特防-20%（最大60%）");
+      if (pokemonName === "Mr.Mime" && moveName === "Psychic") notes.push("サイコキネシス: 命中ごとに特防-5%（最大40%）");
+      if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") notes.push("ヘドロばくだん: 初段後の継続ダメージに特防-50%");
+      if (pokemonName === "Chandelure") notes.push("すりぬけ: ダメージ命中ごとに特防無視+5%（最大6段階）");
+      if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) notes.push("アシストパワー+: 電撃命中ごとに特防-10%（最大30%）");
+      if (pokemonName === "Mega-Gyarados") notes.push("かたやぶり: 防御を30%無視");
+      return notes;
+    }
+
+    function createDefenseSequenceState() {
+      const pokemonName = selectedPokemon()?.name || "";
+      const moveName = selectedMoveChoice()?.displayName || "";
+      const effects = [];
+      const add = (effectId, key, perStack, maxStacks, appliesTo = "") => {
+        const initial = currentDefenseEffectStacks(effectId);
+        effects.push({ effectId, key, perStack, maxStacks, initial, current: initial, appliesTo });
+      };
+
+      if (pokemonName === "Sylveon" && moveName === "Hyper Voice") add("hyper-voice", "spDefenseReductionPercent", 20, 4, "SpAtk");
+      if (pokemonName === "Gardevoir" && moveName === "Psychic") add("psychic", "spDefenseReductionPercent", 20, 3, "SpAtk");
+      if (pokemonName === "Mr.Mime" && moveName === "Psychic") add("psychic", "spDefenseReductionPercent", 5, 8, "SpAtk");
+      if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") add("sludge-bomb", "spDefenseReductionPercent", 50, 1, "SpAtk");
+      if (pokemonName === "Chandelure") add("infiltrator", "spDefenseIgnorePercent", 5, 6, "SpAtk");
+      if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) add("stored-power", "spDefenseReductionPercent", 10, 3, "SpAtk");
+      return effects;
+    }
+
+    function sequenceDefenseModifiers(sequenceState) {
+      const modifiers = emptyDefenseModifiers();
+      sequenceState.forEach((effect) => {
+        modifiers[effect.key] += Math.max(0, effect.current - effect.initial) * effect.perStack;
+      });
+      return modifiers;
+    }
+
+    function advanceDefenseSequence(sequenceState, dmgType) {
+      sequenceState.forEach((effect) => {
+        if (effect.appliesTo && String(dmgType).trim() !== effect.appliesTo) return;
+        effect.current = Math.min(effect.maxStacks, effect.current + 1);
+      });
+    }
+
+    function targetDefenseDetails(type, additionalModifiers = null) {
+      const isPhysical = String(type).trim() === "Atk";
+      const base = isPhysical ? number(el.targetDefense.value, 0) : number(el.targetSpDefense.value, 0);
+      const modifiers = addDefenseModifiers(activeDefenseModifiers(), additionalModifiers || emptyDefenseModifiers());
+      const reductionPercent = Math.min(100, Math.max(0, isPhysical ? modifiers.defenseReductionPercent : modifiers.spDefenseReductionPercent));
+      const reductionFlat = Math.max(0, isPhysical ? modifiers.defenseReductionFlat : modifiers.spDefenseReductionFlat);
+      const ignorePercent = Math.min(100, Math.max(0, isPhysical ? modifiers.defenseIgnorePercent : modifiers.spDefenseIgnorePercent));
+      const penetrationFlat = Math.max(0, isPhysical ? modifiers.defensePenetrationFlat : modifiers.spDefensePenetrationFlat);
+      const afterReduction = (base - reductionFlat) * (1 - reductionPercent / 100);
+      const afterPenetration = afterReduction - penetrationFlat;
+      const effective = Math.max(-599, afterPenetration * (1 - ignorePercent / 100));
+      return { base, effective, reductionPercent, reductionFlat, ignorePercent, penetrationFlat, modifiers };
+    }
+
+    function targetDefenseFor(type, additionalModifiers = null) {
+      return targetDefenseDetails(type, additionalModifiers).effective;
+    }
+
+    function reduceByDefense(raw, type, additionalModifiers = null) {
+      const defense = targetDefenseFor(type, additionalModifiers);
       return Math.floor(raw * 600 / (600 + defense));
     }
 
@@ -5684,6 +6049,7 @@
       const initialYveltalMarks = yveltalDamageActive ? conditionNumber("yveltalMarkStacks", 0, 5) : 0;
       const yveltalAppliesMarks = yveltalDamageActive && move.slotKey !== "basic";
       let yveltalMarks = initialYveltalMarks;
+      const defenseSequenceState = createDefenseSequenceState();
 
       const moveResults = move.parts.map((part) => {
         const typeLabel = jpDamageType(part.dmgType);
@@ -5699,6 +6065,7 @@
         let totalRaw = 0;
         let totalReduced = 0;
         let perHitAfterMultiplier = 0;
+        const effectiveDefenses = [];
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
           const markMultiplier = yveltalDamageActive ? 1 + yveltalMarks * 0.03 : 1;
@@ -5708,8 +6075,12 @@
           yveltalHitDamages.push(afterMark);
           totalAfterCrit += afterMark;
           totalRaw += afterMultiplier;
-          totalReduced += reduceByDefense(afterMultiplier, part.dmgType);
+          const hitDefenseModifiers = addDefenseModifiers(intrinsicDefenseModifiers(part), sequenceDefenseModifiers(defenseSequenceState));
+          const hitDefense = targetDefenseDetails(part.dmgType, hitDefenseModifiers);
+          effectiveDefenses.push(hitDefense.effective);
+          totalReduced += Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
           if (yveltalAppliesMarks) yveltalMarks = Math.min(5, yveltalMarks + 1);
+          advanceDefenseSequence(defenseSequenceState, part.dmgType);
         }
 
         return {
@@ -5726,7 +6097,8 @@
           yveltalHitDamages,
           totalAfterCrit,
           totalRaw,
-          totalReduced
+          totalReduced,
+          effectiveDefenses
         };
       });
 
@@ -5785,9 +6157,22 @@
         const critText = el.criticalHit.checked ? ` / 急所後 ${result.perHitAfterCrit}` : "";
         return [
           `技本体 ${index + 1}`,
-          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.perHitBase}${critText}${hitText}${markText} -> ${formatNumber(result.totalRaw, 0)}`
+          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.perHitBase}${critText}${hitText}${markText} -> 防御前 ${formatNumber(result.totalRaw, 0)} / 防御後 ${formatNumber(result.totalReduced, 0)}`
         ];
       });
+
+      const defenseReferences = moveResults.map((result) => {
+        const label = result.part.dmgType.trim() === "Atk" ? "防御" : "特防";
+        const base = result.part.dmgType.trim() === "Atk" ? number(el.targetDefense.value, 0) : number(el.targetSpDefense.value, 0);
+        const minDefense = Math.min(...result.effectiveDefenses);
+        const maxDefense = Math.max(...result.effectiveDefenses);
+        const effective = Math.abs(minDefense - maxDefense) < 0.000001
+          ? formatNumber(minDefense, 1)
+          : `${formatNumber(maxDefense, 1)} → ${formatNumber(minDefense, 1)}`;
+        return `${label} ${formatNumber(base, 1)} → 有効${label} ${effective}`;
+      }).filter((value, index, rows) => rows.indexOf(value) === index);
+      const activeDefenseLines = defenseModifierSummary(activeDefenseModifiers());
+      const automaticDefenseLines = automaticDefenseEffectNotes();
 
       const rows = [
         ["計算対象", `${moveTitle} / ${moveResults.length > 1 ? "複数項目を合算" : jpMoveLabel(moveResults[0].part.label)}`],
@@ -5795,7 +6180,7 @@
         ["技本体合計", `${formatNumber(moveRaw, 0)}（倍率適用後・防御前）`],
         ["追加効果", extras.length ? extras.map((entry) => `${entry.name}: ${formatNumber(Math.floor(entry.raw * damageMultiplier), 1)}`).join(" / ") : "0"],
         ["ダメージ倍率", `×${formatNumber(damageMultiplier, 3)}`],
-        ["防御参照", moveResults.map((result) => `${result.part.dmgType.trim() === "Atk" ? "防御" : "特防"} ${formatNumber(targetDefenseFor(result.part.dmgType), 1)}`).filter((value, index, rows) => rows.indexOf(value) === index).join(" / ")]
+        ["防御参照", defenseReferences.join(" / ")]
       ];
 
       let detailRowIndex = 1;
@@ -5813,6 +6198,14 @@
       }
       if (stats.specialBuffLines.length) {
         rows.splice(detailRowIndex, 0, ["特殊ポケモン撃破バフ", stats.specialBuffLines.join(" / ")]);
+        detailRowIndex += 1;
+      }
+      if (activeDefenseLines.length) {
+        rows.splice(detailRowIndex, 0, ["防御・特防補正", activeDefenseLines.join(" / ")]);
+        detailRowIndex += 1;
+      }
+      if (automaticDefenseLines.length) {
+        rows.splice(detailRowIndex, 0, ["技内の自動補正", automaticDefenseLines.join(" / ")]);
       }
 
       el.breakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
@@ -5929,6 +6322,8 @@
 
       [
         "manualAttack", "manualSpAttack", "manualDamagePercent", "manualExtraDamage",
+        "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
+        "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "criticalHit", "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc", "chargingCharmProc",
         "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff"
