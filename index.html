@@ -23,95 +23,68 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0d1016;
-      --bg-top: #10151d;
-      --surface: #151b24;
-      --surface-2: #1d2530;
-      --surface-3: #10161f;
-      --line: #2e3948;
-      --ink: #eef3f8;
-      --muted: #a8b4c4;
-      --accent: #f2b33d;
-      --accent-2: #34c3ba;
-      --accent-rgb: 242, 179, 61;
-      --accent-2-rgb: 52, 195, 186;
-      --accent-border: #d79c24;
-      --accent-ink: #211805;
-      --link: #72ddd5;
-      --danger: #ff7a68;
-      --success: #60d394;
-      --input-bg: #0f151d;
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
-      --label: #d9e2ec;
-      --hover-bg: #121b25;
-      --formula-bg: #17212b;
-      --formula-ink: #ffffff;
-      --chip-bg: #253141;
-      --chip-ink: #eaf0f7;
-      --warn-ink: #ffd98a;
-      --good-ink: #91e7b8;
-      --bad-ink: #ffaea3;
-      --note-ink: #dbe5ef;
-      --danger-ink: #ffb5ab;
+      --bg: #121212;
+      --bg-top: #121212;
+      --surface: #1e1e1e;
+      --surface-2: #272727;
+      --surface-3: #181818;
+      --line: rgba(255, 255, 255, 0.12);
+      --ink: rgba(255, 255, 255, 0.87);
+      --muted: rgba(255, 255, 255, 0.60);
+      --accent: #bb86fc;
+      --accent-2: #03dac6;
+      --accent-rgb: 187, 134, 252;
+      --accent-2-rgb: 3, 218, 198;
+      --accent-border: #9a67ea;
+      --accent-ink: #000000;
+      --link: #80cbc4;
+      --danger: #cf6679;
+      --success: #a5d6a7;
+      --input-bg: #181818;
+      --shadow: 0 10px 28px rgba(0, 0, 0, 0.48);
+      --label: rgba(255, 255, 255, 0.87);
+      --hover-bg: rgba(255, 255, 255, 0.08);
+      --formula-bg: #242424;
+      --formula-ink: rgba(255, 255, 255, 0.87);
+      --chip-bg: rgba(255, 255, 255, 0.12);
+      --chip-ink: rgba(255, 255, 255, 0.87);
+      --warn-ink: #ffe082;
+      --good-ink: #a5d6a7;
+      --bad-ink: #ef9a9a;
+      --note-ink: rgba(255, 255, 255, 0.74);
+      --danger-ink: #ef9a9a;
       --radius: 8px;
       font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     :root[data-theme="ocean"] {
-      --bg: #09111a;
-      --bg-top: #0d1824;
-      --surface: #121e2a;
-      --surface-2: #1a2a39;
-      --surface-3: #0c1721;
-      --line: #2d465b;
-      --ink: #edf6fc;
-      --muted: #a8bdcc;
-      --accent: #5aaaff;
-      --accent-2: #f0bd55;
-      --accent-rgb: 90, 170, 255;
-      --accent-2-rgb: 240, 189, 85;
-      --accent-border: #3d8bd8;
-      --accent-ink: #07182a;
-      --link: #76c5ff;
-      --input-bg: #09141e;
+      --accent: #90caf9;
+      --accent-2: #ffe082;
+      --accent-rgb: 144, 202, 249;
+      --accent-2-rgb: 255, 224, 130;
+      --accent-border: #64b5f6;
+      --accent-ink: #06131d;
+      --link: #90caf9;
     }
 
     :root[data-theme="forest"] {
-      --bg: #0a120f;
-      --bg-top: #101b17;
-      --surface: #14211c;
-      --surface-2: #1c2e27;
-      --surface-3: #0d1814;
-      --line: #304a40;
-      --ink: #eef8f3;
-      --muted: #adc2b9;
-      --accent: #65cf96;
-      --accent-2: #efbd58;
-      --accent-rgb: 101, 207, 150;
-      --accent-2-rgb: 239, 189, 88;
-      --accent-border: #43a874;
-      --accent-ink: #071c12;
-      --link: #78dfaa;
-      --input-bg: #0a1511;
+      --accent: #a5d6a7;
+      --accent-2: #ffe082;
+      --accent-rgb: 165, 214, 167;
+      --accent-2-rgb: 255, 224, 130;
+      --accent-border: #81c784;
+      --accent-ink: #081509;
+      --link: #a5d6a7;
     }
 
     :root[data-theme="rose"] {
-      --bg: #130d12;
-      --bg-top: #1c121a;
-      --surface: #241821;
-      --surface-2: #32232e;
-      --surface-3: #180f16;
-      --line: #503748;
-      --ink: #fbf1f7;
-      --muted: #c8afbf;
-      --accent: #f07eac;
-      --accent-2: #54c9c0;
-      --accent-rgb: 240, 126, 172;
-      --accent-2-rgb: 84, 201, 192;
-      --accent-border: #ca5e8a;
-      --accent-ink: #2b0917;
-      --link: #72ddd5;
-      --input-bg: #160d14;
+      --accent: #f48fb1;
+      --accent-2: #80deea;
+      --accent-rgb: 244, 143, 177;
+      --accent-2-rgb: 128, 222, 234;
+      --accent-border: #f06292;
+      --accent-ink: #210711;
+      --link: #f48fb1;
     }
 
     :root[data-mode="light"] {
@@ -220,7 +193,6 @@
     .source {
       color: var(--muted);
       font-size: 13px;
-      text-align: right;
       line-height: 1.5;
     }
 
@@ -230,13 +202,70 @@
       border-top: 1px solid var(--line);
     }
 
+    .source-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 0 4px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .source-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .source-summary::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(-45deg);
+      transition: transform 150ms ease;
+    }
+
+    .source-disclosure[open] > .source-summary::before {
+      transform: rotate(45deg) translate(-2px, -2px);
+    }
+
+    .source-summary:focus-visible {
+      outline: 3px solid rgba(var(--accent-2-rgb), 0.24);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .source-count {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .source-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 4px 24px;
+      margin: 4px 0 0;
+      padding-left: 20px;
+    }
+
+    .source-disclosure:not([open]) > .source-list {
+      display: none;
+    }
+
     a {
       color: var(--link);
     }
 
     .calculator-toolbar {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 10px;
@@ -250,28 +279,107 @@
       align-items: start;
     }
 
-    .tab-bar {
+    .calculator-navigation {
+      position: relative;
       display: flex;
       flex: 1 1 auto;
-      gap: 8px;
-      margin-bottom: 0;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      min-height: 42px;
     }
 
-    .tab-button {
+    .navigation-menu-button {
+      display: grid;
+      flex: 0 0 36px;
+      width: 36px;
       min-height: 36px;
-      border: 0;
-      border-bottom: 3px solid transparent;
-      border-radius: 0;
+      padding: 0;
+      place-items: center;
+      border-color: var(--line);
+      border-radius: 6px;
       background: transparent;
-      color: var(--muted);
-      padding: 7px 12px;
-      font-weight: 900;
+      color: var(--ink);
     }
 
-    .tab-button.active {
-      border-bottom-color: var(--accent);
+    .navigation-menu-button[aria-expanded="true"] {
+      border-color: var(--accent-2);
+      background: rgba(var(--accent-2-rgb), 0.08);
+    }
+
+    .navigation-menu-icon {
+      display: grid;
+      gap: 4px;
+      width: 16px;
+    }
+
+    .navigation-menu-icon span {
+      display: block;
+      width: 16px;
+      height: 2px;
+      border-radius: 1px;
+      background: currentColor;
+    }
+
+    .calculator-view-title {
+      min-width: 0;
+      margin: 0;
       color: var(--ink);
-      background: rgba(var(--accent-rgb), 0.08);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1.3;
+    }
+
+    .navigation-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 120;
+      display: grid;
+      gap: 2px;
+      width: min(300px, calc(100vw - 32px));
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-2);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+    }
+
+    .navigation-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .navigation-menu-check {
+      margin-left: auto;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 900;
+      opacity: 0;
+    }
+
+    .navigation-menu-item:hover,
+    .navigation-menu-item:focus-visible {
+      background: var(--hover-bg);
+    }
+
+    .navigation-menu-item.active {
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--ink);
+    }
+
+    .navigation-menu-item.active .navigation-menu-check {
+      opacity: 1;
     }
 
     .appearance-controls {
@@ -463,38 +571,7 @@
 
     .pokemon-picker {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 84px;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .pokemon-preview {
-      min-height: 84px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface-3);
-      display: grid;
-      grid-template-rows: 58px auto;
-      place-items: center;
-      padding: 6px;
-      overflow: hidden;
-    }
-
-    .pokemon-preview img {
-      max-width: 64px;
-      max-height: 58px;
-      object-fit: contain;
-    }
-
-    .pokemon-preview span {
-      width: 100%;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .move-combobox {
@@ -742,6 +819,126 @@
 
     .held-item-option:hover,
     .held-item-option[aria-selected="true"] {
+      border-color: rgba(var(--accent-2-rgb), 0.38);
+      background: rgba(var(--accent-2-rgb), 0.14);
+    }
+
+    .pokemon-select-picker {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+    }
+
+    .pokemon-select-picker.open {
+      z-index: 70;
+    }
+
+    .pokemon-select-native {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .pokemon-select-trigger {
+      width: 100%;
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) 16px;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .pokemon-select-trigger[aria-expanded="true"] {
+      border-color: var(--accent-2);
+    }
+
+    .pokemon-select-icon,
+    .pokemon-select-icon-placeholder {
+      width: 34px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .pokemon-select-icon-placeholder {
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line);
+      border-radius: 50%;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .pokemon-select-trigger-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .pokemon-select-chevron {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      transition: transform 0.16s ease;
+    }
+
+    .pokemon-select-trigger[aria-expanded="true"] .pokemon-select-chevron {
+      transform: rotate(180deg);
+    }
+
+    .pokemon-select-menu {
+      position: absolute;
+      z-index: 70;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 310px;
+      overflow-y: auto;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+    }
+
+    .pokemon-select-option {
+      width: 100%;
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+      padding: 4px 8px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .pokemon-select-option:hover,
+    .pokemon-select-option[aria-selected="true"] {
       border-color: rgba(var(--accent-2-rgb), 0.38);
       background: rgba(var(--accent-2-rgb), 0.14);
     }
@@ -1588,6 +1785,82 @@
       gap: 0;
     }
 
+    .balance-filter {
+      display: grid;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .balance-filter-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .balance-filter-title {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .balance-filter-clear {
+      min-height: 28px;
+      padding: 3px 8px;
+      font-size: 11px;
+    }
+
+    .balance-filter-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 6px;
+    }
+
+    .balance-filter-option {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-3);
+      color: var(--label);
+      cursor: pointer;
+    }
+
+    .balance-filter-option:has(input:checked) {
+      border-color: var(--accent-2);
+      background: rgba(var(--accent-2-rgb), 0.08);
+    }
+
+    .balance-filter-option input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: var(--accent-2);
+    }
+
+    .balance-filter-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .balance-filter-count,
+    .balance-filter-status {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .balance-filter-count {
+      min-width: 20px;
+      text-align: right;
+    }
+
     .balance-entry {
       position: relative;
       padding: 14px 16px 16px 24px;
@@ -1756,9 +2029,6 @@
         grid-template-columns: 1fr;
       }
 
-      .source {
-        text-align: left;
-      }
     }
 
     @media (max-width: 620px) {
@@ -1773,16 +2043,9 @@
       .item-row,
       .pokemon-picker,
       .condition-row,
-      .tab-bar,
       .button-row,
       .ranking-controls {
         grid-template-columns: 1fr;
-      }
-
-      .tab-bar {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 4px;
       }
 
       .calculator-toolbar {
@@ -1791,7 +2054,7 @@
         gap: 2px;
       }
 
-      .calculator-toolbar .tab-bar {
+      .calculator-navigation {
         grid-column: 1;
         grid-row: 2;
         width: 100%;
@@ -1805,9 +2068,12 @@
         padding-bottom: 2px;
       }
 
-      .tab-button {
-        padding-inline: 4px;
-        font-size: 13px;
+      .calculator-view-title {
+        font-size: 16px;
+      }
+
+      .navigation-menu {
+        width: min(320px, calc(100vw - 16px));
       }
 
       .button-row {
@@ -1861,12 +2127,18 @@
 
     <section id="calculator" hidden>
       <div class="calculator-toolbar">
-        <div class="tab-bar" role="tablist" aria-label="計算種別">
-          <button id="damageTabButton" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="damagePanel">ダメージ計算</button>
-          <button id="rankingTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="rankingPanel">ダメージランキング</button>
-          <button id="shieldTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="shieldPanel">シールド量計算</button>
-          <button id="healingTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="healingPanel">回復量計算</button>
-          <button id="balanceTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="balancePanel">バランス調整</button>
+        <div id="calculatorNavigation" class="calculator-navigation">
+          <button id="navigationMenuButton" class="navigation-menu-button" type="button" aria-label="画面メニューを開く" aria-haspopup="menu" aria-expanded="false" aria-controls="navigationMenu" title="画面メニュー">
+            <span class="navigation-menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+          </button>
+          <h1 id="calculatorViewTitle" class="calculator-view-title">ダメージ計算</h1>
+          <div id="navigationMenu" class="navigation-menu" role="menu" aria-label="画面を選択" hidden>
+            <button id="damageTabButton" class="navigation-menu-item active" type="button" role="menuitem" aria-current="page" aria-controls="damagePanel">ダメージ計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+            <button id="rankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="rankingPanel">ダメージランキング<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+            <button id="shieldTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="shieldPanel">シールド量計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+            <button id="healingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="healingPanel">回復量計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+            <button id="balanceTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="balancePanel">バランス調整<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+          </div>
         </div>
         <div class="appearance-controls">
           <div class="mode-picker" role="group" aria-label="表示モード">
@@ -1876,16 +2148,16 @@
           <label class="theme-picker" for="themeSelect">
             <span class="theme-picker-label">配色</span>
             <select id="themeSelect" aria-label="配色">
-              <option value="standard">標準</option>
-              <option value="ocean">オーシャン</option>
-              <option value="forest">フォレスト</option>
-              <option value="rose">ローズ</option>
+              <option value="standard">マテリアル</option>
+              <option value="ocean">ブルー</option>
+              <option value="forest">グリーン</option>
+              <option value="rose">ピンク</option>
             </select>
           </label>
         </div>
       </div>
 
-      <section id="damagePanel" class="tab-panel app-shell" role="tabpanel" aria-labelledby="damageTabButton">
+      <section id="damagePanel" class="tab-panel app-shell" role="region" aria-labelledby="calculatorViewTitle">
       <div class="stack">
         <section class="panel">
           <div class="panel-head">
@@ -1897,10 +2169,6 @@
                 ポケモン
                 <select id="pokemonSelect"></select>
               </label>
-              <div class="pokemon-preview" aria-live="polite">
-                <img id="pokemonImage" alt="" width="72" height="66">
-                <span id="pokemonImageName">未選択</span>
-              </div>
             </div>
 
             <label>
@@ -2191,10 +2459,6 @@
                   相手ポケモン
                   <select id="targetSelect"></select>
                 </label>
-                <div class="pokemon-preview" aria-live="polite">
-                  <img id="targetImage" alt="" width="72" height="66">
-                  <span id="targetImageName">未選択</span>
-                </div>
               </div>
               <label>
                 相手レベル
@@ -2276,7 +2540,7 @@
       </div>
       </section>
 
-      <section id="rankingPanel" class="tab-panel" role="tabpanel" aria-labelledby="rankingTabButton" hidden>
+      <section id="rankingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
         <div class="stack">
           <section class="panel">
             <div class="panel-head">
@@ -2365,7 +2629,7 @@
         </div>
       </section>
 
-      <section id="shieldPanel" class="tab-panel" role="tabpanel" aria-labelledby="shieldTabButton" hidden>
+      <section id="shieldPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
         <div class="app-shell">
           <div class="stack">
             <section class="panel">
@@ -2378,10 +2642,6 @@
                     ポケモン
                     <select id="shieldPokemonSelect"></select>
                   </label>
-                  <div class="pokemon-preview" aria-live="polite">
-                    <img id="shieldPokemonImage" alt="" width="72" height="66">
-                    <span id="shieldPokemonImageName">未選択</span>
-                  </div>
                 </div>
 
                 <label>
@@ -2562,7 +2822,7 @@
         </div>
       </section>
 
-      <section id="healingPanel" class="tab-panel" role="tabpanel" aria-labelledby="healingTabButton" hidden>
+      <section id="healingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
         <div class="app-shell">
           <div class="stack">
             <section class="panel">
@@ -2575,10 +2835,6 @@
                     ポケモン
                     <select id="healingPokemonSelect"></select>
                   </label>
-                  <div class="pokemon-preview" aria-live="polite">
-                    <img id="healingPokemonImage" alt="" width="72" height="66">
-                    <span id="healingPokemonImageName">未選択</span>
-                  </div>
                 </div>
 
                 <label>
@@ -2756,7 +3012,7 @@
         </div>
       </section>
 
-      <section id="balancePanel" class="tab-panel" role="tabpanel" aria-labelledby="balanceTabButton" hidden>
+      <section id="balancePanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
         <div class="balance-shell">
           <section class="panel">
             <div class="panel-head">
@@ -2768,12 +3024,16 @@
                   ポケモン
                   <select id="balancePokemonSelect"></select>
                 </label>
-                <div class="pokemon-preview" aria-live="polite">
-                  <img id="balancePokemonImage" alt="" width="72" height="66">
-                  <span id="balancePokemonImageName">未選択</span>
-                </div>
               </div>
               <div id="balanceSummary" class="effect-note">調整履歴を読み込んでいます。</div>
+              <div class="balance-filter">
+                <div class="balance-filter-head">
+                  <strong class="balance-filter-title">調整対象で絞り込み</strong>
+                  <button id="balanceFilterClearButton" class="secondary balance-filter-clear" type="button" disabled>選択解除</button>
+                </div>
+                <div id="balanceFilterOptions" class="balance-filter-options" role="group" aria-label="表示する調整対象"></div>
+                <div id="balanceFilterStatus" class="balance-filter-status" aria-live="polite">未選択時はすべて表示します。</div>
+              </div>
             </div>
           </section>
 
@@ -2787,17 +3047,26 @@
       </section>
     </section>
 
-    <footer class="source site-footer">
-      データ元: <a href="https://unite-db.com/" target="_blank" rel="noreferrer">UniteDB</a>（2026年7月6日取得）<br>
-      特殊ポケモン撃破バフ: <a href="https://wikiwiki.jp/poke-unite/%E3%83%86%E3%82%A4%E3%82%A2%E8%92%BC%E7%A9%BA%E9%81%BA%E8%B7%A1%28%E3%82%B0%E3%83%A9%E3%83%BC%E3%83%89%E3%83%B3%29" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a><br>
-      もちもの名・効果: <a href="https://wikiwiki.jp/poke-unite/%E3%82%82%E3%81%A1%E3%82%82%E3%81%AE" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年7月7日取得）<br>
-      デフォルト持ち物: <a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得、各ポケモンの先頭掲載ビルド） / <a href="https://gamewith.jp/pokemon-unite/article/show/565725" target="_blank" rel="noreferrer">GameWith</a>（イベルタル、2026年7月6日取得）<br>
-      サポートメダル: <a href="https://unite-db.com/boost-emblems" target="_blank" rel="noreferrer">UniteDB</a> / <a href="https://wikiwiki.jp/poke-unite/%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%83%A1%E3%83%80%E3%83%AB" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年6月24日取得）<br>
-      メダルの日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a><br>
-      技の日本語名: <a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a> / <a href="https://gamewith.jp/pokemon-unite/article/show/284186" target="_blank" rel="noreferrer">GameWith</a>（2026年7月6日取得）<br>
-      防御・特防計算: <a href="https://wikiwiki.jp/poke-unite/%E3%83%90%E3%83%88%E3%83%AB%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E4%BB%95%E6%A7%98" target="_blank" rel="noreferrer">ポケモンユナイトWiki*</a>（2026年7月7日取得）<br>
-      バランス調整履歴: <a href="https://unite-db.com/patch-notes" target="_blank" rel="noreferrer">UniteDB パッチノート</a>（2026年7月16日取得）<br>
-      式: 計算値 = 能力値 × 倍率 + レベル補正 + 固定値（小数点以下は切り捨て）
+    <footer class="source site-footer" aria-label="情報元">
+      <details class="source-disclosure">
+        <summary class="source-summary">
+          <span>取得元情報</span>
+          <span class="source-count">11件</span>
+        </summary>
+        <ul class="source-list">
+        <li><a href="https://unite-db.com/" target="_blank" rel="noreferrer">UniteDB</a>（2026年7月6日取得）</li>
+        <li><a href="https://wikiwiki.jp/poke-unite/%E3%83%86%E3%82%A4%E3%82%A2%E8%92%BC%E7%A9%BA%E9%81%BA%E8%B7%A1%28%E3%82%B0%E3%83%A9%E3%83%BC%E3%83%89%E3%83%B3%29" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - テイア蒼空遺跡</a>（2026年6月24日取得）</li>
+        <li><a href="https://wikiwiki.jp/poke-unite/%E3%82%82%E3%81%A1%E3%82%82%E3%81%AE" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - もちもの</a>（2026年7月7日取得）</li>
+        <li><a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - ビルド</a>（2026年6月24日取得）</li>
+        <li><a href="https://gamewith.jp/pokemon-unite/article/show/565725" target="_blank" rel="noreferrer">GameWith - イベルタルのおすすめビルド</a>（2026年7月6日取得）</li>
+        <li><a href="https://unite-db.com/boost-emblems" target="_blank" rel="noreferrer">UniteDB - サポートメダル</a>（2026年6月24日取得）</li>
+        <li><a href="https://wikiwiki.jp/poke-unite/%E3%83%9D%E3%82%B1%E3%83%A2%E3%83%B3%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%83%A1%E3%83%80%E3%83%AB" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - サポートメダル</a>（2026年6月24日取得）</li>
+        <li><a href="https://github.com/PokeAPI/pokeapi" target="_blank" rel="noreferrer">PokeAPI</a>（2026年7月6日取得）</li>
+        <li><a href="https://gamewith.jp/pokemon-unite/article/show/284186" target="_blank" rel="noreferrer">GameWith - ポケモン一覧</a>（2026年7月6日取得）</li>
+        <li><a href="https://wikiwiki.jp/poke-unite/%E3%83%90%E3%83%88%E3%83%AB%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E4%BB%95%E6%A7%98" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - バトルに関する仕様</a>（2026年7月7日取得）</li>
+        <li><a href="https://unite-db.com/patch-notes" target="_blank" rel="noreferrer">UniteDB - パッチノート</a>（2026年7月16日取得）</li>
+        </ul>
+      </details>
     </footer>
   </main>
 
@@ -3317,6 +3586,7 @@
       selectedHealingMoveSlot: "",
       selectedHealingEffectKey: "all",
       activeTab: "damage",
+      selectedBalanceFilterKeys: [],
       defenseEffectValues: {},
       suppressTargetAutoFill: false
     };
@@ -3345,6 +3615,13 @@
     };
     const THEMES = ["standard", "ocean", "forest", "rose"];
     const MODES = ["light", "dark"];
+    const CALCULATOR_VIEWS = {
+      damage: { title: "ダメージ計算", buttonId: "damageTabButton", panelId: "damagePanel" },
+      ranking: { title: "ダメージランキング", buttonId: "rankingTabButton", panelId: "rankingPanel" },
+      shield: { title: "シールド量計算", buttonId: "shieldTabButton", panelId: "shieldPanel" },
+      healing: { title: "回復量計算", buttonId: "healingTabButton", panelId: "healingPanel" },
+      balance: { title: "バランス調整", buttonId: "balanceTabButton", panelId: "balancePanel" }
+    };
 
     function applyTheme(theme, persist = true) {
       const selectedTheme = THEMES.includes(theme) ? theme : "standard";
@@ -3711,6 +3988,124 @@
       document.querySelectorAll("select.held-item-native").forEach(syncHeldItemPicker);
     }
 
+    function createPokemonSelectIcon(name) {
+      if (!name) {
+        const placeholder = document.createElement("span");
+        placeholder.className = "pokemon-select-icon-placeholder";
+        placeholder.textContent = "-";
+        return placeholder;
+      }
+
+      const image = document.createElement("img");
+      image.className = "pokemon-select-icon";
+      image.src = pokemonThumbUrl(name);
+      image.alt = "";
+      image.loading = "lazy";
+      image.addEventListener("error", () => {
+        image.src = brokenImageUrl();
+      }, { once: true });
+      return image;
+    }
+
+    function closePokemonSelectPickers(except = null) {
+      document.querySelectorAll(".pokemon-select-picker").forEach((picker) => {
+        if (picker === except) return;
+        const trigger = picker.querySelector(".pokemon-select-trigger");
+        const menu = picker.querySelector(".pokemon-select-menu");
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+        if (menu) menu.hidden = true;
+        picker.classList.remove("open");
+      });
+    }
+
+    function syncPokemonSelectPicker(select) {
+      const picker = select.closest(".pokemon-select-picker");
+      if (!picker) return;
+      const selected = select.options[select.selectedIndex] || select.options[0];
+      const value = selected ? selected.value : "";
+      const label = selected ? selected.textContent : "なし";
+      const trigger = picker.querySelector(".pokemon-select-trigger");
+      const name = picker.querySelector(".pokemon-select-trigger-name");
+      const icon = picker.querySelector(".pokemon-select-trigger-icon");
+      if (name) name.textContent = label;
+      if (icon) icon.replaceChildren(createPokemonSelectIcon(value));
+      picker.querySelectorAll(".pokemon-select-option").forEach((option) => {
+        option.setAttribute("aria-selected", option.dataset.value === value ? "true" : "false");
+      });
+      if (trigger) trigger.title = label;
+    }
+
+    function enhancePokemonSelect(select, ariaLabel) {
+      if (!select || select.dataset.pokemonPickerReady === "true") return;
+      select.dataset.pokemonPickerReady = "true";
+      select.classList.add("pokemon-select-native");
+      select.tabIndex = -1;
+
+      const picker = document.createElement("div");
+      picker.className = "pokemon-select-picker";
+      select.parentNode.insertBefore(picker, select);
+      picker.appendChild(select);
+
+      const trigger = document.createElement("button");
+      trigger.type = "button";
+      trigger.className = "pokemon-select-trigger";
+      trigger.setAttribute("aria-haspopup", "listbox");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.setAttribute("aria-label", ariaLabel);
+
+      const triggerIcon = document.createElement("span");
+      triggerIcon.className = "pokemon-select-trigger-icon";
+      const triggerName = document.createElement("span");
+      triggerName.className = "pokemon-select-trigger-name";
+      const chevron = document.createElement("span");
+      chevron.className = "pokemon-select-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.textContent = "▼";
+      trigger.append(triggerIcon, triggerName, chevron);
+
+      const menu = document.createElement("div");
+      menu.className = "pokemon-select-menu";
+      menu.setAttribute("role", "listbox");
+      menu.setAttribute("aria-label", ariaLabel);
+      menu.hidden = true;
+
+      [...select.options].forEach((nativeOption) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "pokemon-select-option";
+        option.setAttribute("role", "option");
+        option.dataset.value = nativeOption.value;
+        const optionName = document.createElement("span");
+        optionName.textContent = nativeOption.textContent;
+        option.append(createPokemonSelectIcon(nativeOption.value), optionName);
+        option.addEventListener("click", () => {
+          select.value = nativeOption.value;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          syncPokemonSelectPicker(select);
+          closePokemonSelectPickers();
+          trigger.focus();
+        });
+        menu.appendChild(option);
+      });
+
+      trigger.addEventListener("click", () => {
+        const willOpen = menu.hidden;
+        closePokemonSelectPickers(willOpen ? picker : null);
+        closeHeldItemPickers();
+        closeMoveComboboxes();
+        menu.hidden = !willOpen;
+        trigger.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        picker.classList.toggle("open", willOpen);
+      });
+      select.addEventListener("change", () => syncPokemonSelectPicker(select));
+      picker.append(trigger, menu);
+      syncPokemonSelectPicker(select);
+    }
+
+    function syncPokemonSelectPickers() {
+      document.querySelectorAll("select.pokemon-select-native").forEach(syncPokemonSelectPicker);
+    }
+
     function brokenImageUrl() {
       return "https://d275t8dp8rxb42.cloudfront.net/icons/broken-link-icon.jpg";
     }
@@ -3719,6 +4114,7 @@
       [
         "loading", "loadingStatus", "loadingDetail", "retryLoadButton",
         "errorBox", "calculator", "damageTabButton", "rankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
+        "calculatorNavigation", "navigationMenuButton", "navigationMenu", "calculatorViewTitle",
         "damagePanel", "rankingPanel", "shieldPanel", "healingPanel", "balancePanel",
         "lightModeButton", "darkModeButton", "themeSelect",
         "pokemonSelect", "levelRange", "levelValue",
@@ -3741,8 +4137,7 @@
         "emblemEditorColors", "emblemEditorSpecies", "emblemEditorSuggestions", "emblemEditorGrade", "emblemEditorClear",
         "emblemStatEffects", "emblemColorEffects",
         "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff", "specialPokemonBuffNote",
-        "pokemonImage", "pokemonImageName", "targetImage", "targetImageName",
-        "shieldPokemonSelect", "shieldPokemonImage", "shieldPokemonImageName",
+        "shieldPokemonSelect",
         "shieldLevelRange", "shieldLevelValue", "shieldMoveChoices",
         "shieldApplyBuildButton", "shieldClearItemsButton",
         "shieldConditionAttackWeight", "shieldAttackWeightStacks",
@@ -3754,7 +4149,7 @@
         "manualShieldFlat", "shieldCount", "shieldCountLabel", "shieldSelfAmount", "shieldSelfAmountSub", "shieldAllyAmount", "shieldAllyAmountSub",
         "shieldAttackStat", "shieldSpAttackStat", "shieldHpStat", "shieldFormulaText",
         "shieldBreakdownBody", "shieldItemEffects", "shieldLearnChipRow",
-        "healingPokemonSelect", "healingPokemonImage", "healingPokemonImageName",
+        "healingPokemonSelect",
         "healingLevelRange", "healingLevelValue", "healingMoveChoices", "healingEffectRow", "healingEffectSelect",
         "healingApplyBuildButton", "healingClearItemsButton",
         "healingConditionAttackWeight", "healingAttackWeightStacks",
@@ -3768,7 +4163,8 @@
         "healingFormulaText", "healingBreakdownBody", "healingItemEffects", "healingLearnChipRow",
         "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
         "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
-        "balancePokemonSelect", "balancePokemonImage", "balancePokemonImageName", "balanceSummary", "balancePokemonHeading", "balanceTimeline"
+        "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
+        "balancePokemonHeading", "balanceTimeline"
       ].forEach((id) => {
         el[id] = document.getElementById(id);
       });
@@ -3802,31 +4198,55 @@
       el.calculator.hidden = true;
     }
 
+    function closeCalculatorNavigation(restoreFocus = false) {
+      if (!el.navigationMenu || !el.navigationMenuButton) return;
+      el.navigationMenu.hidden = true;
+      el.navigationMenuButton.setAttribute("aria-expanded", "false");
+      el.navigationMenuButton.setAttribute("aria-label", "画面メニューを開く");
+      if (restoreFocus) el.navigationMenuButton.focus();
+    }
+
+    function openCalculatorNavigation() {
+      if (!el.navigationMenu || !el.navigationMenuButton) return;
+      closeHeldItemPickers();
+      closePokemonSelectPickers();
+      closeMoveComboboxes();
+      el.navigationMenu.hidden = false;
+      el.navigationMenuButton.setAttribute("aria-expanded", "true");
+      el.navigationMenuButton.setAttribute("aria-label", "画面メニューを閉じる");
+      const activeView = CALCULATOR_VIEWS[state.activeTab] || CALCULATOR_VIEWS.damage;
+      el[activeView.buttonId].focus();
+    }
+
+    function toggleCalculatorNavigation() {
+      if (el.navigationMenu.hidden) {
+        openCalculatorNavigation();
+      } else {
+        closeCalculatorNavigation(true);
+      }
+    }
+
     function selectCalculatorTab(tabName) {
-      const rankingActive = tabName === "ranking";
-      const shieldActive = tabName === "shield";
-      const healingActive = tabName === "healing";
-      const balanceActive = tabName === "balance";
-      state.activeTab = rankingActive ? "ranking" : shieldActive ? "shield" : healingActive ? "healing" : balanceActive ? "balance" : "damage";
-      el.damagePanel.hidden = rankingActive || shieldActive || healingActive || balanceActive;
-      el.rankingPanel.hidden = !rankingActive;
-      el.shieldPanel.hidden = !shieldActive;
-      el.healingPanel.hidden = !healingActive;
-      el.balancePanel.hidden = !balanceActive;
-      el.damageTabButton.classList.toggle("active", !rankingActive && !shieldActive && !healingActive && !balanceActive);
-      el.rankingTabButton.classList.toggle("active", rankingActive);
-      el.shieldTabButton.classList.toggle("active", shieldActive);
-      el.healingTabButton.classList.toggle("active", healingActive);
-      el.balanceTabButton.classList.toggle("active", balanceActive);
-      el.damageTabButton.setAttribute("aria-selected", rankingActive || shieldActive || healingActive || balanceActive ? "false" : "true");
-      el.rankingTabButton.setAttribute("aria-selected", rankingActive ? "true" : "false");
-      el.shieldTabButton.setAttribute("aria-selected", shieldActive ? "true" : "false");
-      el.healingTabButton.setAttribute("aria-selected", healingActive ? "true" : "false");
-      el.balanceTabButton.setAttribute("aria-selected", balanceActive ? "true" : "false");
-      if (rankingActive) updateDamageRanking();
-      if (shieldActive) updateShieldAll();
-      if (healingActive) updateHealingAll();
-      if (balanceActive) updateBalanceTimeline();
+      const selectedTab = CALCULATOR_VIEWS[tabName] ? tabName : "damage";
+      state.activeTab = selectedTab;
+
+      Object.entries(CALCULATOR_VIEWS).forEach(([name, view]) => {
+        const active = name === selectedTab;
+        el[view.panelId].hidden = !active;
+        el[view.buttonId].classList.toggle("active", active);
+        if (active) {
+          el[view.buttonId].setAttribute("aria-current", "page");
+        } else {
+          el[view.buttonId].removeAttribute("aria-current");
+        }
+      });
+
+      el.calculatorViewTitle.textContent = CALCULATOR_VIEWS[selectedTab].title;
+      closeCalculatorNavigation();
+      if (selectedTab === "ranking") updateDamageRanking();
+      if (selectedTab === "shield") updateShieldAll();
+      if (selectedTab === "healing") updateHealingAll();
+      if (selectedTab === "balance") updateBalanceTimeline();
     }
 
     function number(value, fallback = 0) {
@@ -4605,32 +5025,6 @@
       return pokemon ? jpPokemonName(pokemon) : "";
     }
 
-    function updatePokemonPreview(select, image, nameEl) {
-      const name = select.value;
-      const displayName = pokemonDisplayName(name);
-      if (!name) {
-        image.removeAttribute("src");
-        image.alt = "";
-        nameEl.textContent = "未選択";
-        return;
-      }
-      image.src = pokemonThumbUrl(name);
-      image.alt = `${displayName}の画像`;
-      image.onerror = () => {
-        image.onerror = null;
-        image.src = brokenImageUrl();
-      };
-      nameEl.textContent = displayName;
-    }
-
-    function updateAllPokemonPreviews() {
-      updatePokemonPreview(el.pokemonSelect, el.pokemonImage, el.pokemonImageName);
-      updatePokemonPreview(el.targetSelect, el.targetImage, el.targetImageName);
-      updatePokemonPreview(el.shieldPokemonSelect, el.shieldPokemonImage, el.shieldPokemonImageName);
-      updatePokemonPreview(el.healingPokemonSelect, el.healingPokemonImage, el.healingPokemonImageName);
-      updatePokemonPreview(el.balancePokemonSelect, el.balancePokemonImage, el.balancePokemonImageName);
-    }
-
     function jpPatchDate(value) {
       const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
       return match ? `${match[1]}年${number(match[2])}月${number(match[3])}日` : value;
@@ -4643,14 +5037,106 @@
       }).sort((a, b) => b.date.localeCompare(a.date));
     }
 
+    function balanceFilterDefinition(move) {
+      const raw = String(move || "").replace(/\\?\[[^\]]+\]/g, "").replace(/[:：\s]+$/g, "").trim();
+      const cleaned = raw.replace(/^Unite Move:\s*/i, "").replace(/\+$/, "").trim();
+      const normalized = cleaned.toLowerCase();
+      const generic = [
+        { pattern: /^(natural stats|stat changes|stats)$/i, key: "stats", label: "ステータス", order: 0 },
+        { pattern: /^general adjustments$/i, key: "general", label: "全般", order: 1 },
+        { pattern: /^progression$/i, key: "progression", label: "成長・習得レベル", order: 2 },
+        { pattern: /^(attack|auto attacks?|basic attacks?)$/i, key: "basic", label: "通常攻撃", order: 3 },
+        { pattern: /^boosted attacks?$/i, key: "boosted", label: "強化攻撃", order: 4 },
+        { pattern: /^unite move$/i, key: "unite", label: "ユナイト技", order: 5 },
+        { pattern: /^bugfixes$/i, key: "bugfixes", label: "不具合修正", order: 90 }
+      ].find((entry) => entry.pattern.test(normalized));
+      if (generic) return generic;
+
+      const translated = jpPatchMoveName(raw).replace(/\+$/, "");
+      if (!translated || translated === "技・特性" || hasUntranslatedPatchText(translated)) {
+        return { key: "other", label: "その他", order: 99 };
+      }
+      return { key: `move:${translated}`, label: translated, order: 10 };
+    }
+
+    function balanceFilterDefinitions(history) {
+      const definitions = new Map();
+      history.forEach((patch) => {
+        (patch.changes || []).forEach((change) => {
+          const definition = balanceFilterDefinition(change.move);
+          const current = definitions.get(definition.key);
+          if (current) {
+            current.count += 1;
+          } else {
+            definitions.set(definition.key, { ...definition, count: 1 });
+          }
+        });
+      });
+      return [...definitions.values()].sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, "ja"));
+    }
+
+    function renderBalanceFilterOptions(history, pokemonName) {
+      const definitions = balanceFilterDefinitions(history);
+      const validKeys = new Set(definitions.map((definition) => definition.key));
+      state.selectedBalanceFilterKeys = state.selectedBalanceFilterKeys.filter((key) => validKeys.has(key));
+      const selectedKeys = new Set(state.selectedBalanceFilterKeys);
+      el.balanceFilterOptions.replaceChildren();
+      el.balanceFilterOptions.dataset.pokemon = pokemonName;
+
+      definitions.forEach((definition) => {
+        const option = document.createElement("label");
+        option.className = "balance-filter-option";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = definition.key;
+        checkbox.checked = selectedKeys.has(definition.key);
+        checkbox.setAttribute("aria-label", definition.label);
+        const name = document.createElement("span");
+        name.className = "balance-filter-name";
+        name.textContent = definition.label;
+        const count = document.createElement("span");
+        count.className = "balance-filter-count";
+        count.textContent = `${definition.count}件`;
+        checkbox.addEventListener("change", () => {
+          const nextKeys = new Set(state.selectedBalanceFilterKeys);
+          if (checkbox.checked) {
+            nextKeys.add(definition.key);
+          } else {
+            nextKeys.delete(definition.key);
+          }
+          state.selectedBalanceFilterKeys = [...nextKeys];
+          updateBalanceTimeline();
+        });
+        option.append(checkbox, name, count);
+        el.balanceFilterOptions.appendChild(option);
+      });
+    }
+
     function updateBalanceTimeline() {
       if (!el.balancePokemonSelect || !el.balanceTimeline) return;
-      updatePokemonPreview(el.balancePokemonSelect, el.balancePokemonImage, el.balancePokemonImageName);
       const pokemonName = el.balancePokemonSelect.value;
       const displayName = pokemonDisplayName(pokemonName) || "ポケモン";
       const history = balanceHistoryForPokemon(pokemonName);
+      const filterPokemonChanged = el.balanceFilterOptions.dataset.pokemon !== pokemonName;
+      if (filterPokemonChanged) {
+        state.selectedBalanceFilterKeys = [];
+        renderBalanceFilterOptions(history, pokemonName);
+      }
+      const selectedFilters = new Set(state.selectedBalanceFilterKeys);
+      const filteredHistory = selectedFilters.size
+        ? history.map((patch) => ({
+          ...patch,
+          changes: (patch.changes || []).filter((change) => selectedFilters.has(balanceFilterDefinition(change.move).key))
+        })).filter((patch) => patch.changes.length)
+        : history;
+      const totalChangeCount = history.reduce((sum, patch) => sum + (patch.changes || []).length, 0);
+      const filteredChangeCount = filteredHistory.reduce((sum, patch) => sum + (patch.changes || []).length, 0);
       el.balancePokemonHeading.textContent = `${displayName}のバランス調整履歴`;
       el.balanceTimeline.replaceChildren();
+      el.balanceFilterClearButton.disabled = selectedFilters.size === 0;
+      el.balanceFilterStatus.textContent = selectedFilters.size
+        ? `${selectedFilters.size}項目を選択中 / ${filteredChangeCount}件の変更を表示`
+        : `未選択（全${totalChangeCount}件の変更を表示）`;
 
       if (!history.length) {
         const empty = document.createElement("div");
@@ -4661,11 +5147,22 @@
         return;
       }
 
-      const latestDate = history[0].date;
-      const oldestDate = history[history.length - 1].date;
-      el.balanceSummary.textContent = `${history.length}件 / ${jpPatchDate(oldestDate)}～${jpPatchDate(latestDate)} / 新しい順`;
+      if (!filteredHistory.length) {
+        const empty = document.createElement("div");
+        empty.className = "balance-empty";
+        empty.textContent = "選択した条件に一致する調整履歴はありません。";
+        el.balanceTimeline.appendChild(empty);
+        el.balanceSummary.textContent = "0件 / 絞り込み中";
+        return;
+      }
 
-      history.forEach((patch) => {
+      const latestDate = filteredHistory[0].date;
+      const oldestDate = filteredHistory[filteredHistory.length - 1].date;
+      el.balanceSummary.textContent = selectedFilters.size
+        ? `${filteredHistory.length}件（${filteredChangeCount}項目） / ${jpPatchDate(oldestDate)}～${jpPatchDate(latestDate)} / 絞り込み中`
+        : `${history.length}件 / ${jpPatchDate(oldestDate)}～${jpPatchDate(latestDate)} / 新しい順`;
+
+      filteredHistory.forEach((patch) => {
         const article = document.createElement("article");
         article.className = "balance-entry";
         const header = document.createElement("div");
@@ -4837,6 +5334,15 @@
       const firstBalancePokemon = balancePokemonRows.find((pokemon) => pokemon.name === "Pikachu") || balancePokemonRows[0];
       if (firstBalancePokemon) el.balancePokemonSelect.value = firstBalancePokemon.name;
 
+      [
+        [el.pokemonSelect, "攻撃側ポケモンを選択"],
+        [el.targetSelect, "相手ポケモンを選択"],
+        [el.rankingTargetSelect, "ランキングの相手ポケモンを選択"],
+        [el.shieldPokemonSelect, "シールドを使うポケモンを選択"],
+        [el.healingPokemonSelect, "回復を使うポケモンを選択"],
+        [el.balancePokemonSelect, "調整履歴を確認するポケモンを選択"]
+      ].forEach(([select, ariaLabel]) => enhancePokemonSelect(select, ariaLabel));
+
       updateMoveOptions();
       applyRecommendedBuild();
       applyRecommendedEmblems();
@@ -4845,7 +5351,6 @@
       applyRecommendedShieldBuild();
       updateHealingMoveOptions();
       applyRecommendedHealingBuild();
-      updateAllPokemonPreviews();
       updateAll();
       updateShieldAll();
       updateHealingAll();
@@ -7487,7 +7992,6 @@
 
     function updateShieldAll() {
       if (!el.shieldPokemonSelect) return;
-      updatePokemonPreview(el.shieldPokemonSelect, el.shieldPokemonImage, el.shieldPokemonImageName);
       updateShieldConditionVisibility();
       el.shieldLevelValue.textContent = el.shieldLevelRange.value;
 
@@ -7633,7 +8137,6 @@
 
     function updateHealingAll() {
       if (!el.healingPokemonSelect) return;
-      updatePokemonPreview(el.healingPokemonSelect, el.healingPokemonImage, el.healingPokemonImageName);
       updateHealingConditionVisibility();
       el.healingLevelValue.textContent = el.healingLevelRange.value;
 
@@ -7766,7 +8269,6 @@
     }
 
     function updateAll() {
-      updateAllPokemonPreviews();
       updateConditionVisibility();
       syncSpecialPokemonBuffs();
       el.levelValue.textContent = el.levelRange.value;
@@ -7997,8 +8499,14 @@
 
     function wireEvents() {
       document.addEventListener("click", (event) => {
+        if (!(event.target instanceof Element) || (!event.target.closest("#navigationMenuButton") && !event.target.closest("#navigationMenu"))) {
+          closeCalculatorNavigation();
+        }
         if (!(event.target instanceof Element) || !event.target.closest(".held-item-picker")) {
           closeHeldItemPickers();
+        }
+        if (!(event.target instanceof Element) || !event.target.closest(".pokemon-select-picker")) {
+          closePokemonSelectPickers();
         }
         if (!(event.target instanceof Element) || !event.target.closest(".move-combobox")) {
           closeMoveComboboxes();
@@ -8006,15 +8514,41 @@
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
+          if (!el.navigationMenu.hidden) {
+            event.preventDefault();
+            closeCalculatorNavigation(true);
+          }
           closeHeldItemPickers();
+          closePokemonSelectPickers();
           closeMoveComboboxes();
         }
       });
-      el.damageTabButton.addEventListener("click", () => selectCalculatorTab("damage"));
-      el.rankingTabButton.addEventListener("click", () => selectCalculatorTab("ranking"));
-      el.shieldTabButton.addEventListener("click", () => selectCalculatorTab("shield"));
-      el.healingTabButton.addEventListener("click", () => selectCalculatorTab("healing"));
-      el.balanceTabButton.addEventListener("click", () => selectCalculatorTab("balance"));
+      el.navigationMenuButton.addEventListener("click", toggleCalculatorNavigation);
+      el.navigationMenu.addEventListener("keydown", (event) => {
+        const menuItems = Object.values(CALCULATOR_VIEWS).map((view) => el[view.buttonId]);
+        const currentIndex = menuItems.indexOf(document.activeElement);
+        if ((event.key === "Enter" || event.key === " ") && currentIndex >= 0) {
+          event.preventDefault();
+          menuItems[currentIndex].click();
+          return;
+        }
+        let nextIndex = currentIndex;
+        if (event.key === "ArrowDown") nextIndex = (currentIndex + 1 + menuItems.length) % menuItems.length;
+        if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = menuItems.length - 1;
+        if (nextIndex !== currentIndex) {
+          event.preventDefault();
+          menuItems[nextIndex].focus();
+        }
+      });
+      Object.keys(CALCULATOR_VIEWS).forEach((tabName) => {
+        const view = CALCULATOR_VIEWS[tabName];
+        el[view.buttonId].addEventListener("click", () => {
+          selectCalculatorTab(tabName);
+          el.navigationMenuButton.focus();
+        });
+      });
       el.lightModeButton.addEventListener("click", () => applyMode("light"));
       el.darkModeButton.addEventListener("click", () => applyMode("dark"));
       el.themeSelect.addEventListener("change", () => applyTheme(el.themeSelect.value));
@@ -8059,6 +8593,13 @@
       el.healingApplyBuildButton.addEventListener("click", applyRecommendedHealingBuild);
       el.healingClearItemsButton.addEventListener("click", clearHealingItems);
       el.balancePokemonSelect.addEventListener("change", updateBalanceTimeline);
+      el.balanceFilterClearButton.addEventListener("click", () => {
+        state.selectedBalanceFilterKeys = [];
+        el.balanceFilterOptions.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+        updateBalanceTimeline();
+      });
 
       for (let i = 0; i < 3; i += 1) {
         el[`itemSelect${i}`].addEventListener("change", updateAll);
