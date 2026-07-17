@@ -2511,6 +2511,10 @@
               <span>もうこうダンベルの回数</span>
               <input id="attackWeightStacks" type="number" min="0" max="6" value="0">
             </div>
+            <div id="conditionAeosCookie" class="condition-row" hidden>
+              <span>エオスビスケットの回数</span>
+              <input id="aeosCookieStacks" type="number" min="0" max="6" value="0">
+            </div>
             <div id="conditionSpAtkSpecs" class="condition-row" hidden>
               <span>しんげきメガネの回数</span>
               <input id="spAtkSpecsStacks" type="number" min="0" max="6" value="0">
@@ -2546,6 +2550,11 @@
             <div id="conditionYveltalMarks" class="condition-row" hidden>
               <span>はかいカウンタ（計算前）</span>
               <input id="yveltalMarkStacks" type="number" min="0" max="5" value="0">
+            </div>
+            <div id="conditionSnorlaxFlailHp" class="condition-row" hidden>
+              <span>自分の残りHP（%）</span>
+              <input id="snorlaxFlailHpPercent" type="number" min="0" max="100" value="100" step="1">
+              <span id="snorlaxFlailMaxHpNote" class="effect-note" style="grid-column: 1 / -1;">最大HPを計算しています</span>
             </div>
             <label id="conditionSylveonHyperVoice" class="condition-row" hidden>
               <span>ハイパーボイスの距離</span>
@@ -2611,6 +2620,10 @@
               <label>
                 攻撃 +/-
                 <input id="manualAttack" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                最大HP +/-
+                <input id="manualHp" type="number" value="0" step="1">
               </label>
               <label>
                 特攻 +/-
@@ -4421,14 +4434,15 @@
         "targetLevelRange", "targetLevelValue", "targetDefense", "targetSpDefense",
         "rawDamage", "rawDamageSub", "finalDamage", "finalDamageSub", "attackStat",
         "spAttackStat", "critRateStat", "critDamageStat", "formulaText",
-        "breakdownBody", "itemEffects", "learnChipRow", "manualAttack",
+        "breakdownBody", "itemEffects", "learnChipRow", "manualAttack", "manualHp",
         "manualSpAttack", "manualDamagePercent", "manualExtraDamage", "criticalHit",
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "defenseEffectControls", "defenseEffectList", "defenseEffectNote",
-        "conditionYveltalMarks", "yveltalMarkStacks", "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
+        "conditionYveltalMarks", "yveltalMarkStacks", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
+        "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
         "conditionDamageVariant", "damageVariantSelect",
-        "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
+        "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
         "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemSlots", "emblemSlotCount",
@@ -5099,6 +5113,15 @@
       const level = number(el.levelRange.value, 15);
       const pokemon = selectedPokemon();
       const activeEntries = activeEntriesForLevel(choice.entries, level);
+      if (isSnorlaxFlailAttackChoice(pokemon, choice)) {
+        const hpTier = selectedSnorlaxFlailHpTier();
+        return entriesWithHitInfo(
+          activeEntries.filter((entry) => entry.flailHpTierKey === hpTier.key),
+          pokemon,
+          choice,
+          level
+        );
+      }
       const damageVariant = selectedDamageVariantOption(pokemon, choice, level, activeEntries);
       if (damageVariant) return entriesWithHitInfo(damageVariant.entries, pokemon, choice, level);
 
@@ -5849,6 +5872,99 @@
       return `https://d275t8dp8rxb42.cloudfront.net/skills/${folder}/${file}.png`;
     }
 
+    const SNORLAX_FLAIL_HP_TIERS = [
+      { key: "above-80", label: "残りHP 80%超", minExclusive: 80 },
+      { key: "up-to-80", label: "残りHP 80%以下", minExclusive: 60 },
+      { key: "up-to-60", label: "残りHP 60%以下", minExclusive: 40 },
+      { key: "up-to-40", label: "残りHP 40%以下", minExclusive: 20 },
+      { key: "up-to-20", label: "残りHP 20%以下", minExclusive: -1 }
+    ];
+
+    const SNORLAX_FLAIL_FORMULAS = {
+      basic: {
+        regular: [
+          [45, 7, 90, 5], [50, 8, 150, 6], [55, 9, 210, 7], [60, 10, 270, 8], [65, 11, 330, 9]
+        ],
+        enhanced: [
+          [81, 7, 100, 5], [86, 8, 160, 6], [91, 9, 220, 7], [96, 10, 280, 8], [101, 11, 340, 9]
+        ]
+      },
+      boosted: {
+        regular: [
+          [67.5, 10, 135, 6], [75, 11, 225, 7], [82.5, 12, 315, 8], [90, 13, 405, 9], [97.5, 14, 495, 10]
+        ],
+        enhanced: [
+          [121.5, 10, 150, 6], [129, 11, 240, 7], [136.5, 12, 330, 8], [144, 13, 420, 9], [151.5, 14, 510, 10]
+        ]
+      }
+    };
+
+    function isSnorlaxFlailAttackChoice(pokemon, choice) {
+      return pokemon?.name === "Snorlax" && /^snorlax-flail-(?:basic|boosted)$/.test(choice?.slotKey || "");
+    }
+
+    function selectedSnorlaxFlailHpTier() {
+      const hpPercent = clamp(number(el.snorlaxFlailHpPercent?.value, 100), 0, 100);
+      return SNORLAX_FLAIL_HP_TIERS.find((tier) => hpPercent > tier.minExclusive)
+        || SNORLAX_FLAIL_HP_TIERS[SNORLAX_FLAIL_HP_TIERS.length - 1];
+    }
+
+    function snorlaxFlailAttackChoice(pokemon, flail, attackKind) {
+      const slotKey = `snorlax-flail-${attackKind}`;
+      const isBoosted = attackKind === "boosted";
+      const displayName = isBoosted ? "強化攻撃（じたばた）" : "通常攻撃（じたばた）";
+      const iconUrl = skillIconUrl(pokemon.name, flail.name);
+      const minLevel = number(flail.level1 || flail.level || 5, 5);
+      const enhancedMinLevel = number(flail.level2 || 11, 11);
+      const formulas = SNORLAX_FLAIL_FORMULAS[attackKind];
+      const entries = [];
+
+      SNORLAX_FLAIL_HP_TIERS.forEach((tier, index) => {
+        [
+          { values: formulas.regular[index], enhanced: false, entryMinLevel: minLevel },
+          { values: formulas.enhanced[index], enhanced: true, entryMinLevel: enhancedMinLevel }
+        ].forEach(({ values, enhanced, entryMinLevel }) => {
+          const [ratio, slider, base, maxHpRatio] = values;
+          const basePartKey = `${slotKey}-${tier.key}`;
+          entries.push({
+            id: `${basePartKey}${enhanced ? "-plus" : ""}`,
+            ownerName: displayName,
+            groupName: "Move 1",
+            suffix: "",
+            label: tier.label,
+            ratio,
+            slider,
+            base,
+            maxHpRatio,
+            dmgType: "Atk",
+            minLevel: entryMinLevel,
+            notes: "自分の残りHP割合に応じてダメージ式が変化します。",
+            contextText: "じたばた中の通常攻撃。自分の残りHPが少ないほどダメージが増加します。",
+            enhancedNotes: "Lv11以降はじたばた＋の式を使用します。",
+            enhancedMinLevel,
+            enhanced,
+            partKey: `${basePartKey}${enhanced ? "-plus" : ""}`,
+            basePartKey,
+            slotKey,
+            slotLabel: "技1",
+            displayName,
+            iconUrl,
+            flailHpTierKey: tier.key
+          });
+        });
+      });
+
+      return {
+        slotKey,
+        slotLabel: "技1",
+        displayName,
+        iconUrl,
+        minLevel,
+        entries,
+        disabled: false
+      };
+    }
+
     function addRsbEntries(entries, rsb, ownerName, groupName, minLevel, suffix, meta = {}) {
       if (!rsb) return;
 
@@ -5974,6 +6090,17 @@
         minLevel: 1,
         iconName: "Attack"
       });
+
+      if (pokemon.name === "Snorlax") {
+        const flail = ((move1 && move1.upgrades) || []).find((node) => node.name === "Flail");
+        if (flail) {
+          ["basic", "boosted"].forEach((attackKind) => {
+            const choice = snorlaxFlailAttackChoice(pokemon, flail, attackKind);
+            state.moveChoices.push(choice);
+            state.moveEntries.push(...choice.entries);
+          });
+        }
+      }
 
       [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
         createChoice({
@@ -6247,10 +6374,11 @@
 
     function computeRankingAttackerStats(pokemon, level, itemRows) {
       const baseStats = pokemon ? pokemonStats(pokemon.name, level) : null;
+      const baseHp = number(baseStats && baseStats.hp, 0);
       const baseAttack = number(baseStats && baseStats.attack, 0);
       const baseSpAttack = number(baseStats && baseStats.sp_attack, 0);
       const emblemPreset = emblemPresetFromBuild(pokemon);
-      const emblem = emblemBonusesFromSummary(emblemPreset, baseAttack, baseSpAttack);
+      const emblem = emblemBonusesFromSummary(emblemPreset, baseAttack, baseSpAttack, baseHp);
       const bonuses = { attackFlat: 0, spAttackFlat: 0, critRate: 0, critDamage: 0 };
 
       itemRows.forEach(({ item, level: itemLevel }) => {
@@ -7650,6 +7778,7 @@
       const names = selectedItemNames();
       const map = {
         conditionAttackWeight: "Attack Weight",
+        conditionAeosCookie: "Aeos Cookie",
         conditionSpAtkSpecs: "Sp. Atk Specs",
         conditionWeaknessPolicy: "Weakness Policy",
         conditionAccelBracer: "Accel Bracer",
@@ -7663,6 +7792,7 @@
         document.getElementById(id).hidden = !names.has(itemName);
       });
       el.conditionYveltalMarks.hidden = selectedPokemon()?.name !== "Yveltal";
+      el.conditionSnorlaxFlailHp.hidden = !isSnorlaxFlailAttackChoice(selectedPokemon(), selectedMoveChoice());
       el.conditionSylveonHyperVoice.hidden = !(selectedPokemon()?.name === "Sylveon"
         && selectedMoveChoice()?.displayName === "Hyper Voice");
       updateDamageVariantControls();
@@ -7761,7 +7891,7 @@
       return 0;
     }
 
-    function emblemBonusesFromSummary(summary, baseAttack, baseSpAttack) {
+    function emblemBonusesFromSummary(summary, baseAttack, baseSpAttack, baseHp = 0) {
       summary = summary || {};
       const equippedCount = clamp(number(summary.equippedCount, 0), 0, EMBLEM_SLOT_COUNT);
       const colorCounts = Object.fromEntries(state.emblemSets.map((set) => [set.name, 0]));
@@ -7770,6 +7900,7 @@
       });
       colorCounts.Brown = clamp(number(summary.brownCount, colorCounts.Brown), 0, EMBLEM_SLOT_COUNT);
       colorCounts.Green = clamp(number(summary.greenCount, colorCounts.Green), 0, EMBLEM_SLOT_COUNT);
+      colorCounts.White = clamp(number(summary.whiteCount, colorCounts.White), 0, EMBLEM_SLOT_COUNT);
 
       const flatStats = Object.fromEntries(EMBLEM_STAT_DEFINITIONS.map((definition) => [definition.key, 0]));
       Object.entries(summary.flatStats || {}).forEach(([stat, value]) => {
@@ -7778,47 +7909,57 @@
       flatStats.attack = number(summary.attack, flatStats.attack);
       flatStats.sp_attack = number(summary.spAttack, flatStats.sp_attack);
       flatStats.crit = number(summary.critRate, flatStats.crit);
+      flatStats.hp = number(summary.hp, flatStats.hp);
 
       const brownCount = colorCounts.Brown;
       const greenCount = colorCounts.Green;
+      const whiteCount = colorCounts.White;
+      const hpFlat = flatStats.hp;
       const attackFlat = flatStats.attack;
       const spAttackFlat = flatStats.sp_attack;
       const critRate = flatStats.crit;
       const attackPercent = emblemSetPercent("Brown", brownCount);
       const spAttackPercent = emblemSetPercent("Green", greenCount);
+      const hpPercent = emblemSetPercent("White", whiteCount);
       const attackSetBonus = baseAttack * attackPercent / 100;
       const spAttackSetBonus = baseSpAttack * spAttackPercent / 100;
+      const hpSetBonus = baseHp * hpPercent / 100;
       const lines = [];
 
-      if (attackPercent || spAttackPercent) {
+      if (attackPercent || spAttackPercent || hpPercent) {
         const colors = [];
         if (attackPercent) colors.push(`茶${brownCount}: 攻撃+${formatNumber(attackPercent, 1)}%（基礎能力から+${formatNumber(attackSetBonus, 1)}）`);
         if (spAttackPercent) colors.push(`緑${greenCount}: 特攻+${formatNumber(spAttackPercent, 1)}%（基礎能力から+${formatNumber(spAttackSetBonus, 1)}）`);
+        if (hpPercent) colors.push(`白${whiteCount}: HP+${formatNumber(hpPercent, 1)}%（基礎能力から+${formatNumber(hpSetBonus, 1)}）`);
         lines.push(colors.join(" / "));
       }
-      if (attackFlat || spAttackFlat || critRate) {
-        lines.push(`個別補正: 攻撃${signedNumber(attackFlat, 1)} / 特攻${signedNumber(spAttackFlat, 1)} / 急所率${signedNumber(critRate, 1)}%`);
+      if (hpFlat || attackFlat || spAttackFlat || critRate) {
+        lines.push(`個別補正: HP${signedNumber(hpFlat, 0)} / 攻撃${signedNumber(attackFlat, 1)} / 特攻${signedNumber(spAttackFlat, 1)} / 急所率${signedNumber(critRate, 1)}%`);
       }
 
       return {
         equippedCount,
         brownCount,
         greenCount,
+        whiteCount,
+        hpFlat,
         attackFlat,
         spAttackFlat,
         critRate,
         attackPercent,
         spAttackPercent,
+        hpPercent,
         attackSetBonus,
         spAttackSetBonus,
+        hpSetBonus,
         colorCounts,
         flatStats,
         lines
       };
     }
 
-    function selectedEmblemBonuses(baseAttack, baseSpAttack) {
-      return emblemBonusesFromSummary(state.emblemFallback || summarizeEmblemRows(selectedEmblemRows()), baseAttack, baseSpAttack);
+    function selectedEmblemBonuses(baseAttack, baseSpAttack, baseHp = 0) {
+      return emblemBonusesFromSummary(state.emblemFallback || summarizeEmblemRows(selectedEmblemRows()), baseAttack, baseSpAttack, baseHp);
     }
 
     function renderEmblemSummary(emblem) {
@@ -7895,12 +8036,14 @@
       const level = number(el.levelRange.value, 15);
       const pokemon = selectedPokemon();
       const baseStats = pokemon ? pokemonStats(pokemon.name, level) : null;
+      const baseHp = number(baseStats && baseStats.hp, 0);
       const baseAttack = number(baseStats && baseStats.attack, 0);
       const baseSpAttack = number(baseStats && baseStats.sp_attack, 0);
       const baseCrit = number(baseStats && baseStats.crit, 0);
-      const emblem = selectedEmblemBonuses(baseAttack, baseSpAttack);
+      const emblem = selectedEmblemBonuses(baseAttack, baseSpAttack, baseHp);
 
       const bonuses = {
+        hpFlat: 0,
         attackFlat: 0,
         spAttackFlat: 0,
         critRate: 0,
@@ -7912,6 +8055,7 @@
         (item.stats || []).forEach((stat) => {
           const value = itemLevelValue(itemLevel, stat);
           const label = stat.label;
+          if (label === "HP") bonuses.hpFlat += value;
           if (label === "Attack") bonuses.attackFlat += value;
           if (label === "Sp. Attack") bonuses.spAttackFlat += value;
           if (label === "Critical-Hit Rate") bonuses.critRate += value;
@@ -7923,6 +8067,7 @@
         });
       });
 
+      let hpFlat = bonuses.hpFlat + emblem.hpFlat + number(el.manualHp.value, 0);
       let attackFlat = bonuses.attackFlat + emblem.attackFlat + number(el.manualAttack.value, 0);
       let spAttackFlat = bonuses.spAttackFlat + emblem.spAttackFlat + number(el.manualSpAttack.value, 0);
       let attackPercent = 0;
@@ -7930,6 +8075,9 @@
 
       if (hasItem("Attack Weight")) {
         attackFlat += conditionNumber("attackWeightStacks", 0, 6) * effectTierFor("Attack Weight");
+      }
+      if (hasItem("Aeos Cookie")) {
+        hpFlat += conditionNumber("aeosCookieStacks", 0, 6) * effectTierFor("Aeos Cookie");
       }
       if (hasItem("Sp. Atk Specs")) {
         spAttackFlat += conditionNumber("spAtkSpecsStacks", 0, 6) * effectTierFor("Sp. Atk Specs");
@@ -7955,10 +8103,14 @@
       const spAttackBeforePercent = baseSpAttack + spAttackFlat;
       const attack = attackBeforePercent * (1 + attackPercent / 100) + emblem.attackSetBonus;
       const spAttack = spAttackBeforePercent * (1 + spAttackPercent / 100) + emblem.spAttackSetBonus;
+      const maxHp = Math.max(0, baseHp + hpFlat + emblem.hpSetBonus);
 
       return {
+        baseHp,
         baseAttack,
         baseSpAttack,
+        maxHp,
+        hpFlat,
         attack,
         spAttack,
         attackFlat,
@@ -8585,6 +8737,9 @@
       el.spAttackStat.textContent = formatNumber(stats.spAttack, 1);
       el.critRateStat.textContent = `${formatNumber(stats.critRate, 1)}%`;
       el.critDamageStat.textContent = `${formatNumber(stats.critDamageMultiplier * 100, 1)}%`;
+      if (!el.conditionSnorlaxFlailHp.hidden) {
+        el.snorlaxFlailMaxHpNote.textContent = `計算に使用する最大HP: ${formatNumber(stats.maxHp, 0)}`;
+      }
       renderEmblemSummary(stats.emblem);
 
       if (!move) {
@@ -8620,8 +8775,10 @@
         const statComponent = Math.floor(part.ratio * moveStat / 100);
         const levelComponent = part.slider * (level - 1);
         const baseComponent = part.base;
+        const maxHpRatio = Math.max(0, number(part.maxHpRatio, 0));
+        const maxHpComponent = Math.floor(maxHpRatio * stats.maxHp / 100);
         const hitCount = Math.max(1, number(part.hitCount, 1));
-        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
+        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent + maxHpComponent));
         const damageScale = Math.max(0, number(part.damageScale, 1));
         const perHitBase = Math.max(0, Math.floor(formulaBase * damageScale));
         const perHitAfterCrit = el.criticalHit.checked ? Math.floor(perHitBase * stats.critDamageMultiplier) : perHitBase;
@@ -8658,6 +8815,8 @@
           statComponent,
           levelComponent,
           baseComponent,
+          maxHpRatio,
+          maxHpComponent,
           formulaBase,
           damageScale,
           hitCount,
@@ -8702,7 +8861,10 @@
         const scaleText = result.damageScale !== 1
           ? ` = ${result.formulaBase} × ${formatNumber(result.damageScale * 100, 1)}% = ${result.perHitBase}`
           : ` = ${result.perHitBase}`;
-        el.formulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base}${scaleText}${hitText}（各ヒットで小数点以下は切り捨て）`;
+        const maxHpText = result.maxHpRatio
+          ? ` + 最大HP${formatNumber(stats.maxHp, 0)} × ${formatNumber(result.maxHpRatio, 1)}%`
+          : "";
+        el.formulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base}${maxHpText}${scaleText}${hitText}（各ヒットで小数点以下は切り捨て）`;
       } else {
         const totalHits = moveResults.reduce((sum, result) => sum + result.hitCount, 0);
         el.formulaText.textContent = `${moveTitle}: ${moveResults.length}項目 / ${formatNumber(totalHits, 0)}ヒットを合算（各ヒットで小数点以下は切り捨て）`;
@@ -8735,9 +8897,12 @@
         const scaleText = result.damageScale !== 1
           ? ` = ${result.formulaBase} × ${formatNumber(result.damageScale * 100, 1)}% = ${result.perHitBase}`
           : ` = ${result.perHitBase}`;
+        const maxHpText = result.maxHpRatio
+          ? ` + 最大HP${formatNumber(stats.maxHp, 0)} × ${formatNumber(result.maxHpRatio, 1)}%（${formatNumber(result.maxHpComponent, 0)}）`
+          : "";
         return [
           `技本体 ${index + 1}`,
-          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base}${scaleText}${critText}${hitText}${markText} -> 防御前 ${formatNumber(result.totalRaw, 0)} / 防御後 ${formatNumber(result.totalReduced, 0)}${reducedHitsText}`
+          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base}${maxHpText}${scaleText}${critText}${hitText}${markText} -> 防御前 ${formatNumber(result.totalRaw, 0)} / 防御後 ${formatNumber(result.totalReduced, 0)}${reducedHitsText}`
         ];
       });
 
@@ -8764,6 +8929,13 @@
       ];
 
       let detailRowIndex = 1;
+      if (isSnorlaxFlailAttackChoice(selectedPokemon(), move.choice)) {
+        rows.splice(detailRowIndex, 0, [
+          "じたばた条件",
+          `自分の残りHP ${formatNumber(clamp(number(el.snorlaxFlailHpPercent.value, 100), 0, 100), 0)}% / 最大HP ${formatNumber(stats.maxHp, 0)}`
+        ]);
+        detailRowIndex += 1;
+      }
       if (yveltalDamageActive) {
         rows.splice(detailRowIndex, 0, ["はかいカウンタ", `開始 ${formatNumber(initialYveltalMarks, 0)} / 5（1個につき与ダメージ+3%、強化攻撃・技の各ヒット後に付与）`]);
         detailRowIndex += 1;
@@ -8848,11 +9020,13 @@
       const conditions = feedbackConditionSummary(
         [
           ["attackWeightStacks", "conditionAttackWeight", "もうこうダンベル"],
+          ["aeosCookieStacks", "conditionAeosCookie", "エオスビスケット"],
           ["spAtkSpecsStacks", "conditionSpAtkSpecs", "しんげきメガネ"],
           ["weaknessPolicyStacks", "conditionWeaknessPolicy", "じゃくてんほけん"],
           ["accelBracerStacks", "conditionAccelBracer", "アクセルリスト"],
           ["driveLensStacks", "conditionDriveLens", "ドライブレンズ"],
-          ["yveltalMarkStacks", "conditionYveltalMarks", "はかいカウンタ"]
+          ["yveltalMarkStacks", "conditionYveltalMarks", "はかいカウンタ"],
+          ["snorlaxFlailHpPercent", "conditionSnorlaxFlailHp", "自分の残りHP%"]
         ],
         [
           ["criticalHit", "", "技本体を急所計算"],
@@ -8866,6 +9040,7 @@
         ],
         [
           ["manualAttack", "攻撃補正"],
+          ["manualHp", "最大HP補正"],
           ["manualSpAttack", "特攻補正"],
           ["manualDamagePercent", "ダメージ%補正"],
           ["manualExtraDamage", "固定ダメージ補正"]
@@ -9231,12 +9406,12 @@
       });
 
       [
-        "manualAttack", "manualSpAttack", "manualDamagePercent", "manualExtraDamage",
+        "manualAttack", "manualHp", "manualSpAttack", "manualDamagePercent", "manualExtraDamage",
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
-        "criticalHit", "attackWeightStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
+        "criticalHit", "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc", "chargingCharmProc",
-        "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "sylveonHyperVoiceRange", "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff"
+        "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "snorlaxFlailHpPercent", "sylveonHyperVoiceRange", "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff"
       ].forEach((id) => {
         el[id].addEventListener("input", updateAll);
         el[id].addEventListener("change", updateAll);
