@@ -3512,6 +3512,7 @@
       "Moltres": "ファイヤー",
       "Mr.Mime": "バリヤード",
       "Ninetales": "アローラキュウコン",
+      "Palkia": "パルキア",
       "Pawmot": "パーモット",
       "Pikachu": "ピカチュウ",
       "Psyduck": "コダック",
@@ -3607,6 +3608,13 @@
       "Sp. Defense Penetration": "特防無視",
       "Shield": "シールド",
       "Shield and Recovery Effects": "シールド/回復効果"
+    };
+
+    const LABEL_EXACT_JA = {
+      "Healing (4x)": "回復（4回）",
+      "Damage - Mark": "ダメージ - マーク",
+      "Healing - Mark": "回復 - マーク",
+      "Damage - Flurry": "ダメージ - 連続攻撃"
     };
 
     const LABEL_REPLACEMENTS = [
@@ -4047,7 +4055,9 @@
     }
 
     function jpMoveLabel(label) {
-      let text = label || "ダメージ";
+      const raw = label || "ダメージ";
+      if (LABEL_EXACT_JA[raw]) return LABEL_EXACT_JA[raw];
+      let text = raw;
       LABEL_REPLACEMENTS.forEach(([from, to]) => {
         text = text.split(from).join(to);
       });
