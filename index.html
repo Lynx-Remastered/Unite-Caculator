@@ -1015,9 +1015,11 @@
     }
 
     .mini span,
-    .check-row span {
+    .condition-row > span:first-child,
+    .check-row > span:first-child {
       font-size: 11px;
       font-weight: 800;
+      line-height: 1.35;
       color: var(--muted);
       text-transform: uppercase;
     }
@@ -1025,6 +1027,10 @@
     .condition-grid {
       display: grid;
       gap: 8px;
+    }
+
+    .condition-grid .effect-note {
+      font-size: 11px;
     }
 
     .defense-effect-controls {
@@ -2588,8 +2594,9 @@
               <input id="energyAmpProc" type="checkbox">
             </label>
             <div id="conditionYveltalMarks" class="condition-row" hidden>
-              <span>はかいカウンタ（計算前）</span>
+              <span>ダークオーラ：はかいカウンタ数（計算前）</span>
               <input id="yveltalMarkStacks" type="number" min="0" max="5" value="0">
+              <span id="yveltalDarkAuraNote" class="effect-note" style="grid-column: 1 / -1;"></span>
             </div>
             <div id="conditionSnorlaxFlailHp" class="condition-row" hidden>
               <span>自分の残りHP（%）</span>
@@ -4499,7 +4506,7 @@
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "defenseEffectControls", "defenseEffectList", "defenseEffectNote",
-        "conditionYveltalMarks", "yveltalMarkStacks", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
+        "conditionYveltalMarks", "yveltalMarkStacks", "yveltalDarkAuraNote", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
         "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
         "conditionDamageVariant", "damageVariantSelect",
         "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
@@ -6532,7 +6539,7 @@
     function calculateRankingDamage({ pokemon, choice, parts, level, stats, itemRows, targetDefense, targetSpDefense, singleHit = false }) {
       const sequenceState = rankingDefenseSequenceState(pokemon.name, choice.displayName, level);
       const yveltalDamageActive = pokemon.name === "Yveltal";
-      const yveltalAppliesMarks = yveltalDamageActive && choice.slotKey !== "basic";
+      const yveltalAppliesMarks = yveltalDarkAuraAppliesMarks(pokemon, choice.slotKey);
       let yveltalMarks = 0;
       let totalRaw = 0;
       let totalReduced = 0;
@@ -6551,8 +6558,9 @@
         totalHits += hitCount;
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
-          const markMultiplier = yveltalDamageActive ? 1 + yveltalMarks * 0.03 : 1;
-          const afterMultiplier = Math.max(0, Math.floor(perHitBase * markMultiplier));
+          const afterMultiplier = yveltalDamageActive
+            ? applyYveltalDarkAuraDamage(perHitBase, yveltalMarks)
+            : perHitBase;
           totalRaw += afterMultiplier;
           const modifiers = rankingBaseDefenseModifiers(pokemon, itemRows);
           addDefenseModifiers(modifiers, rankingIntrinsicDefenseModifiers(pokemon.name, choice.displayName, part));
@@ -6564,7 +6572,7 @@
             bestSingleRaw = afterMultiplier;
             bestSingleReduced = reduced;
           }
-          if (yveltalAppliesMarks) yveltalMarks = Math.min(5, yveltalMarks + 1);
+          if (yveltalAppliesMarks) yveltalMarks = Math.min(YVELTAL_DARK_AURA.maxStacks, yveltalMarks + 1);
           advanceDefenseSequence(sequenceState, part.dmgType);
         }
       });
@@ -7681,6 +7689,24 @@
       return clamp(number(el[id].value, 0), min, max);
     }
 
+    const YVELTAL_DARK_AURA = Object.freeze({
+      maxStacks: 5,
+      damagePerStackPercent: 3,
+      durationSeconds: 3,
+      executeHpPercent: 10,
+      overflowShieldPercent: 50
+    });
+
+    function applyYveltalDarkAuraDamage(damage, stacks) {
+      const safeStacks = clamp(number(stacks, 0), 0, YVELTAL_DARK_AURA.maxStacks);
+      const percent = 100 + safeStacks * YVELTAL_DARK_AURA.damagePerStackPercent;
+      return Math.max(0, Math.floor(number(damage, 0) * percent / 100));
+    }
+
+    function yveltalDarkAuraAppliesMarks(pokemon, slotKey) {
+      return pokemon?.name === "Yveltal" && slotKey !== "basic";
+    }
+
     function selectedItemNames() {
       return new Set(selectedItems().map((entry) => entry.item.name));
     }
@@ -7851,7 +7877,13 @@
       Object.entries(map).forEach(([id, itemName]) => {
         document.getElementById(id).hidden = !names.has(itemName);
       });
-      el.conditionYveltalMarks.hidden = selectedPokemon()?.name !== "Yveltal";
+      const yveltalSelected = selectedPokemon()?.name === "Yveltal";
+      el.conditionYveltalMarks.hidden = !yveltalSelected;
+      if (yveltalSelected) {
+        const stacks = conditionNumber("yveltalMarkStacks", 0, YVELTAL_DARK_AURA.maxStacks);
+        const damageBonus = stacks * YVELTAL_DARK_AURA.damagePerStackPercent;
+        el.yveltalDarkAuraNote.textContent = `${YVELTAL_DARK_AURA.durationSeconds}秒間有効。現在の被ダメージ増加 +${formatNumber(damageBonus, 0)}%。強化攻撃・わざ・ユナイトわざの命中後に付与（最大${YVELTAL_DARK_AURA.maxStacks}個）。最大時は技で残りHP${YVELTAL_DARK_AURA.executeHpPercent}%以下になると即KO。KO時の回復と超過回復の${YVELTAL_DARK_AURA.overflowShieldPercent}%シールド転換はダメージ値には含みません。`;
+      }
       el.conditionSnorlaxFlailHp.hidden = !isSnorlaxFlailAttackChoice(selectedPokemon(), selectedMoveChoice());
       el.conditionSylveonHyperVoice.hidden = !(selectedPokemon()?.name === "Sylveon"
         && selectedMoveChoice()?.displayName === "Hyper Voice");
@@ -8824,8 +8856,10 @@
       }
 
       const yveltalDamageActive = selectedPokemon()?.name === "Yveltal";
-      const initialYveltalMarks = yveltalDamageActive ? conditionNumber("yveltalMarkStacks", 0, 5) : 0;
-      const yveltalAppliesMarks = yveltalDamageActive && move.slotKey !== "basic";
+      const initialYveltalMarks = yveltalDamageActive
+        ? conditionNumber("yveltalMarkStacks", 0, YVELTAL_DARK_AURA.maxStacks)
+        : 0;
+      const yveltalAppliesMarks = yveltalDarkAuraAppliesMarks(selectedPokemon(), move.slotKey);
       let yveltalMarks = initialYveltalMarks;
       const defenseSequenceState = createDefenseSequenceState();
 
@@ -8851,8 +8885,9 @@
         const reducedHitDamages = [];
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
-          const markMultiplier = yveltalDamageActive ? 1 + yveltalMarks * 0.03 : 1;
-          const afterMark = Math.max(0, Math.floor(perHitAfterCrit * markMultiplier));
+          const afterMark = yveltalDamageActive
+            ? applyYveltalDarkAuraDamage(perHitAfterCrit, yveltalMarks)
+            : perHitAfterCrit;
           const afterMultiplier = Math.max(0, Math.floor(afterMark * damageMultiplier));
           if (hitIndex === 0) perHitAfterMultiplier = afterMultiplier;
           yveltalHitDamages.push(afterMark);
@@ -8864,7 +8899,7 @@
           const reducedHitDamage = Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
           reducedHitDamages.push(reducedHitDamage);
           totalReduced += reducedHitDamage;
-          if (yveltalAppliesMarks) yveltalMarks = Math.min(5, yveltalMarks + 1);
+          if (yveltalAppliesMarks) yveltalMarks = Math.min(YVELTAL_DARK_AURA.maxStacks, yveltalMarks + 1);
           advanceDefenseSequence(defenseSequenceState, part.dmgType);
         }
 
@@ -8894,11 +8929,22 @@
 
       const moveRaw = moveResults.reduce((sum, result) => sum + result.totalRaw, 0);
       const moveReduced = moveResults.reduce((sum, result) => sum + result.totalReduced, 0);
-      const extrasRaw = extras.reduce((sum, entry) => sum + Math.floor(entry.raw * damageMultiplier), 0);
+      const extrasRaw = extras.reduce((sum, entry) => {
+        const afterMark = yveltalDamageActive
+          ? applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
+          : entry.raw;
+        return sum + Math.floor(afterMark * damageMultiplier);
+      }, 0);
       const totalRaw = Math.max(0, moveRaw + extrasRaw);
 
       const extrasReduced = extras.reduce((sum, entry) => {
-        return sum + reduceByDefense(Math.floor(entry.raw * damageMultiplier), entry.type);
+        const afterMark = yveltalDamageActive
+          ? applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
+          : entry.raw;
+        return sum + reduceByDefense(
+          Math.floor(afterMark * damageMultiplier),
+          entry.type
+        );
       }, 0);
       const totalReduced = Math.max(0, moveReduced + extrasReduced);
 
@@ -8983,7 +9029,12 @@
         ["計算対象", `${moveTitle} / ${moveResults.length > 1 ? "複数項目を合算" : jpMoveLabel(moveResults[0].part.label)}`],
         ...partRows,
         ["技本体合計", `${formatNumber(moveRaw, 0)}（倍率適用後・防御前）`],
-        ["追加効果", extras.length ? extras.map((entry) => `${entry.name}: ${formatNumber(Math.floor(entry.raw * damageMultiplier), 1)}`).join(" / ") : "0"],
+        ["追加効果", extras.length ? extras.map((entry) => {
+          const afterMark = yveltalDamageActive
+            ? applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
+            : entry.raw;
+          return `${entry.name}: ${formatNumber(Math.floor(afterMark * damageMultiplier), 1)}`;
+        }).join(" / ") : "0"],
         ["ダメージ倍率", `×${formatNumber(damageMultiplier, 3)}`],
         ["防御参照", defenseReferences.join(" / ")]
       ];
@@ -8997,7 +9048,10 @@
         detailRowIndex += 1;
       }
       if (yveltalDamageActive) {
-        rows.splice(detailRowIndex, 0, ["はかいカウンタ", `開始 ${formatNumber(initialYveltalMarks, 0)} / 5（1個につき与ダメージ+3%、強化攻撃・技の各ヒット後に付与）`]);
+        rows.splice(detailRowIndex, 0, [
+          "ダークオーラ",
+          `はかいカウンタ 開始 ${formatNumber(initialYveltalMarks, 0)} / ${YVELTAL_DARK_AURA.maxStacks}（1個につき被ダメージ+${YVELTAL_DARK_AURA.damagePerStackPercent}%、強化攻撃・わざ・ユナイトわざの各ヒット後に付与）`
+        ]);
         detailRowIndex += 1;
       }
       if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
@@ -9085,7 +9139,7 @@
           ["weaknessPolicyStacks", "conditionWeaknessPolicy", "じゃくてんほけん"],
           ["accelBracerStacks", "conditionAccelBracer", "アクセルリスト"],
           ["driveLensStacks", "conditionDriveLens", "ドライブレンズ"],
-          ["yveltalMarkStacks", "conditionYveltalMarks", "はかいカウンタ"],
+          ["yveltalMarkStacks", "conditionYveltalMarks", "ダークオーラ（はかいカウンタ）"],
           ["snorlaxFlailHpPercent", "conditionSnorlaxFlailHp", "自分の残りHP%"]
         ],
         [
