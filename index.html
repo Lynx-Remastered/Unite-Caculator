@@ -2846,64 +2846,6 @@
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h2>サポートメダル</h2>
-          </div>
-          <div class="panel-body stack">
-            <div class="button-row">
-              <button id="applyEmblemButton" type="button">推奨メダル</button>
-              <button id="clearEmblemButton" class="secondary" type="button">メダルなし</button>
-            </div>
-            <div class="medal-ring" aria-label="選択中のメダル">
-              <div id="emblemSlots" class="medal-ring-slots"></div>
-              <div class="medal-ring-center" aria-live="polite">
-                <strong id="emblemSlotCount">0 / 10</strong>
-                <span>選択中</span>
-              </div>
-            </div>
-            <section id="emblemEditor" class="medal-editor" aria-live="polite" hidden>
-              <div class="medal-editor-head">
-                <strong id="emblemEditorTitle">メダルを追加</strong>
-                <button id="emblemEditorDone" class="secondary" type="button">完了</button>
-              </div>
-              <div class="medal-editor-body">
-                <div class="medal-editor-preview" aria-hidden="true">
-                  <img id="emblemEditorIcon" alt="" width="64" height="64" hidden>
-                  <span id="emblemEditorPlaceholder">+</span>
-                  <span id="emblemEditorColors" class="emblem-color-icons"></span>
-                </div>
-                <div class="medal-editor-controls">
-                  <label>
-                    メダル検索
-                    <span class="medal-autocomplete">
-                      <input id="emblemEditorSpecies" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="emblemEditorSuggestions" autocomplete="off" spellcheck="false" placeholder="図鑑番号・名前で検索">
-                      <span id="emblemEditorSuggestions" class="emblem-suggestions" role="listbox" hidden></span>
-                    </span>
-                  </label>
-                  <div class="medal-editor-grade-row">
-                    <label>
-                      等級
-                      <select id="emblemEditorGrade"></select>
-                    </label>
-                    <button id="emblemEditorClear" class="medal-editor-clear" type="button" aria-label="このメダルを外す" title="このメダルを外す">×</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <div class="emblem-effects-board" aria-label="適用中のメダル効果">
-              <section class="emblem-effects-section" aria-labelledby="emblemStatsHeading">
-                <h3 id="emblemStatsHeading">現在の効果</h3>
-                <dl id="emblemStatEffects" class="emblem-stat-list"></dl>
-              </section>
-              <section class="emblem-effects-section" aria-labelledby="emblemColorsHeading">
-                <h3 id="emblemColorsHeading">カラー効果</h3>
-                <div id="emblemColorEffects" class="emblem-color-effects"></div>
-              </section>
-            </div>
-          </div>
-        </section>
-
         <section id="damageConditionPanel" class="panel">
           <div class="panel-head">
             <h2>条件付き効果</h2>
@@ -2979,6 +2921,64 @@
               <span>技本体を急所として計算</span>
               <input id="criticalHit" type="checkbox">
             </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>サポートメダル</h2>
+          </div>
+          <div class="panel-body stack">
+            <div class="button-row">
+              <button id="applyEmblemButton" type="button">推奨メダル</button>
+              <button id="clearEmblemButton" class="secondary" type="button">メダルなし</button>
+            </div>
+            <div class="medal-ring" aria-label="選択中のメダル">
+              <div id="emblemSlots" class="medal-ring-slots"></div>
+              <div class="medal-ring-center" aria-live="polite">
+                <strong id="emblemSlotCount">0 / 10</strong>
+                <span>選択中</span>
+              </div>
+            </div>
+            <section id="emblemEditor" class="medal-editor" aria-live="polite" hidden>
+              <div class="medal-editor-head">
+                <strong id="emblemEditorTitle">メダルを追加</strong>
+                <button id="emblemEditorDone" class="secondary" type="button">完了</button>
+              </div>
+              <div class="medal-editor-body">
+                <div class="medal-editor-preview" aria-hidden="true">
+                  <img id="emblemEditorIcon" alt="" width="64" height="64" hidden>
+                  <span id="emblemEditorPlaceholder">+</span>
+                  <span id="emblemEditorColors" class="emblem-color-icons"></span>
+                </div>
+                <div class="medal-editor-controls">
+                  <label>
+                    メダル検索
+                    <span class="medal-autocomplete">
+                      <input id="emblemEditorSpecies" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="emblemEditorSuggestions" autocomplete="off" spellcheck="false" placeholder="図鑑番号・名前で検索">
+                      <span id="emblemEditorSuggestions" class="emblem-suggestions" role="listbox" hidden></span>
+                    </span>
+                  </label>
+                  <div class="medal-editor-grade-row">
+                    <label>
+                      等級
+                      <select id="emblemEditorGrade"></select>
+                    </label>
+                    <button id="emblemEditorClear" class="medal-editor-clear" type="button" aria-label="このメダルを外す" title="このメダルを外す">×</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <div class="emblem-effects-board" aria-label="適用中のメダル効果">
+              <section class="emblem-effects-section" aria-labelledby="emblemStatsHeading">
+                <h3 id="emblemStatsHeading">現在の効果</h3>
+                <dl id="emblemStatEffects" class="emblem-stat-list"></dl>
+              </section>
+              <section class="emblem-effects-section" aria-labelledby="emblemColorsHeading">
+                <h3 id="emblemColorsHeading">カラー効果</h3>
+                <div id="emblemColorEffects" class="emblem-color-effects"></div>
+              </section>
+            </div>
           </div>
         </section>
 
@@ -8611,6 +8611,12 @@
       el.damageVariantSelect.value = currentKey;
     }
 
+    function updateDefaultCheckedCondition(container, checkbox, eligible) {
+      const becameEligible = eligible && container.hidden;
+      container.hidden = !eligible;
+      if (becameEligible) checkbox.checked = true;
+    }
+
     function updateConditionVisibility() {
       const names = selectedItemNames();
       const map = {
@@ -8619,15 +8625,31 @@
         conditionSpAtkSpecs: "Sp. Atk Specs",
         conditionWeaknessPolicy: "Weakness Policy",
         conditionAccelBracer: "Accel Bracer",
-        conditionDriveLens: "Drive Lens",
-        conditionChargingCharm: "Charging Charm",
-        conditionEnergyAmp: "Energy Amplifier"
+        conditionDriveLens: "Drive Lens"
       };
       Object.entries(map).forEach(([id, itemName]) => {
         document.getElementById(id).hidden = !names.has(itemName);
       });
-      el.conditionChoiceSpecs.hidden = !names.has("Choice Specs") || !choiceSpecsCanTrigger();
-      el.conditionRazorClaw.hidden = !names.has("Razor Claw") || !razorClawCanTrigger();
+      updateDefaultCheckedCondition(
+        el.conditionChoiceSpecs,
+        el.choiceSpecsProc,
+        names.has("Choice Specs") && choiceSpecsCanTrigger()
+      );
+      updateDefaultCheckedCondition(
+        el.conditionChargingCharm,
+        el.chargingCharmProc,
+        names.has("Charging Charm")
+      );
+      updateDefaultCheckedCondition(
+        el.conditionRazorClaw,
+        el.razorClawProc,
+        names.has("Razor Claw") && razorClawCanTrigger()
+      );
+      updateDefaultCheckedCondition(
+        el.conditionEnergyAmp,
+        el.energyAmpProc,
+        names.has("Energy Amplifier")
+      );
       const yveltalSelected = selectedPokemon()?.name === "Yveltal";
       el.conditionYveltalMarks.hidden = !yveltalSelected;
       if (yveltalSelected) {
