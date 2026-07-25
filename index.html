@@ -56,11 +56,14 @@
       --hover-bg: rgba(255, 255, 255, 0.08);
       --formula-bg: #2d211c;
       --formula-ink: rgba(255, 255, 255, 0.87);
+      --formula-stat-highlight: #ffad62;
       --chip-bg: rgba(255, 138, 61, 0.16);
       --chip-ink: rgba(255, 255, 255, 0.87);
       --warn-ink: #ffe082;
       --good-ink: #a5d6a7;
       --bad-ink: #ef9a9a;
+      --status-positive: #3cff7a;
+      --status-negative: #ff4164;
       --note-ink: rgba(255, 255, 255, 0.74);
       --danger-ink: #ef9a9a;
       --radius: 8px;
@@ -83,6 +86,7 @@
       --link: #8bd5fa;
       --input-bg: #101b21;
       --formula-bg: #1c2d37;
+      --formula-stat-highlight: #4fd9ff;
       --chip-bg: rgba(120, 201, 244, 0.16);
     }
 
@@ -102,6 +106,7 @@
       --link: #8add91;
       --input-bg: #101a13;
       --formula-bg: #1d3023;
+      --formula-stat-highlight: #57f283;
       --chip-bg: rgba(119, 215, 132, 0.16);
     }
 
@@ -130,11 +135,14 @@
       --hover-bg: #f9eadf;
       --formula-bg: #f0dfd3;
       --formula-ink: #2a1d17;
+      --formula-stat-highlight: #d94700;
       --chip-bg: #f2d7c4;
       --chip-ink: #402a1e;
       --warn-ink: #825400;
       --good-ink: #0f6b3e;
       --bad-ink: #a33225;
+      --status-positive: #00a83f;
+      --status-negative: #e0003b;
       --note-ink: #334454;
       --danger-ink: #a33225;
     }
@@ -159,6 +167,7 @@
       --hover-bg: #e5f1f7;
       --formula-bg: #dfeef5;
       --formula-ink: #172a34;
+      --formula-stat-highlight: #007ab8;
       --chip-bg: #d2e9f4;
       --chip-ink: #173b4d;
     }
@@ -183,6 +192,7 @@
       --hover-bg: #e4f1e6;
       --formula-bg: #dfeee2;
       --formula-ink: #192b1d;
+      --formula-stat-highlight: #008f42;
       --chip-bg: #d4ead8;
       --chip-ink: #204329;
     }
@@ -335,6 +345,15 @@
       grid-template-columns: minmax(320px, 460px) 1fr;
       gap: 12px;
       align-items: start;
+    }
+
+    .tab-panel > .manual-adjustment-panel {
+      margin-top: 12px;
+    }
+
+    .tab-panel.app-shell > .manual-adjustment-panel {
+      grid-column: 1 / -1;
+      margin-top: 0;
     }
 
     .calculator-navigation {
@@ -638,6 +657,42 @@
     .pokemon-picker {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
+    }
+
+    .pokemon-level-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 10px;
+      align-items: end;
+      min-width: 0;
+    }
+
+    .pokemon-level-row > *,
+    .pokemon-level-row .range-row,
+    .pokemon-level-row input[type="range"] {
+      min-width: 0;
+    }
+
+    .pokemon-level-row .range-row,
+    .pokemon-level-row .range-value {
+      min-height: 42px;
+    }
+
+    .target-pokemon-level-row {
+      grid-column: 1 / -1;
+    }
+
+    .target-defense-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-column: 1 / -1;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .ranking-pokemon-level-row {
+      grid-column: span 2;
     }
 
     .move-combobox {
@@ -651,12 +706,12 @@
 
     .move-choice {
       width: 100%;
-      min-height: 52px;
+      min-height: 38px;
       display: grid;
-      grid-template-columns: 40px minmax(0, 1fr);
-      gap: 8px;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 6px;
       align-items: center;
-      padding: 6px 8px;
+      padding: 4px 6px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--surface-3);
@@ -681,13 +736,13 @@
     }
 
     .move-choice img {
-      width: 36px;
-      height: 36px;
+      width: 28px;
+      height: 28px;
       object-fit: contain;
     }
 
     .move-combobox-trigger {
-      grid-template-columns: 40px minmax(0, 1fr) 18px;
+      grid-template-columns: 28px minmax(0, 1fr) 16px;
       cursor: pointer;
     }
 
@@ -709,10 +764,10 @@
       left: 0;
       right: 0;
       display: grid;
-      gap: 5px;
-      max-height: 320px;
+      gap: 3px;
+      max-height: 280px;
       overflow-y: auto;
-      padding: 6px;
+      padding: 4px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--surface-2);
@@ -728,38 +783,24 @@
     }
 
     .move-choice-text {
-      display: grid;
-      gap: 2px;
+      display: block;
       min-width: 0;
-    }
-
-    .move-choice-slot {
-      color: var(--accent-2);
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 1.2;
     }
 
     .move-choice-name {
       color: var(--ink);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
-      line-height: 1.25;
+      line-height: 1.2;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .move-choice-note {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.25;
-    }
-
     .item-row {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 112px;
+      grid-template-columns: minmax(0, 1fr) minmax(72px, 96px);
       gap: 8px;
       align-items: end;
       padding: 8px;
@@ -1033,6 +1074,91 @@
       font-size: 11px;
     }
 
+    .buff-pokemon-row {
+      position: relative;
+      cursor: help;
+    }
+
+    .buff-pokemon-label {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .buff-pokemon-icon {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+
+    .buff-pokemon-row::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      z-index: 80;
+      bottom: calc(100% + 7px);
+      left: 0;
+      width: min(360px, calc(100vw - 48px));
+      padding: 9px 10px;
+      border: 1px solid rgba(var(--accent-2-rgb), 0.52);
+      border-radius: 7px;
+      background: var(--surface-2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.55;
+      text-transform: none;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .buff-pokemon-row:hover::after,
+    .buff-pokemon-row:focus-within::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .regi-buff-group {
+      display: grid;
+      min-width: 0;
+      gap: 8px;
+      margin: 0;
+      padding: 8px 10px 10px;
+      border: 1px solid rgba(var(--accent-2-rgb), 0.48);
+      border-radius: 10px;
+      background: rgba(var(--accent-2-rgb), 0.06);
+    }
+
+    .regi-buff-group legend {
+      padding: 0 6px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .regi-buff-group-note {
+      display: inline-block;
+      margin-left: 7px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(var(--accent-2-rgb), 0.16);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .regi-buff-group .check-row:has(input:checked) {
+      border-color: var(--accent-2);
+      background: rgba(var(--accent-2-rgb), 0.12);
+      box-shadow: inset 3px 0 0 var(--accent-2);
+    }
+
     .defense-effect-controls {
       display: grid;
       grid-column: 1 / -1;
@@ -1079,13 +1205,14 @@
     }
 
     button {
-      min-height: 36px;
+      min-height: 26px;
       border: 1px solid var(--accent-border);
       border-radius: 6px;
       background: var(--accent);
       color: var(--accent-ink);
-      padding: 6px 10px;
+      padding: 4px 7px;
       font: inherit;
+      font-size: 11px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -1121,12 +1248,17 @@
     .damage-total {
       display: grid;
       gap: 10px;
+      align-content: start;
     }
 
     .target-total-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+    }
+
+    .target-total-grid.single-target {
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .target-total-grid .total-value {
@@ -1143,6 +1275,129 @@
     .total-box.primary {
       border-color: rgba(var(--accent-2-rgb), 0.48);
       background: rgba(var(--accent-2-rgb), 0.10);
+    }
+
+    .calculation-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .calculation-tip-button {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 12px;
+      min-height: 12px;
+      padding: 0;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 8px;
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+    }
+
+    .calculation-tip-button:hover,
+    .calculation-tip-button:focus-visible {
+      border-color: var(--accent-2);
+      background: transparent;
+      color: var(--accent-2);
+    }
+
+    .calculation-tip-button.showing-value {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .calculation-tip-button::after {
+      content: attr(data-tip);
+      position: absolute;
+      z-index: 10;
+      right: -5px;
+      bottom: calc(100% + 8px);
+      width: max-content;
+      max-width: min(240px, calc(100vw - 32px));
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface-1);
+      box-shadow: var(--shadow);
+      color: var(--ink);
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      font-style: normal;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(3px);
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+
+    .calculation-tip-button:hover::after,
+    .calculation-tip-button:focus-visible::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .calculation-card-formula {
+      display: block;
+      min-height: 48px;
+      margin-top: 8px;
+      color: var(--formula-ink);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      white-space: pre-line;
+    }
+
+    #rawDamageFormula,
+    #finalDamageFormula {
+      font-size: 11px;
+    }
+
+    #healingSelfFormula,
+    #healingAllyFormula {
+      font-size: 12px;
+    }
+
+    .calculation-formula-token {
+      font-weight: 900;
+    }
+
+    .calculation-formula-token.stat {
+      color: var(--formula-stat-highlight);
+      text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.18);
+    }
+
+    .calculation-formula-token.level {
+      color: var(--accent-2);
+    }
+
+    .calculation-formula-token.defense {
+      color: var(--formula-stat-highlight);
+      text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.18);
+    }
+
+    .calculation-formula-token.modifier,
+    .calculation-formula-token.extra {
+      color: var(--warn-ink);
+    }
+
+    .calculation-card-result {
+      min-height: 48px;
+    }
+
+    .calculation-card-result .total-value {
+      color: var(--accent);
     }
 
     .total-label {
@@ -1195,21 +1450,11 @@
       gap: 10px;
     }
 
-    .formula-line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-      min-height: 36px;
-      padding: 9px;
-      border-radius: 8px;
-      background: var(--formula-bg);
-      color: var(--formula-ink);
-    }
-
-    .formula-line code {
-      font-size: 13px;
-      white-space: normal;
+    .damage-result-content,
+    .result-section-body {
+      display: grid;
+      gap: 10px;
+      padding: 12px 14px 14px;
     }
 
     .chip {
@@ -1265,6 +1510,113 @@
 
     tr:last-child td {
       border-bottom: 0;
+    }
+
+    .status-adjustment-table {
+      table-layout: fixed;
+    }
+
+    .status-adjustment-table col:nth-child(1) {
+      width: 16%;
+    }
+
+    .status-adjustment-table col:nth-child(2) {
+      width: 30%;
+    }
+
+    .status-adjustment-table col:nth-child(3) {
+      width: 54%;
+    }
+
+    .status-value-table col:nth-child(2),
+    .status-value-table col:nth-child(3) {
+      width: 42%;
+    }
+
+    .status-adjustment-target {
+      color: var(--accent-2);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status-adjustment-target.opponent {
+      color: var(--bad-ink);
+    }
+
+    .status-adjustment-source {
+      font-weight: 800;
+    }
+
+    .status-adjustment-details {
+      display: grid;
+      gap: 3px;
+    }
+
+    .status-adjustment-detail {
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .status-adjustment-sign {
+      font-weight: 900;
+    }
+
+    .status-adjustment-sign.positive {
+      color: var(--status-positive);
+    }
+
+    .status-adjustment-sign.negative {
+      color: var(--status-negative);
+    }
+
+    .status-adjustment-suffix {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .status-adjustment-empty {
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .status-value-after {
+      font-weight: 900;
+    }
+
+    .status-value-after.increased {
+      color: var(--status-positive);
+    }
+
+    .status-value-after.decreased {
+      color: var(--status-negative);
+    }
+
+    .damage-adjustment-table {
+      table-layout: fixed;
+    }
+
+    .damage-adjustment-table col:first-child {
+      width: 30%;
+    }
+
+    .damage-adjustment-table col:last-child {
+      width: 70%;
+    }
+
+    .damage-adjustment-source {
+      font-weight: 800;
+    }
+
+    .damage-adjustment-formulas {
+      display: grid;
+      gap: 3px;
+    }
+
+    .damage-adjustment-formula {
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .ranking-controls {
@@ -1625,7 +1977,9 @@
     .medal-editor-controls {
       min-width: 0;
       display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(82px, 110px);
       gap: 5px;
+      align-items: end;
     }
 
     .medal-editor-controls label {
@@ -1737,7 +2091,7 @@
 
     .emblem-effects-board {
       display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       overflow: hidden;
       border: 1px solid rgba(var(--accent-2-rgb), 0.42);
       border-radius: 8px;
@@ -1784,60 +2138,48 @@
 
     .emblem-color-effects {
       display: grid;
-      gap: 6px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+      font-size: 12px;
     }
 
     .emblem-color-effect-row {
       --emblem-color: var(--accent-2);
-      display: grid;
-      grid-template-columns: 54px minmax(0, 1fr);
-      align-items: center;
-      gap: 6px;
-      min-height: 30px;
-      padding: 3px 5px;
-      border-left: 3px solid var(--emblem-color);
-      border-radius: 5px;
+      display: block;
+      min-height: 24px;
+      padding: 2px 4px;
+      border-left: 2px solid var(--emblem-color);
+      border-radius: 4px;
       background: var(--input-bg);
     }
 
     .emblem-color-current {
-      display: flex;
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
       align-items: center;
-      gap: 5px;
+      gap: 6px;
+      min-width: 0;
     }
 
     .emblem-color-current img {
-      width: 22px;
-      height: 22px;
+      width: 16px;
+      height: 16px;
       object-fit: contain;
     }
 
-    .emblem-color-current strong {
-      font-size: 14px;
-    }
-
-    .emblem-color-thresholds {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(22px, 1fr));
-      gap: 4px;
-    }
-
-    .emblem-color-threshold {
-      display: grid;
-      place-items: center;
-      min-width: 22px;
-      height: 22px;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      color: var(--muted);
-      font-size: 10px;
+    .emblem-color-effect-value {
+      min-width: 0;
+      font-size: 12px;
       font-weight: 900;
+      overflow-wrap: anywhere;
     }
 
-    .emblem-color-threshold.active {
-      border-color: var(--emblem-color);
-      background: color-mix(in srgb, var(--emblem-color) 24%, transparent);
-      color: var(--ink);
+    .emblem-color-effect-value.positive {
+      color: var(--status-positive);
+    }
+
+    .emblem-color-effect-value.negative {
+      color: var(--status-negative);
     }
 
     .emblem-effect-empty {
@@ -2087,13 +2429,6 @@
       line-height: 1.5;
     }
 
-    .footer-note {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
     .feedback-trigger {
       flex: 0 0 auto;
       min-height: 34px;
@@ -2286,14 +2621,16 @@
       .grid-2,
       .stats-grid,
       .target-total-grid,
-      .item-row,
-      .pokemon-picker,
       .condition-row,
       .button-row,
       .ranking-controls,
       .feedback-grid,
       .feedback-actions {
         grid-template-columns: 1fr;
+      }
+
+      .ranking-pokemon-level-row {
+        grid-column: 1 / -1;
       }
 
       .calculator-toolbar {
@@ -2348,12 +2685,7 @@
       }
 
       .emblem-effects-board {
-        grid-template-columns: 1fr;
-      }
-
-      .emblem-effects-section + .emblem-effects-section {
-        border-top: 1px solid var(--line);
-        border-left: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .check-row {
@@ -2424,20 +2756,22 @@
             <h2>攻撃側</h2>
           </div>
           <div class="panel-body stack">
-            <div class="pokemon-picker">
+            <div class="pokemon-level-row">
+              <div class="pokemon-picker">
+                <label>
+                  ポケモン
+                  <select id="pokemonSelect"></select>
+                </label>
+              </div>
+
               <label>
-                ポケモン
-                <select id="pokemonSelect"></select>
+                レベル
+                <div class="range-row">
+                  <input id="levelRange" type="range" min="1" max="15" value="15">
+                  <span id="levelValue" class="range-value">15</span>
+                </div>
               </label>
             </div>
-
-            <label>
-              レベル
-              <div class="range-row">
-                <input id="levelRange" type="range" min="1" max="15" value="15">
-                <span id="levelValue" class="range-value">15</span>
-              </div>
-            </label>
 
             <div>
               <label>技</label>
@@ -2498,7 +2832,6 @@
               <button id="applyEmblemButton" type="button">推奨メダル</button>
               <button id="clearEmblemButton" class="secondary" type="button">メダルなし</button>
             </div>
-            <div id="emblemBuildName" class="effect-note">メダルなし</div>
             <div class="medal-ring" aria-label="選択中のメダル">
               <div id="emblemSlots" class="medal-ring-slots"></div>
               <div class="medal-ring-center" aria-live="polite">
@@ -2548,7 +2881,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section id="damageConditionPanel" class="panel">
           <div class="panel-head">
             <h2>条件付き効果</h2>
           </div>
@@ -2628,97 +2961,86 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>特殊ポケモン撃破バフ</h2>
+            <h2>バフ効果</h2>
           </div>
           <div class="panel-body stack">
-            <label>
-              レジ系バフ
-              <select id="regiBuffSelect">
-                <option value="none">なし</option>
-                <option value="regirock">レジロック</option>
-                <option value="regice">レジアイス</option>
-                <option value="registeel">レジスチル</option>
-              </select>
-            </label>
+            <fieldset class="regi-buff-group" role="radiogroup" aria-labelledby="regiBuffLegend">
+              <legend id="regiBuffLegend">
+                レジ系バフ
+                <span class="regi-buff-group-note">いずれか1つ</span>
+              </legend>
+              <div class="condition-grid">
+                <label class="check-row">
+                  <span>なし</span>
+                  <input id="regiBuffNone" name="regiBuff" type="radio" value="none" checked>
+                </label>
+                <label
+                  class="check-row buff-pokemon-row"
+                  data-tooltip="撃破すると味方全員が経験値と30秒間のシールドを獲得。さらに90秒間、防御が30%、特防が25%上昇します。"
+                >
+                  <span class="buff-pokemon-label">
+                    <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/377.png" alt="" loading="lazy">
+                    レジロック（防御+30%・特防+25%）
+                  </span>
+                  <input id="regiBuffRegirock" name="regiBuff" type="radio" value="regirock">
+                </label>
+                <label
+                  class="check-row buff-pokemon-row"
+                  data-tooltip="撃破すると味方全員が経験値と30秒間のシールドを獲得。さらに90秒間、3秒ごとに最大HPの5%を回復します。"
+                >
+                  <span class="buff-pokemon-label">
+                    <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/378.png" alt="" loading="lazy">
+                    レジアイス（3秒ごとに最大HPの5%回復）
+                  </span>
+                  <input id="regiBuffRegice" name="regiBuff" type="radio" value="regice">
+                </label>
+                <label
+                  class="check-row buff-pokemon-row"
+                  data-tooltip="撃破すると味方全員が経験値と30秒間のシールドを獲得。さらに90秒間、攻撃と特攻が15%上昇します。"
+                >
+                  <span class="buff-pokemon-label">
+                    <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/379.png" alt="" loading="lazy">
+                    レジスチル（攻撃+15%・特攻+15%）
+                  </span>
+                  <input id="regiBuffRegisteel" name="regiBuff" type="radio" value="registeel">
+                </label>
+              </div>
+            </fieldset>
             <div class="condition-grid">
-              <label class="check-row">
-                <span>レジドラゴ</span>
+              <label
+                class="check-row buff-pokemon-row"
+                data-tooltip="撃破したポケモンは60秒間、ゴール速度が100%上昇します。味方全員は経験値を獲得します。グラードンのバフを獲得すると、この効果は解除されます。"
+              >
+                <span class="buff-pokemon-label">
+                  <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/895.png" alt="" loading="lazy">
+                  レジドラゴ（ゴール速度+100%）
+                </span>
                 <input id="regidragoBuff" type="checkbox">
               </label>
-              <label class="check-row">
-                <span>グラードン</span>
+              <label
+                class="check-row buff-pokemon-row"
+                data-tooltip="撃破すると味方全員がシールド（最大HPの30%+1000）、ゴール速度+300%、与ダメージ+50%を獲得します。シールドとバフは時間経過では解除されず、バフ所持中にKOされるとKOした相手へ効果が移ります（シールドは移りません）。"
+              >
+                <span class="buff-pokemon-label">
+                  <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/383.png" alt="" loading="lazy">
+                  グラードン（与ダメージ+50%）
+                </span>
                 <input id="groudonBuff" type="checkbox">
               </label>
-              <label class="check-row">
-                <span>レックウザ</span>
+              <label
+                class="check-row buff-pokemon-row"
+                data-tooltip="撃破すると味方全員がシールド（最大HPの30%+3000）、ゴール速度+300%、与ダメージ+40%、ゴール中の妨害無効を獲得します。与ダメージ上昇はシールドが残っている間だけ有効です。"
+              >
+                <span class="buff-pokemon-label">
+                  <img class="buff-pokemon-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/384.png" alt="" loading="lazy">
+                  レックウザ（シールド中は与ダメージ+40%）
+                </span>
                 <input id="rayquazaBuff" type="checkbox">
               </label>
             </div>
-            <div id="specialPokemonBuffNote" class="effect-note">撃破バフなし</div>
           </div>
         </section>
 
-        <details class="panel collapsible-panel">
-          <summary class="panel-head">
-            <h2>手動補正</h2>
-          </summary>
-          <div class="panel-body stack">
-            <div class="grid-2">
-              <label>
-                攻撃 +/-
-                <input id="manualAttack" type="number" value="0" step="0.1">
-              </label>
-              <label>
-                最大HP +/-
-                <input id="manualHp" type="number" value="0" step="1">
-              </label>
-              <label>
-                特攻 +/-
-                <input id="manualSpAttack" type="number" value="0" step="0.1">
-              </label>
-              <label>
-                ダメージ +%
-                <input id="manualDamagePercent" type="number" value="0" step="0.1">
-              </label>
-              <label>
-                固定ダメージ +/-
-                <input id="manualExtraDamage" type="number" value="0" step="1">
-              </label>
-              <label>
-                防御低下 %
-                <input id="manualDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
-              </label>
-              <label>
-                特防低下 %
-                <input id="manualSpDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
-              </label>
-              <label>
-                防御固定低下
-                <input id="manualDefenseReductionFlat" type="number" value="0" min="0" step="1">
-              </label>
-              <label>
-                特防固定低下
-                <input id="manualSpDefenseReductionFlat" type="number" value="0" min="0" step="1">
-              </label>
-              <label>
-                防御無視 %
-                <input id="manualDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
-              </label>
-              <label>
-                特防無視 %
-                <input id="manualSpDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
-              </label>
-              <label>
-                防御固定貫通
-                <input id="manualDefensePenetrationFlat" type="number" value="0" min="0" step="1">
-              </label>
-              <label>
-                特防固定貫通
-                <input id="manualSpDefensePenetrationFlat" type="number" value="0" min="0" step="1">
-              </label>
-            </div>
-          </div>
-        </details>
       </div>
 
       <div class="stack">
@@ -2728,27 +3050,31 @@
           </div>
           <div class="panel-body stack">
             <div class="grid-2">
-              <div class="pokemon-picker">
+              <div class="pokemon-level-row target-pokemon-level-row">
+                <div class="pokemon-picker">
+                  <label>
+                    相手ポケモン
+                    <select id="targetSelect"></select>
+                  </label>
+                </div>
                 <label>
-                  相手ポケモン
-                  <select id="targetSelect"></select>
+                  相手レベル
+                  <div class="range-row">
+                    <input id="targetLevelRange" type="range" min="1" max="15" value="15">
+                    <span id="targetLevelValue" class="range-value">15</span>
+                  </div>
                 </label>
               </div>
-              <label>
-                相手レベル
-                <div class="range-row">
-                  <input id="targetLevelRange" type="range" min="1" max="15" value="15">
-                  <span id="targetLevelValue" class="range-value">15</span>
-                </div>
-              </label>
-              <label>
-                防御
-                <input id="targetDefense" type="number" min="-599" value="0" step="1">
-              </label>
-              <label>
-                特防
-                <input id="targetSpDefense" type="number" min="-599" value="0" step="1">
-              </label>
+              <div class="target-defense-row">
+                <label>
+                  防御
+                  <input id="targetDefense" type="number" min="-599" value="0" step="1">
+                </label>
+                <label>
+                  特防
+                  <input id="targetSpDefense" type="number" min="-599" value="0" step="1">
+                </label>
+              </div>
             </div>
           </div>
         </section>
@@ -2757,61 +3083,155 @@
           <div class="result-head">
             <h2>計算結果</h2>
           </div>
-          <div class="result-layout">
-            <div class="damage-total">
+          <div class="damage-result-content">
+            <div class="target-total-grid">
               <div class="total-box primary">
-                <span class="total-label">基礎ダメージ</span>
-                <strong id="rawDamage" class="total-value">0</strong>
-                <span id="rawDamageSub" class="total-sub">技本体 + 選択中の追加効果</span>
+                <div class="calculation-card-head">
+                  <span class="total-label">基礎ダメージ</span>
+                  <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="rawDamage" data-tip="計算プロセスを表示" aria-label="基礎ダメージの計算プロセスを表示" aria-pressed="true">i</button>
+                </div>
+                <code id="rawDamageFormula" class="calculation-card-formula" hidden>-</code>
+                <div id="rawDamageResult" class="calculation-card-result">
+                  <strong id="rawDamage" class="total-value">0</strong>
+                </div>
               </div>
               <div class="total-box">
-                <span class="total-label">防御込み推定</span>
-                <strong id="finalDamage" class="total-value">0</strong>
-                <span id="finalDamageSub" class="total-sub">相手未選択時は基礎ダメージと同じ</span>
-              </div>
-              <div class="stats-grid">
-                <div class="stat-tile">
-                  <span class="total-label">攻撃</span>
-                  <strong id="attackStat">0</strong>
+                <div class="calculation-card-head">
+                  <span class="total-label">防御込み推定</span>
+                  <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="finalDamage" data-tip="計算プロセスを表示" aria-label="防御込み推定の計算プロセスを表示" aria-pressed="true">i</button>
                 </div>
-                <div class="stat-tile">
-                  <span class="total-label">特攻</span>
-                  <strong id="spAttackStat">0</strong>
-                </div>
-                <div class="stat-tile">
-                  <span class="total-label">急所率</span>
-                  <strong id="critRateStat">0%</strong>
-                </div>
-                <div class="stat-tile">
-                  <span class="total-label">急所ダメージ</span>
-                  <strong id="critDamageStat">200%</strong>
+                <code id="finalDamageFormula" class="calculation-card-formula" hidden>-</code>
+                <div id="finalDamageResult" class="calculation-card-result">
+                  <strong id="finalDamage" class="total-value">0</strong>
                 </div>
               </div>
             </div>
-
-            <div class="details">
-              <div id="learnChipRow"></div>
-              <div class="formula-line">
-                <code id="formulaText">-</code>
-              </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>項目</th>
-                    <th>値</th>
-                  </tr>
-                </thead>
-                <tbody id="breakdownBody"></tbody>
-              </table>
-              <div id="itemEffects" class="item-effects"></div>
-            </div>
+            <div id="learnChipRow"></div>
           </div>
         </section>
 
-        <p class="footer-note">
-          ポケモン、能力値、技のRSB、持ち物、サポートメダルのデータは同梱JSONから読み込みます。条件付きの効果は、チェックを入れた場合または回数を入力した場合だけ反映します。
-        </p>
+        <section class="panel result-panel">
+          <div class="result-head">
+            <h2>ステータス補正</h2>
+          </div>
+          <div class="result-section-body">
+            <table class="status-adjustment-table">
+              <colgroup>
+                <col>
+                <col>
+                <col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>対象値</th>
+                  <th>内容</th>
+                  <th>詳細</th>
+                </tr>
+              </thead>
+              <tbody id="damageStatusBody"></tbody>
+            </table>
+            <table class="status-adjustment-table status-value-table" aria-label="ステータス補正の適用前後">
+              <colgroup>
+                <col>
+                <col>
+                <col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>対象値</th>
+                  <th>補正前</th>
+                  <th>補正後</th>
+                </tr>
+              </thead>
+              <tbody id="damageStatusValueBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel result-panel">
+          <div class="result-head">
+            <h2>ダメージ補正</h2>
+          </div>
+          <div class="result-section-body">
+            <table class="damage-adjustment-table">
+              <colgroup>
+                <col>
+                <col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>項目</th>
+                  <th>詳細</th>
+                </tr>
+              </thead>
+              <tbody id="damageAdjustmentBody"></tbody>
+            </table>
+          </div>
+        </section>
+
       </div>
+
+      <details class="panel collapsible-panel manual-adjustment-panel">
+        <summary class="panel-head">
+          <h2>手動補正</h2>
+        </summary>
+        <div class="panel-body stack">
+          <div class="grid-2">
+            <label>
+              攻撃 +/-
+              <input id="manualAttack" type="number" value="0" step="0.1">
+            </label>
+            <label>
+              最大HP +/-
+              <input id="manualHp" type="number" value="0" step="1">
+            </label>
+            <label>
+              特攻 +/-
+              <input id="manualSpAttack" type="number" value="0" step="0.1">
+            </label>
+            <label>
+              ダメージ +%
+              <input id="manualDamagePercent" type="number" value="0" step="0.1">
+            </label>
+            <label>
+              固定ダメージ +/-
+              <input id="manualExtraDamage" type="number" value="0" step="1">
+            </label>
+            <label>
+              防御低下 %
+              <input id="manualDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
+            </label>
+            <label>
+              特防低下 %
+              <input id="manualSpDefenseReductionPercent" type="number" value="0" min="0" max="100" step="1">
+            </label>
+            <label>
+              防御固定低下
+              <input id="manualDefenseReductionFlat" type="number" value="0" min="0" step="1">
+            </label>
+            <label>
+              特防固定低下
+              <input id="manualSpDefenseReductionFlat" type="number" value="0" min="0" step="1">
+            </label>
+            <label>
+              防御無視 %
+              <input id="manualDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
+            </label>
+            <label>
+              特防無視 %
+              <input id="manualSpDefenseIgnorePercent" type="number" value="0" min="0" max="100" step="1">
+            </label>
+            <label>
+              防御固定貫通
+              <input id="manualDefensePenetrationFlat" type="number" value="0" min="0" step="1">
+            </label>
+            <label>
+              特防固定貫通
+              <input id="manualSpDefensePenetrationFlat" type="number" value="0" min="0" step="1">
+            </label>
+          </div>
+        </div>
+      </details>
       </section>
 
       <section id="rankingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
@@ -2829,17 +3249,19 @@
                     <span id="rankingLevelValue" class="range-value">15</span>
                   </div>
                 </label>
-                <label>
-                  相手ポケモン
-                  <select id="rankingTargetSelect"></select>
-                </label>
-                <label>
-                  相手レベル
-                  <div class="range-row">
-                    <input id="rankingTargetLevelRange" type="range" min="1" max="15" value="15">
-                    <span id="rankingTargetLevelValue" class="range-value">15</span>
-                  </div>
-                </label>
+                <div class="pokemon-level-row ranking-pokemon-level-row">
+                  <label>
+                    相手ポケモン
+                    <select id="rankingTargetSelect"></select>
+                  </label>
+                  <label>
+                    相手レベル
+                    <div class="range-row">
+                      <input id="rankingTargetLevelRange" type="range" min="1" max="15" value="15">
+                      <span id="rankingTargetLevelValue" class="range-value">15</span>
+                    </div>
+                  </label>
+                </div>
                 <label>
                   技カテゴリ
                   <select id="rankingSlotFilter">
@@ -2911,20 +3333,22 @@
                 <h2>シールド側</h2>
               </div>
               <div class="panel-body stack">
-                <div class="pokemon-picker">
+                <div class="pokemon-level-row">
+                  <div class="pokemon-picker">
+                    <label>
+                      ポケモン
+                      <select id="shieldPokemonSelect"></select>
+                    </label>
+                  </div>
+
                   <label>
-                    ポケモン
-                    <select id="shieldPokemonSelect"></select>
+                    レベル
+                    <div class="range-row">
+                      <input id="shieldLevelRange" type="range" min="1" max="15" value="15">
+                      <span id="shieldLevelValue" class="range-value">15</span>
+                    </div>
                   </label>
                 </div>
-
-                <label>
-                  レベル
-                  <div class="range-row">
-                    <input id="shieldLevelRange" type="range" min="1" max="15" value="15">
-                    <span id="shieldLevelValue" class="range-value">15</span>
-                  </div>
-                </label>
 
                 <div>
                   <label>シールド技</label>
@@ -2976,7 +3400,7 @@
               </div>
             </section>
 
-            <section class="panel">
+            <section id="shieldConditionPanel" class="panel">
               <div class="panel-head">
                 <h2>条件付き効果</h2>
               </div>
@@ -3004,39 +3428,6 @@
               </div>
             </section>
 
-            <details class="panel collapsible-panel">
-              <summary class="panel-head">
-                <h2>手動補正</h2>
-              </summary>
-              <div class="panel-body stack">
-                <div class="grid-2">
-                  <label>
-                    攻撃 +/-
-                    <input id="shieldManualAttack" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    特攻 +/-
-                    <input id="shieldManualSpAttack" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    最大HP +/-
-                    <input id="shieldManualHp" type="number" value="0" step="1">
-                  </label>
-                  <label>
-                    シールド +%
-                    <input id="manualShieldPercent" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    固定シールド +/-
-                    <input id="manualShieldFlat" type="number" value="0" step="1">
-                  </label>
-                  <label>
-                    <span id="shieldCountLabel">回数/対象数</span>
-                    <input id="shieldCount" type="number" min="1" max="20" value="1" step="1">
-                  </label>
-                </div>
-              </div>
-            </details>
           </div>
 
           <div class="stack">
@@ -3044,56 +3435,99 @@
               <div class="result-head">
                 <h2>シールド結果</h2>
               </div>
-              <div class="result-layout">
-                <div class="damage-total">
-                  <div class="target-total-grid">
-                    <div class="total-box primary">
+              <div class="damage-result-content">
+                <div id="shieldTargetTotalGrid" class="target-total-grid">
+                  <div id="shieldSelfResultCard" class="total-box primary">
+                    <div class="calculation-card-head">
                       <span class="total-label">自分へのシールド</span>
+                      <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="shieldSelf" data-tip="計算プロセスを表示" aria-label="自分へのシールドの計算プロセスを表示" aria-pressed="true">i</button>
+                    </div>
+                    <code id="shieldSelfFormula" class="calculation-card-formula" hidden>-</code>
+                    <div id="shieldSelfResult" class="calculation-card-result">
                       <strong id="shieldSelfAmount" class="total-value">0</strong>
-                      <span id="shieldSelfAmountSub" class="total-sub">選択中のシールド式</span>
                     </div>
-                    <div class="total-box primary">
+                  </div>
+                  <div id="shieldAllyResultCard" class="total-box primary">
+                    <div class="calculation-card-head">
                       <span class="total-label">味方へのシールド</span>
+                      <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="shieldAlly" data-tip="計算プロセスを表示" aria-label="味方へのシールドの計算プロセスを表示" aria-pressed="true">i</button>
+                    </div>
+                    <code id="shieldAllyFormula" class="calculation-card-formula" hidden>-</code>
+                    <div id="shieldAllyResult" class="calculation-card-result">
                       <strong id="shieldAllyAmount" class="total-value">0</strong>
-                      <span id="shieldAllyAmountSub" class="total-sub">選択中のシールド式</span>
-                    </div>
-                  </div>
-                  <div class="stats-grid">
-                    <div class="stat-tile">
-                      <span class="total-label">攻撃</span>
-                      <strong id="shieldAttackStat">0</strong>
-                    </div>
-                    <div class="stat-tile">
-                      <span class="total-label">特攻</span>
-                      <strong id="shieldSpAttackStat">0</strong>
-                    </div>
-                    <div class="stat-tile">
-                      <span class="total-label">最大HP</span>
-                      <strong id="shieldHpStat">0</strong>
                     </div>
                   </div>
                 </div>
+                <div id="shieldLearnChipRow"></div>
+              </div>
+            </section>
 
-                <div class="details">
-                  <div id="shieldLearnChipRow"></div>
-                  <div class="formula-line">
-                    <code id="shieldFormulaText">-</code>
-                  </div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>項目</th>
-                        <th>値</th>
-                      </tr>
-                    </thead>
-                    <tbody id="shieldBreakdownBody"></tbody>
-                  </table>
-                  <div id="shieldItemEffects" class="item-effects"></div>
-                </div>
+            <section class="panel result-panel">
+              <div class="result-head">
+                <h2>ステータス補正</h2>
+              </div>
+              <div class="result-section-body">
+                <table class="status-adjustment-table">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>内容</th><th>詳細</th></tr></thead>
+                  <tbody id="shieldStatusBody"></tbody>
+                </table>
+                <table class="status-adjustment-table status-value-table" aria-label="シールド計算のステータス補正前後">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正前</th><th>補正後</th></tr></thead>
+                  <tbody id="shieldStatusValueBody"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel result-panel">
+              <div class="result-head">
+                <h2>シールド補正</h2>
+              </div>
+              <div class="result-section-body">
+                <table class="damage-adjustment-table">
+                  <colgroup><col><col></colgroup>
+                  <thead><tr><th>項目</th><th>詳細</th></tr></thead>
+                  <tbody id="shieldAdjustmentBody"></tbody>
+                </table>
               </div>
             </section>
           </div>
         </div>
+
+        <details class="panel collapsible-panel manual-adjustment-panel">
+          <summary class="panel-head">
+            <h2>手動補正</h2>
+          </summary>
+          <div class="panel-body stack">
+            <div class="grid-2">
+              <label>
+                攻撃 +/-
+                <input id="shieldManualAttack" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                特攻 +/-
+                <input id="shieldManualSpAttack" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                最大HP +/-
+                <input id="shieldManualHp" type="number" value="0" step="1">
+              </label>
+              <label>
+                シールド +%
+                <input id="manualShieldPercent" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                固定シールド +/-
+                <input id="manualShieldFlat" type="number" value="0" step="1">
+              </label>
+              <label>
+                <span id="shieldCountLabel">回数/対象数</span>
+                <input id="shieldCount" type="number" min="1" max="20" value="1" step="1">
+              </label>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section id="healingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
@@ -3104,20 +3538,22 @@
                 <h2>回復側</h2>
               </div>
               <div class="panel-body stack">
-                <div class="pokemon-picker">
+                <div class="pokemon-level-row">
+                  <div class="pokemon-picker">
+                    <label>
+                      ポケモン
+                      <select id="healingPokemonSelect"></select>
+                    </label>
+                  </div>
+
                   <label>
-                    ポケモン
-                    <select id="healingPokemonSelect"></select>
+                    レベル
+                    <div class="range-row">
+                      <input id="healingLevelRange" type="range" min="1" max="15" value="15">
+                      <span id="healingLevelValue" class="range-value">15</span>
+                    </div>
                   </label>
                 </div>
-
-                <label>
-                  レベル
-                  <div class="range-row">
-                    <input id="healingLevelRange" type="range" min="1" max="15" value="15">
-                    <span id="healingLevelValue" class="range-value">15</span>
-                  </div>
-                </label>
 
                 <div>
                   <label>回復技</label>
@@ -3174,7 +3610,7 @@
               </div>
             </section>
 
-            <section class="panel">
+            <section id="healingConditionPanel" class="panel">
               <div class="panel-head">
                 <h2>条件付き効果</h2>
               </div>
@@ -3202,35 +3638,6 @@
               </div>
             </section>
 
-            <details class="panel collapsible-panel">
-              <summary class="panel-head">
-                <h2>手動補正</h2>
-              </summary>
-              <div class="panel-body stack">
-                <div class="grid-2">
-                  <label>
-                    攻撃 +/-
-                    <input id="healingManualAttack" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    特攻 +/-
-                    <input id="healingManualSpAttack" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    回復量 +%
-                    <input id="manualHealingPercent" type="number" value="0" step="0.1">
-                  </label>
-                  <label>
-                    固定回復量 +/-
-                    <input id="manualHealingFlat" type="number" value="0" step="1">
-                  </label>
-                  <label>
-                    回数/対象数
-                    <input id="healingCount" type="number" min="1" max="48" value="1" step="1">
-                  </label>
-                </div>
-              </div>
-            </details>
           </div>
 
           <div class="stack">
@@ -3238,52 +3645,95 @@
               <div class="result-head">
                 <h2>回復結果</h2>
               </div>
-              <div class="result-layout">
-                <div class="damage-total">
-                  <div class="target-total-grid">
-                    <div class="total-box primary">
+              <div class="damage-result-content">
+                <div class="target-total-grid">
+                  <div class="total-box primary">
+                    <div class="calculation-card-head">
                       <span class="total-label">自分への回復</span>
+                      <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="healingSelf" data-tip="計算プロセスを表示" aria-label="自分への回復の計算プロセスを表示" aria-pressed="true">i</button>
+                    </div>
+                    <code id="healingSelfFormula" class="calculation-card-formula" hidden>-</code>
+                    <div id="healingSelfResult" class="calculation-card-result">
                       <strong id="healingSelfAmount" class="total-value">0</strong>
-                      <span id="healingSelfAmountSub" class="total-sub">選択中の回復式</span>
                     </div>
-                    <div class="total-box primary">
+                  </div>
+                  <div class="total-box primary">
+                    <div class="calculation-card-head">
                       <span class="total-label">味方への回復</span>
+                      <button class="calculation-tip-button showing-value" type="button" data-calculation-tip="healingAlly" data-tip="計算プロセスを表示" aria-label="味方への回復の計算プロセスを表示" aria-pressed="true">i</button>
+                    </div>
+                    <code id="healingAllyFormula" class="calculation-card-formula" hidden>-</code>
+                    <div id="healingAllyResult" class="calculation-card-result">
                       <strong id="healingAllyAmount" class="total-value">0</strong>
-                      <span id="healingAllyAmountSub" class="total-sub">選択中の回復式</span>
-                    </div>
-                  </div>
-                  <div class="stats-grid">
-                    <div class="stat-tile">
-                      <span class="total-label">攻撃</span>
-                      <strong id="healingAttackStat">0</strong>
-                    </div>
-                    <div class="stat-tile">
-                      <span class="total-label">特攻</span>
-                      <strong id="healingSpAttackStat">0</strong>
                     </div>
                   </div>
                 </div>
+                <div id="healingLearnChipRow"></div>
+              </div>
+            </section>
 
-                <div class="details">
-                  <div id="healingLearnChipRow"></div>
-                  <div class="formula-line">
-                    <code id="healingFormulaText">-</code>
-                  </div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>項目</th>
-                        <th>値</th>
-                      </tr>
-                    </thead>
-                    <tbody id="healingBreakdownBody"></tbody>
-                  </table>
-                  <div id="healingItemEffects" class="item-effects"></div>
-                </div>
+            <section class="panel result-panel">
+              <div class="result-head">
+                <h2>ステータス補正</h2>
+              </div>
+              <div class="result-section-body">
+                <table class="status-adjustment-table">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>内容</th><th>詳細</th></tr></thead>
+                  <tbody id="healingStatusBody"></tbody>
+                </table>
+                <table class="status-adjustment-table status-value-table" aria-label="回復計算のステータス補正前後">
+                  <colgroup><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正前</th><th>補正後</th></tr></thead>
+                  <tbody id="healingStatusValueBody"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel result-panel">
+              <div class="result-head">
+                <h2>回復補正</h2>
+              </div>
+              <div class="result-section-body">
+                <table class="damage-adjustment-table">
+                  <colgroup><col><col></colgroup>
+                  <thead><tr><th>項目</th><th>詳細</th></tr></thead>
+                  <tbody id="healingAdjustmentBody"></tbody>
+                </table>
               </div>
             </section>
           </div>
         </div>
+
+        <details class="panel collapsible-panel manual-adjustment-panel">
+          <summary class="panel-head">
+            <h2>手動補正</h2>
+          </summary>
+          <div class="panel-body stack">
+            <div class="grid-2">
+              <label>
+                攻撃 +/-
+                <input id="healingManualAttack" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                特攻 +/-
+                <input id="healingManualSpAttack" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                回復量 +%
+                <input id="manualHealingPercent" type="number" value="0" step="0.1">
+              </label>
+              <label>
+                固定回復量 +/-
+                <input id="manualHealingFlat" type="number" value="0" step="1">
+              </label>
+              <label>
+                回数/対象数
+                <input id="healingCount" type="number" min="1" max="48" value="1" step="1">
+              </label>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section id="balancePanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
@@ -3817,8 +4267,8 @@
 
     const REGI_BUFFS = {
       none: { name: "", attackPercent: 0, spAttackPercent: 0, description: "" },
-      regirock: { name: "レジロック", attackPercent: 0, spAttackPercent: 0, description: "与ダメージ変化なし" },
-      regice: { name: "レジアイス", attackPercent: 0, spAttackPercent: 0, description: "与ダメージ変化なし" },
+      regirock: { name: "レジロック", attackPercent: 0, spAttackPercent: 0, description: "防御+30%・特防+25%" },
+      regice: { name: "レジアイス", attackPercent: 0, spAttackPercent: 0, description: "3秒ごとに最大HPの5%回復" },
       registeel: { name: "レジスチル", attackPercent: 15, spAttackPercent: 15, description: "攻撃+15%・特攻+15%" }
     };
 
@@ -3965,7 +4415,15 @@
       activeTab: "damage",
       selectedBalanceFilterKeys: [],
       defenseEffectValues: {},
-      suppressTargetAutoFill: false
+      suppressTargetAutoFill: false,
+      calculationValueVisibility: {
+        rawDamage: true,
+        finalDamage: true,
+        shieldSelf: true,
+        shieldAlly: true,
+        healingSelf: true,
+        healingAlly: true
+      }
     };
 
     const el = {};
@@ -4499,24 +4957,24 @@
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
         "targetLevelRange", "targetLevelValue", "targetDefense", "targetSpDefense",
-        "rawDamage", "rawDamageSub", "finalDamage", "finalDamageSub", "attackStat",
-        "spAttackStat", "critRateStat", "critDamageStat", "formulaText",
-        "breakdownBody", "itemEffects", "learnChipRow", "manualAttack", "manualHp",
+        "rawDamage", "rawDamageFormula", "rawDamageResult",
+        "finalDamage", "finalDamageFormula", "finalDamageResult",
+        "damageStatusBody", "damageStatusValueBody", "damageAdjustmentBody", "learnChipRow", "manualAttack", "manualHp",
         "manualSpAttack", "manualDamagePercent", "manualExtraDamage", "criticalHit",
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "defenseEffectControls", "defenseEffectList", "defenseEffectNote",
         "conditionYveltalMarks", "yveltalMarkStacks", "yveltalDarkAuraNote", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
         "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
-        "conditionDamageVariant", "damageVariantSelect",
+        "conditionDamageVariant", "damageVariantSelect", "damageConditionPanel",
         "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
-        "applyEmblemButton", "clearEmblemButton", "emblemBuildName", "emblemSlots", "emblemSlotCount",
+        "applyEmblemButton", "clearEmblemButton", "emblemSlots", "emblemSlotCount",
         "emblemEditor", "emblemEditorTitle", "emblemEditorDone", "emblemEditorIcon", "emblemEditorPlaceholder",
         "emblemEditorColors", "emblemEditorSpecies", "emblemEditorSuggestions", "emblemEditorGrade", "emblemEditorClear",
         "emblemStatEffects", "emblemColorEffects",
-        "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff", "specialPokemonBuffNote",
+        "regidragoBuff", "groudonBuff", "rayquazaBuff",
         "shieldPokemonSelect",
         "shieldLevelRange", "shieldLevelValue", "shieldMoveChoices",
         "shieldApplyBuildButton", "shieldClearItemsButton",
@@ -4524,11 +4982,13 @@
         "shieldConditionSpAtkSpecs", "shieldSpAtkSpecsStacks",
         "shieldConditionWeaknessPolicy", "shieldWeaknessPolicyStacks",
         "shieldConditionAccelBracer", "shieldAccelBracerStacks",
-        "shieldConditionDriveLens", "shieldDriveLensStacks",
+        "shieldConditionDriveLens", "shieldDriveLensStacks", "shieldConditionPanel",
         "shieldManualAttack", "shieldManualSpAttack", "shieldManualHp", "manualShieldPercent",
-        "manualShieldFlat", "shieldCount", "shieldCountLabel", "shieldSelfAmount", "shieldSelfAmountSub", "shieldAllyAmount", "shieldAllyAmountSub",
-        "shieldAttackStat", "shieldSpAttackStat", "shieldHpStat", "shieldFormulaText",
-        "shieldBreakdownBody", "shieldItemEffects", "shieldLearnChipRow",
+        "manualShieldFlat", "shieldCount", "shieldCountLabel",
+        "shieldTargetTotalGrid", "shieldSelfResultCard", "shieldAllyResultCard",
+        "shieldSelfAmount", "shieldSelfFormula", "shieldSelfResult",
+        "shieldAllyAmount", "shieldAllyFormula", "shieldAllyResult",
+        "shieldStatusBody", "shieldStatusValueBody", "shieldAdjustmentBody", "shieldLearnChipRow",
         "healingPokemonSelect",
         "healingLevelRange", "healingLevelValue", "healingMoveChoices", "healingEffectRow", "healingEffectSelect",
         "healingApplyBuildButton", "healingClearItemsButton",
@@ -4536,11 +4996,12 @@
         "healingConditionSpAtkSpecs", "healingSpAtkSpecsStacks",
         "healingConditionWeaknessPolicy", "healingWeaknessPolicyStacks",
         "healingConditionAccelBracer", "healingAccelBracerStacks",
-        "healingConditionDriveLens", "healingDriveLensStacks",
+        "healingConditionDriveLens", "healingDriveLensStacks", "healingConditionPanel",
         "healingManualAttack", "healingManualSpAttack",
         "manualHealingPercent", "manualHealingFlat", "healingCount",
-        "healingSelfAmount", "healingSelfAmountSub", "healingAllyAmount", "healingAllyAmountSub", "healingAttackStat", "healingSpAttackStat",
-        "healingFormulaText", "healingBreakdownBody", "healingItemEffects", "healingLearnChipRow",
+        "healingSelfAmount", "healingSelfFormula", "healingSelfResult",
+        "healingAllyAmount", "healingAllyFormula", "healingAllyResult",
+        "healingStatusBody", "healingStatusValueBody", "healingAdjustmentBody", "healingLearnChipRow",
         "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
         "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
         "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
@@ -4647,6 +5108,219 @@
       if (!Number.isFinite(value)) return "0";
       if (Math.abs(value - Math.round(value)) < 0.000001) return String(Math.round(value));
       return value.toFixed(digits).replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+    }
+
+    const CALCULATION_TIP_CONFIG = {
+      rawDamage: {
+        formulaId: "rawDamageFormula",
+        resultId: "rawDamageResult",
+        label: "基礎ダメージ"
+      },
+      finalDamage: {
+        formulaId: "finalDamageFormula",
+        resultId: "finalDamageResult",
+        label: "防御込み推定"
+      },
+      shieldSelf: {
+        formulaId: "shieldSelfFormula",
+        resultId: "shieldSelfResult",
+        label: "自分へのシールド"
+      },
+      shieldAlly: {
+        formulaId: "shieldAllyFormula",
+        resultId: "shieldAllyResult",
+        label: "味方へのシールド"
+      },
+      healingSelf: {
+        formulaId: "healingSelfFormula",
+        resultId: "healingSelfResult",
+        label: "自分への回復"
+      },
+      healingAlly: {
+        formulaId: "healingAllyFormula",
+        resultId: "healingAllyResult",
+        label: "味方への回復"
+      }
+    };
+
+    function syncCalculationTip(key) {
+      const config = CALCULATION_TIP_CONFIG[key];
+      if (!config) return;
+      const showingValue = Boolean(state.calculationValueVisibility[key]);
+      const button = document.querySelector(`[data-calculation-tip="${key}"]`);
+      el[config.formulaId].hidden = showingValue;
+      el[config.resultId].hidden = !showingValue;
+      button.classList.toggle("showing-value", showingValue);
+      button.setAttribute("aria-pressed", String(showingValue));
+      button.setAttribute("aria-label", `${config.label}の${showingValue ? "計算プロセス" : "計算結果"}を表示`);
+      button.dataset.tip = `${showingValue ? "計算プロセス" : "計算結果"}を表示`;
+    }
+
+    function toggleCalculationTip(key) {
+      if (!(key in CALCULATION_TIP_CONFIG)) return;
+      state.calculationValueVisibility[key] = !state.calculationValueVisibility[key];
+      syncCalculationTip(key);
+    }
+
+    function formulaStatKey(result) {
+      if (result.part.sourceType === "maxHp" || String(result.part.dmgType).trim() === "MaxHP") return "hp";
+      return String(result.part.dmgType).trim() === "Atk" ? "atk" : "spatk";
+    }
+
+    function formulaVariableValue(value, key, digits = 1) {
+      return `${formatNumber(value, digits)}(${key})`;
+    }
+
+    function signedFormulaStatTerm(value, key, label) {
+      const amount = number(value, 0);
+      return `${amount < 0 ? "-" : "+"} ${label} ${formulaVariableValue(Math.abs(amount), key, 1)}`;
+    }
+
+    function attackerStatAdjustmentFormula(stats, key) {
+      const config = {
+        atk: {
+          label: "攻撃",
+          base: stats.baseAttack,
+          flat: stats.attackFlat,
+          emblemFlat: stats.emblem.attackFlat,
+          percent: stats.attackPercent,
+          emblemPercent: stats.emblem.attackPercent,
+          emblemCount: stats.emblem.brownCount,
+          emblemColor: "茶",
+          result: stats.attack
+        },
+        spatk: {
+          label: "特攻",
+          base: stats.baseSpAttack,
+          flat: stats.spAttackFlat,
+          emblemFlat: stats.emblem.spAttackFlat,
+          percent: stats.spAttackPercent,
+          emblemPercent: stats.emblem.spAttackPercent,
+          emblemCount: stats.emblem.greenCount,
+          emblemColor: "緑",
+          result: stats.spAttack
+        },
+        hp: {
+          label: "HP",
+          base: stats.baseHp,
+          flat: stats.hpFlat,
+          emblemFlat: stats.emblem.hpFlat,
+          percent: 0,
+          emblemPercent: stats.emblem.hpPercent,
+          emblemCount: stats.emblem.whiteCount,
+          emblemColor: "白",
+          result: stats.maxHp
+        }
+      }[key];
+
+      if (!config) return "";
+      const otherFlat = config.flat - config.emblemFlat;
+      let expression = `(${formulaVariableValue(config.base, key, 1)} ${signedFormulaStatTerm(config.emblemFlat, key, "メダル")}`;
+      if (Math.abs(otherFlat) > 0.000001) {
+        expression += ` ${signedFormulaStatTerm(otherFlat, key, "その他")}`;
+      }
+      expression += ")";
+      if (Math.abs(config.percent) > 0.000001) {
+        expression = `${expression} × (1 ${config.percent < 0 ? "-" : "+"} ${formatNumber(Math.abs(config.percent), 1)}% その他補正)`;
+      }
+      if (Math.abs(config.emblemPercent) > 0.000001) {
+        expression += ` + ${config.emblemColor}${formatNumber(config.emblemCount, 0)}メダル ${formulaVariableValue(config.base, key, 1)} × ${formatNumber(config.emblemPercent, 1)}%`;
+      }
+      return `${config.label}補正: ${expression} = ${formulaVariableValue(config.result, key, 1)}`;
+    }
+
+    function defenseAdjustmentFormula(details, type) {
+      const isPhysical = String(type).trim() === "Atk";
+      const key = isPhysical ? "def" : "spdef";
+      let expression = formulaVariableValue(details.base, key, 1);
+
+      if (details.reductionFlat > 0) {
+        expression = `(${expression} - ${formatNumber(details.reductionFlat, 1)})`;
+      }
+      if (details.reductionPercent > 0) {
+        expression = `(${expression}) × (1 - ${formatNumber(details.reductionPercent, 1)}%)`;
+      }
+      if (details.penetrationFlat > 0) {
+        expression = `(${expression} - ${formatNumber(details.penetrationFlat, 1)})`;
+      }
+      if (details.ignorePercent > 0) {
+        expression = `(${expression}) × (1 - ${formatNumber(details.ignorePercent, 1)}%)`;
+      }
+
+      return expression;
+    }
+
+    function rsbFormulaExpression(result, level) {
+      return `${formulaVariableValue(result.moveStat, formulaStatKey(result), 1)} × ${formatNumber(result.part.ratio, 1)}% + ${formatNumber(result.part.slider, 1)} × (${formulaVariableValue(level, "lv", 0)} - 1) + ${formatNumber(result.part.base, 1)}`;
+    }
+
+    function sumFormulaExpressions(results, level) {
+      const expressions = results.map((result) => rsbFormulaExpression(result, level));
+      if (!expressions.length) return "-";
+      if (expressions.length === 1) return expressions[0];
+      return expressions.map((expression) => `(${expression})`).join(" + ");
+    }
+
+    function groupedFormulaExpressions(expressions, repeatLabel = "ヒット") {
+      const groups = new Map();
+      expressions.filter(Boolean).forEach((expression) => {
+        groups.set(expression, (groups.get(expression) || 0) + 1);
+      });
+      const terms = Array.from(groups, ([expression, count]) => (
+        count > 1 ? `(${expression}) × ${formatNumber(count, 0)}${repeatLabel}` : expression
+      ));
+      if (!terms.length) return "-";
+      if (terms.length === 1) return terms[0];
+      return terms.map((term) => `(${term})`).join(" + ");
+    }
+
+    function renderCalculationFormula(element, text) {
+      const source = String(text || "-");
+      const tokenPattern = /-?\d+(?:\.\d+)?\((?:atk|spatk|hp|lv|def|spdef)\)|追加効果|防御後|有効(?:防御|特防)|-?\d+(?:\.\d+)?% (?:防御|特防)(?:低下|無視)|× -?\d+(?:\.\d+)?(?:%|ヒット|回\/対象)?/g;
+      const fragment = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+
+      while ((match = tokenPattern.exec(source))) {
+        if (match.index > lastIndex) {
+          fragment.append(document.createTextNode(source.slice(lastIndex, match.index)));
+        }
+        const token = document.createElement("span");
+        token.className = "calculation-formula-token";
+        if (/\((?:atk|spatk|hp)\)$/.test(match[0])) token.classList.add("stat");
+        else if (/\(lv\)$/.test(match[0])) token.classList.add("level");
+        else if (/\((?:def|spdef)\)$/.test(match[0]) || /^(?:防御後|有効(?:防御|特防)|-?\d+(?:\.\d+)?% (?:防御|特防)(?:低下|無視))$/.test(match[0])) token.classList.add("defense");
+        else if (match[0] === "追加効果") token.classList.add("extra");
+        else token.classList.add("modifier");
+        token.textContent = match[0];
+        fragment.append(token);
+        lastIndex = tokenPattern.lastIndex;
+      }
+
+      if (lastIndex < source.length) {
+        fragment.append(document.createTextNode(source.slice(lastIndex)));
+      }
+      element.replaceChildren(fragment);
+    }
+
+    function applyPostCalculationFormula(expression, percentCorrections = [], flat = 0, count = 1, countLabel = "回/対象") {
+      let adjusted = expression;
+      const percentages = percentCorrections
+        .map((value) => number(value, 0))
+        .filter((value) => Math.abs(value) > 0.000001);
+      if (percentages.length) {
+        const factor = percentages
+          .map((value) => `${value < 0 ? "-" : "+"} ${formatNumber(Math.abs(value), 1)}%`)
+          .join(" ");
+        adjusted = `(${adjusted}) × (1 ${factor})`;
+      }
+      if (Math.abs(flat) > 0.000001) {
+        adjusted = `${adjusted} ${flat >= 0 ? "+" : "−"} ${formatNumber(Math.abs(flat), 1)}`;
+      }
+      if (count > 1) {
+        adjusted = `(${adjusted}) × ${formatNumber(count, 0)}${countLabel}`;
+      }
+      return adjusted;
     }
 
     function tierValue(item) {
@@ -5762,6 +6436,24 @@
         && !/shield stance/i.test(label);
     }
 
+    const SHIELD_TARGET_SCOPE_OVERRIDES = Object.freeze({
+      "Alcremie|Helping Hand": "both",
+      "Alcremie|Decorate": "both",
+      "Blissey|Safeguard": "both",
+      "Blissey|Bliss Assistance": "ally",
+      "Comfey|Sweet Kiss": "ally",
+      "Eldegoss|Cotton Guard": "both",
+      "Hoopa|Trick": "both",
+      "Latias|Dragon Cheer": "both",
+      "Mew|Coaching": "ally",
+      "Wigglytuff|Starlight Recital": "both"
+    });
+
+    function inferShieldTargetScope(entry, node, pokemonName) {
+      const moveName = String(node?.name || entry?.ownerName || "");
+      return SHIELD_TARGET_SCOPE_OVERRIDES[`${pokemonName}|${moveName}`] || "self";
+    }
+
     function pokemonHasShieldFormula(pokemon) {
       const prefixes = ["", "add1", "add2", "add3", "add4", "add5", "enhanced", "enhanced_add1", "enhanced_add2", "enhanced_add3", "enhanced_add4", "enhanced_add5"];
       const nodes = [];
@@ -6209,7 +6901,7 @@
       renderMoveChoices();
     }
 
-    function createMoveChoiceVisual(choice, noteText) {
+    function createMoveChoiceVisual(choice) {
       const img = document.createElement("img");
       img.src = choice.iconUrl || brokenImageUrl();
       img.alt = "";
@@ -6220,16 +6912,10 @@
 
       const text = document.createElement("span");
       text.className = "move-choice-text";
-      const slot = document.createElement("span");
-      slot.className = "move-choice-slot";
-      slot.textContent = choice.slotLabel;
       const name = document.createElement("span");
       name.className = "move-choice-name";
       name.textContent = jpMoveName(choice.displayName);
-      const note = document.createElement("span");
-      note.className = "move-choice-note";
-      note.textContent = noteText;
-      text.append(slot, name, note);
+      text.append(name);
       return [img, text];
     }
 
@@ -6244,7 +6930,7 @@
       });
     }
 
-    function renderMoveCombobox({ container, choices, selectedSlot, ariaLabel, emptyMessage, noteFor, onSelect }) {
+    function renderMoveCombobox({ container, choices, selectedSlot, ariaLabel, emptyMessage, onSelect }) {
       container.innerHTML = "";
       container.classList.remove("open");
       if (!choices.length) {
@@ -6272,7 +6958,7 @@
       trigger.setAttribute("aria-haspopup", "listbox");
       trigger.setAttribute("aria-expanded", "false");
       trigger.setAttribute("aria-label", `${ariaLabel}: ${jpMoveName(selectedChoice.displayName)}`);
-      const triggerVisual = createMoveChoiceVisual(selectedChoice, noteFor(selectedChoice));
+      const triggerVisual = createMoveChoiceVisual(selectedChoice);
       const chevron = document.createElement("span");
       chevron.className = "move-combobox-chevron";
       chevron.setAttribute("aria-hidden", "true");
@@ -6293,7 +6979,7 @@
         option.disabled = choice.disabled;
         option.setAttribute("role", "option");
         option.setAttribute("aria-selected", choice.slotKey === selectedChoice.slotKey ? "true" : "false");
-        option.append(...createMoveChoiceVisual(choice, noteFor(choice)));
+        option.append(...createMoveChoiceVisual(choice));
         option.addEventListener("click", () => {
           closeMoveComboboxes();
           onSelect(choice);
@@ -6318,7 +7004,6 @@
         selectedSlot: state.selectedMoveSlot,
         ariaLabel: "技",
         emptyMessage: "現在のレベルで計算できる技がありません。",
-        noteFor: (choice) => choice.disabled ? "ダメージ式なし" : choice.minLevel > 1 ? `Lv${choice.minLevel}以降` : "計算可",
         onSelect: (choice) => {
           state.selectedMoveSlot = choice.slotKey;
           renderMoveChoices();
@@ -6791,6 +7476,10 @@
         const itemShieldEntries = [];
         const choiceMinLevel = number(minLevel || node.level1 || node.level || 1, 1);
 
+        shieldEntries.forEach((entry) => {
+          entry.targetScope = inferShieldTargetScope(entry, node, pokemon.name);
+        });
+
         if (fireSpinAttackTrigger) {
           shieldEntries.push({
             id: `shield-${slotKey}-fire-spin-trigger`,
@@ -6825,6 +7514,7 @@
             itemSource: "Resonant Guard",
             minLevel: choiceMinLevel,
             enhanced: false,
+            targetScope: "both",
             partKey: "resonant-guard",
             basePartKey: "resonant-guard"
           });
@@ -6844,6 +7534,7 @@
             itemSource: "Buddy Barrier",
             minLevel: choiceMinLevel,
             enhanced: false,
+            targetScope: "both",
             partKey: "buddy-barrier",
             basePartKey: "buddy-barrier"
           });
@@ -6947,7 +7638,6 @@
         selectedSlot: state.selectedShieldMoveSlot,
         ariaLabel: "シールド技",
         emptyMessage: "現在のレベルで計算できるシールド技がありません。",
-        noteFor: (choice) => choice.disabled ? `Lv${choice.minLevel}以降` : "計算可",
         onSelect: (choice) => {
           state.selectedShieldMoveSlot = choice.slotKey;
           renderShieldMoveChoices();
@@ -7052,7 +7742,6 @@
         selectedSlot: state.selectedHealingMoveSlot,
         ariaLabel: "回復技",
         emptyMessage: "現在のレベルで計算できる回復技がありません。",
-        noteFor: (choice) => choice.disabled ? `Lv${choice.minLevel}以降` : choice.effectGroups.length > 1 ? `${choice.effectGroups.length}種類の回復効果` : jpMoveLabel(choice.variantLabel),
         onSelect: (choice) => {
           state.selectedHealingMoveSlot = choice.slotKey;
           state.selectedHealingEffectKey = defaultHealingEffectKey(choice);
@@ -7090,6 +7779,19 @@
     const EMBLEM_COLOR_LABELS = {
       Black: "黒", Blue: "青", Brown: "茶", Gray: "灰", Green: "緑", Navy: "紺",
       Pink: "桃", Purple: "紫", Red: "赤", White: "白", Yellow: "黄"
+    };
+    const EMBLEM_COLOR_EFFECT_LABELS = {
+      Black: "Cdr",
+      Blue: "Def",
+      Brown: "Atk",
+      Gray: "Dt",
+      Green: "Sp.Atk",
+      Navy: "Cdr（Unite）",
+      Pink: "Hed",
+      Purple: "Sp.Def",
+      Red: "Atk Speed",
+      White: "Hp",
+      Yellow: "Move Speed"
     };
     const EMBLEM_COLOR_HEX = {
       Black: "#718096", Blue: "#4aa3df", Brown: "#d88a45", Gray: "#aab2bd", Green: "#45c878",
@@ -7428,7 +8130,6 @@
       }
 
       state.emblemFallback = null;
-      el.emblemBuildName.textContent = "個別設定";
       updateEmblemSlotVisual(index);
       updateEmblemEditorVisual(true);
       updateAll();
@@ -7513,7 +8214,6 @@
         if (index === null) return;
         state.emblemSelections[index].grade = el.emblemEditorGrade.value;
         state.emblemFallback = null;
-        el.emblemBuildName.textContent = "個別設定";
         updateEmblemSlotVisual(index);
         updateEmblemEditorVisual(true);
         updateAll();
@@ -7523,7 +8223,6 @@
         if (index === null) return;
         state.emblemSelections[index] = { pokedex: "", grade: "" };
         state.emblemFallback = null;
-        el.emblemBuildName.textContent = "個別設定";
         updateAll();
         closeEmblemEditor();
       });
@@ -7619,7 +8318,7 @@
       };
     }
 
-    function setEmblemControls(preset, label) {
+    function setEmblemControls(preset) {
       const values = preset || {};
       const ids = Array.isArray(values.ids) ? values.ids.slice(0, EMBLEM_SLOT_COUNT) : [];
       state.emblemFallback = preset && !ids.length ? { ...values } : null;
@@ -7630,19 +8329,17 @@
         updateEmblemSlotVisual(i);
       }
       closeEmblemEditor();
-      el.emblemBuildName.textContent = label || "メダルなし";
     }
 
     function applyRecommendedEmblems() {
       const preset = emblemPresetFromBuild(selectedPokemon());
-      const detail = preset && (!Array.isArray(preset.ids) || !preset.ids.length) ? "（個別内訳なし）" : "";
-      setEmblemControls(preset, preset ? `推奨構成: ${preset.name}${detail}` : "推奨構成なし");
+      setEmblemControls(preset);
       updateAll();
     }
 
     function clearEmblems() {
       state.emblemFallback = null;
-      setEmblemControls(null, "メダルなし");
+      setEmblemControls(null);
       updateAll();
     }
 
@@ -7903,23 +8600,29 @@
         && selectedMoveChoice()?.displayName === "Hyper Voice");
       updateDamageVariantControls();
       renderDefenseEffectControls();
+      updateConditionPanelVisibility(el.damageConditionPanel);
+    }
+
+    function selectedRegiBuffValue() {
+      return document.querySelector('input[name="regiBuff"]:checked')?.value || "none";
     }
 
     function selectedSpecialPokemonBuffLines() {
       const lines = [];
-      const regiBuff = REGI_BUFFS[el.regiBuffSelect.value] || REGI_BUFFS.none;
+      const regiBuff = REGI_BUFFS[selectedRegiBuffValue()] || REGI_BUFFS.none;
       if (regiBuff.name) lines.push(`${regiBuff.name}: ${regiBuff.description}`);
-      if (el.regidragoBuff.checked) lines.push("レジドラゴ: 与ダメージ変化なし");
-      if (el.groudonBuff.checked) lines.push("グラードン: 与ダメージ+50%");
+      if (el.regidragoBuff.checked) lines.push("レジドラゴ（ゴール速度+100%）");
+      if (el.groudonBuff.checked) lines.push("グラードン（与ダメージ+50%）");
       if (el.rayquazaBuff.checked) {
-        lines.push("レックウザ: 与ダメージ+40%（シールド中）");
+        lines.push("レックウザ（シールド中は与ダメージ+40%）");
       }
       return lines;
     }
 
-    function syncSpecialPokemonBuffs() {
-      const lines = selectedSpecialPokemonBuffLines();
-      el.specialPokemonBuffNote.textContent = lines.length ? lines.join(" / ") : "撃破バフなし";
+    function updateConditionPanelVisibility(panel) {
+      if (!panel) return;
+      const body = panel.querySelector(".condition-grid");
+      panel.hidden = !body || !Array.from(body.children).some((child) => !child.hidden);
     }
 
     function updateShieldConditionVisibility() {
@@ -7934,6 +8637,7 @@
       Object.entries(map).forEach(([id, itemName]) => {
         el[id].hidden = !names.has(itemName);
       });
+      updateConditionPanelVisibility(el.shieldConditionPanel);
     }
 
     function updateHealingConditionVisibility() {
@@ -7948,6 +8652,7 @@
       Object.entries(map).forEach(([id, itemName]) => {
         el[id].hidden = !names.has(itemName);
       });
+      updateConditionPanelVisibility(el.healingConditionPanel);
     }
 
     function effectTierFor(itemName) {
@@ -8094,7 +8799,10 @@
       }
 
       el.emblemColorEffects.innerHTML = "";
-      const visibleColors = EMBLEM_COLOR_DISPLAY_ORDER.filter((color) => number(emblem.colorCounts[color], 0) > 0);
+      const visibleColors = EMBLEM_COLOR_DISPLAY_ORDER.filter((color) => {
+        const count = number(emblem.colorCounts[color], 0);
+        return count > 0 && emblemSetPercent(color, count) !== 0;
+      });
       if (!visibleColors.length) {
         const empty = document.createElement("div");
         empty.className = "emblem-effect-empty";
@@ -8109,8 +8817,6 @@
           const row = document.createElement("div");
           row.className = "emblem-color-effect-row";
           row.style.setProperty("--emblem-color", EMBLEM_COLOR_HEX[color] || "var(--accent-2)");
-          row.setAttribute("aria-label", `${EMBLEM_COLOR_LABELS[color] || color}${count}枚`);
-
           const current = document.createElement("div");
           current.className = "emblem-color-current";
           const icon = document.createElement("img");
@@ -8118,21 +8824,19 @@
           icon.alt = EMBLEM_COLOR_LABELS[color] || color;
           icon.loading = "lazy";
           icon.onerror = () => icon.remove();
-          const countLabel = document.createElement("strong");
-          countLabel.textContent = formatNumber(count, 0);
-          current.append(icon, countLabel);
+          const bonus = emblemSetPercent(color, count);
+          const effect = document.createElement("span");
+          effect.className = "emblem-color-effect-value";
+          const negative = String(set.math || "").toLowerCase() === "sub";
+          const sign = negative ? "-" : "+";
+          const suffix = set.percent ? "%" : "";
+          const effectLabel = EMBLEM_COLOR_EFFECT_LABELS[color] || jpStat(set.stat || set.stat_desc || color);
+          effect.classList.add(negative ? "negative" : "positive");
+          effect.textContent = `${effectLabel} ${sign} ${formatNumber(Math.abs(bonus), 1)}${suffix}`;
+          row.setAttribute("aria-label", effect.textContent);
+          current.append(icon, effect);
 
-          const thresholds = document.createElement("div");
-          thresholds.className = "emblem-color-thresholds";
-          [set.count1, set.count2, set.count3].forEach((thresholdValue) => {
-            const threshold = number(thresholdValue, 0);
-            const chip = document.createElement("span");
-            chip.className = `emblem-color-threshold${count >= threshold ? " active" : ""}`;
-            chip.textContent = formatNumber(threshold, 0);
-            thresholds.appendChild(chip);
-          });
-
-          row.append(current, thresholds);
+          row.appendChild(current);
           el.emblemColorEffects.appendChild(row);
         });
       }
@@ -8201,7 +8905,7 @@
         spAttackPercent += effectTierFor("Wise Glasses");
       }
 
-      const regiBuff = REGI_BUFFS[el.regiBuffSelect.value] || REGI_BUFFS.none;
+      const regiBuff = REGI_BUFFS[selectedRegiBuffValue()] || REGI_BUFFS.none;
       attackPercent += regiBuff.attackPercent;
       spAttackPercent += regiBuff.spAttackPercent;
 
@@ -8376,27 +9080,51 @@
         const percent = effectTierFor("Choice Specs");
         const flat = selectedItemLevel("Choice Specs") < 10 ? 40 : selectedItemLevel("Choice Specs") < 20 ? 50 : 60;
         const raw = Math.floor(Math.floor(stats.spAttack * percent / 100) + flat);
-        extras.push({ name: jpItemName("Choice Specs"), raw, type: "SpAtk" });
+        extras.push({
+          name: jpItemName("Choice Specs"),
+          raw,
+          type: "SpAtk",
+          formula: `+${formatNumber(stats.spAttack, 1)}*${formatNumber(percent, 1)}% +${formatNumber(flat, 0)}`,
+          calculationFormula: `${formulaVariableValue(stats.spAttack, "spatk", 1)} × ${formatNumber(percent, 1)}% + ${formatNumber(flat, 0)}`
+        });
       }
 
       if (hasItem("Charging Charm") && el.chargingCharmProc.checked) {
         const percent = effectTierFor("Charging Charm");
         const flat = selectedItemLevel("Charging Charm") < 10 ? 20 : selectedItemLevel("Charging Charm") < 20 ? 30 : 40;
         const raw = Math.floor(Math.floor(stats.attack * percent / 100) + flat);
-        extras.push({ name: jpItemName("Charging Charm"), raw, type: "Atk" });
+        extras.push({
+          name: jpItemName("Charging Charm"),
+          raw,
+          type: "Atk",
+          formula: `+${formatNumber(stats.attack, 1)}*${formatNumber(percent, 1)}% +${formatNumber(flat, 0)}`,
+          calculationFormula: `${formulaVariableValue(stats.attack, "atk", 1)} × ${formatNumber(percent, 1)}% + ${formatNumber(flat, 0)}`
+        });
       }
 
       if (hasItem("Razor Claw") && el.razorClawProc.checked) {
         const percent = effectTierFor("Razor Claw");
         const flat = selectedItemLevel("Razor Claw") < 10 ? 10 : selectedItemLevel("Razor Claw") < 20 ? 15 : 20;
         const raw = Math.floor(Math.floor(stats.attack * percent / 100) + flat);
-        extras.push({ name: jpItemName("Razor Claw"), raw, type: "Atk" });
+        extras.push({
+          name: jpItemName("Razor Claw"),
+          raw,
+          type: "Atk",
+          formula: `+${formatNumber(stats.attack, 1)}*${formatNumber(percent, 1)}% +${formatNumber(flat, 0)}`,
+          calculationFormula: `${formulaVariableValue(stats.attack, "atk", 1)} × ${formatNumber(percent, 1)}% + ${formatNumber(flat, 0)}`
+        });
       }
 
       const manual = number(el.manualExtraDamage.value, 0);
       if (manual) {
         const move = selectedMove();
-        extras.push({ name: "手動固定値", raw: manual, type: move ? move.dmgType : "Atk" });
+        extras.push({
+          name: "手動固定値",
+          raw: manual,
+          type: move ? move.dmgType : "Atk",
+          formula: `${manual < 0 ? "-" : "+"}${formatNumber(Math.abs(manual), 1)}`,
+          calculationFormula: `${manual < 0 ? "-" : ""}${formatNumber(Math.abs(manual), 1)}`
+        });
       }
 
       return extras;
@@ -8448,6 +9176,667 @@
       if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) notes.push("アシストパワー+: 電撃命中ごとに特防-10%（最大30%）");
       if (pokemonName === "Mega-Gyarados") notes.push("かたやぶり: 防御を30%無視");
       return notes;
+    }
+
+    function statusAdjustmentRows(stats, moveResults) {
+      const rows = new Map();
+      let rowOrder = 0;
+      const targetOrder = { Atk: 0, "Sp.Atk": 1, Def: 2, "Sp.Def": 3 };
+      const attackPercentBase = stats.baseAttack + stats.attackFlat;
+      const spAttackPercentBase = stats.baseSpAttack + stats.spAttackFlat;
+      const defenseBase = Math.max(0, number(el.targetDefense.value, 0));
+      const spDefenseBase = Math.max(0, number(el.targetSpDefense.value, 0));
+
+      const ensureRow = (target, content, side) => {
+        const key = `${target}\u0000${content}\u0000${side}`;
+        if (!rows.has(key)) {
+          rows.set(key, {
+            target,
+            content,
+            side,
+            order: rowOrder,
+            details: new Map()
+          });
+          rowOrder += 1;
+        }
+        return rows.get(key);
+      };
+
+      const addDetail = (target, content, amount, kind = "number", base = 0, suffix = "", side = "self") => {
+        const numericAmount = number(amount, 0);
+        if (Math.abs(numericAmount) < 0.000001) return;
+        const sign = numericAmount < 0 ? "-" : "+";
+        const normalizedBase = Math.abs(number(base, 0));
+        const row = ensureRow(target, content, side);
+        const detailKey = `${kind}\u0000${sign}\u0000${normalizedBase}\u0000${suffix}`;
+        const current = row.details.get(detailKey);
+        if (current) {
+          current.amount += Math.abs(numericAmount);
+          return;
+        }
+        row.details.set(detailKey, {
+          kind,
+          sign,
+          amount: Math.abs(numericAmount),
+          base: normalizedBase,
+          suffix
+        });
+      };
+
+      const addNumber = (target, content, amount, suffix = "", side = "self") => {
+        addDetail(target, content, amount, "number", 0, suffix, side);
+      };
+      const addPercent = (target, content, percent, base, suffix = "", side = "self") => {
+        addDetail(target, content, percent, "percent", base, suffix, side);
+      };
+      const percentBaseFor = (target) => target === "Atk" ? attackPercentBase : spAttackPercentBase;
+
+      addNumber("Atk", "メダル", stats.emblem.attackFlat);
+      addPercent("Atk", "メダル", stats.emblem.attackPercent, stats.baseAttack);
+      addNumber("Sp.Atk", "メダル", stats.emblem.spAttackFlat);
+      addPercent("Sp.Atk", "メダル", stats.emblem.spAttackPercent, stats.baseSpAttack);
+
+      selectedItems().forEach(({ item, level: itemLevel }) => {
+        const content = jpItemName(item);
+        (item.stats || []).forEach((stat) => {
+          const target = stat.label === "Attack" ? "Atk" : stat.label === "Sp. Attack" ? "Sp.Atk" : "";
+          if (!target) return;
+          const value = itemLevelValue(itemLevel, stat);
+          if (stat.percent) addPercent(target, content, value, percentBaseFor(target));
+          else addNumber(target, content, value);
+        });
+
+        if (item.name === "Attack Weight") {
+          addNumber("Atk", content, conditionNumber("attackWeightStacks", 0, 6) * effectTierFor(item.name));
+        }
+        if (item.name === "Sp. Atk Specs") {
+          addNumber("Sp.Atk", content, conditionNumber("spAtkSpecsStacks", 0, 6) * effectTierFor(item.name));
+        }
+        if (item.name === "Weakness Policy") {
+          addPercent("Atk", content, conditionNumber("weaknessPolicyStacks", 0, 4) * effectTierFor(item.name), attackPercentBase);
+        }
+        if (item.name === "Accel Bracer") {
+          addPercent("Atk", content, conditionNumber("accelBracerStacks", 0, 20) * effectTierFor(item.name), attackPercentBase);
+        }
+        if (item.name === "Drive Lens") {
+          addPercent("Sp.Atk", content, conditionNumber("driveLensStacks", 0, 20) * effectTierFor(item.name), spAttackPercentBase);
+        }
+        if (item.name === "Wise Glasses") {
+          addPercent("Sp.Atk", content, effectTierFor(item.name), spAttackPercentBase);
+        }
+      });
+
+      addNumber("Atk", "手動補正", number(el.manualAttack.value, 0));
+      addNumber("Sp.Atk", "手動補正", number(el.manualSpAttack.value, 0));
+
+      const regiBuff = REGI_BUFFS[selectedRegiBuffValue()] || REGI_BUFFS.none;
+      if (regiBuff.name === "レジスチル") {
+        addPercent("Atk", regiBuff.name, regiBuff.attackPercent, attackPercentBase);
+        addPercent("Sp.Atk", regiBuff.name, regiBuff.spAttackPercent, spAttackPercentBase);
+      }
+      if (regiBuff.name === "レジロック") {
+        const pokemon = selectedPokemon();
+        const baseStats = pokemon ? pokemonStats(pokemon.name, number(el.levelRange.value, 15)) : null;
+        addPercent("Def", regiBuff.name, 30, number(baseStats && baseStats.defense, 0));
+        addPercent("Sp.Def", regiBuff.name, 25, number(baseStats && baseStats.sp_defense, 0));
+      }
+
+      const addDefenseModifiers = (content, modifiers, suffixPrefix = "") => {
+        const suffix = (label) => `（${suffixPrefix}${label}）`;
+        addNumber("Def", content, -number(modifiers.defenseReductionFlat, 0), suffix("低下"), "opponent");
+        addPercent("Def", content, -number(modifiers.defenseReductionPercent, 0), defenseBase, suffix("低下"), "opponent");
+        addNumber("Def", content, -number(modifiers.defensePenetrationFlat, 0), suffix("貫通"), "opponent");
+        addPercent("Def", content, -number(modifiers.defenseIgnorePercent, 0), defenseBase, suffix("無視"), "opponent");
+        addNumber("Sp.Def", content, -number(modifiers.spDefenseReductionFlat, 0), suffix("低下"), "opponent");
+        addPercent("Sp.Def", content, -number(modifiers.spDefenseReductionPercent, 0), spDefenseBase, suffix("低下"), "opponent");
+        addNumber("Sp.Def", content, -number(modifiers.spDefensePenetrationFlat, 0), suffix("貫通"), "opponent");
+        addPercent("Sp.Def", content, -number(modifiers.spDefenseIgnorePercent, 0), spDefenseBase, suffix("無視"), "opponent");
+      };
+
+      const level = number(el.levelRange.value, 15);
+      selectedDefenseEffectRows().forEach((effect) => {
+        const stacks = clamp(number(state.defenseEffectValues[defenseEffectStateKey(effect)], 0), 0, effect.maxStacks);
+        if (!stacks) return;
+        const modifiers = emptyDefenseModifiers();
+        Object.keys(modifiers).forEach((key) => {
+          modifiers[key] = defenseEffectAmount(effect, key, level) * stacks;
+        });
+        addDefenseModifiers(effect.label, modifiers);
+      });
+
+      addDefenseModifiers("手動補正", {
+        defenseReductionPercent: clamp(number(el.manualDefenseReductionPercent.value, 0), 0, 100),
+        spDefenseReductionPercent: clamp(number(el.manualSpDefenseReductionPercent.value, 0), 0, 100),
+        defenseReductionFlat: Math.max(0, number(el.manualDefenseReductionFlat.value, 0)),
+        spDefenseReductionFlat: Math.max(0, number(el.manualSpDefenseReductionFlat.value, 0)),
+        defenseIgnorePercent: clamp(number(el.manualDefenseIgnorePercent.value, 0), 0, 100),
+        spDefenseIgnorePercent: clamp(number(el.manualSpDefenseIgnorePercent.value, 0), 0, 100),
+        defensePenetrationFlat: Math.max(0, number(el.manualDefensePenetrationFlat.value, 0)),
+        spDefensePenetrationFlat: Math.max(0, number(el.manualSpDefensePenetrationFlat.value, 0))
+      });
+
+      if (hasItem("Slick Spoon")) {
+        addPercent("Sp.Def", jpItemName("Slick Spoon"), -effectTierFor("Slick Spoon"), spDefenseBase, "（無視）", "opponent");
+      }
+      if (selectedPokemon()?.name === "Mega-Gyarados") {
+        addPercent("Def", "かたやぶり", -30, defenseBase, "（無視）", "opponent");
+      }
+
+      const selectedMoveName = jpMoveName(selectedMoveChoice()?.displayName || "");
+      const intrinsicModifierRows = new Set();
+      (moveResults || []).forEach((result) => {
+        const modifiers = intrinsicDefenseModifiers(result.part);
+        const partLabel = jpMoveLabel(result.part.label);
+        const signature = `${partLabel}\u0000${Object.keys(modifiers).map((key) => `${key}:${modifiers[key]}`).join("|")}`;
+        if (intrinsicModifierRows.has(signature)) return;
+        intrinsicModifierRows.add(signature);
+        addDefenseModifiers(selectedMoveName || "技固有効果", modifiers, partLabel ? `${partLabel}・` : "");
+      });
+
+      const pokemonName = selectedPokemon()?.name || "";
+      const moveName = selectedMoveChoice()?.displayName || "";
+      if (pokemonName === "Sylveon" && moveName === "Hyper Voice") {
+        addPercent("Sp.Def", jpMoveName(moveName), -80, spDefenseBase, "（命中ごと20%低下・最大80%）", "opponent");
+      }
+      if (pokemonName === "Gardevoir" && moveName === "Psychic") {
+        addPercent("Sp.Def", jpMoveName(moveName), -60, spDefenseBase, "（命中ごと20%低下・最大60%）", "opponent");
+      }
+      if (pokemonName === "Mr.Mime" && moveName === "Psychic") {
+        addPercent("Sp.Def", jpMoveName(moveName), -40, spDefenseBase, "（命中ごと5%低下・最大40%）", "opponent");
+      }
+      if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") {
+        addPercent("Sp.Def", jpMoveName(moveName), -50, spDefenseBase, "（初段命中後）", "opponent");
+      }
+      if (pokemonName === "Chandelure") {
+        addPercent("Sp.Def", "すりぬけ", -30, spDefenseBase, "（命中ごと5%無視・最大30%）", "opponent");
+      }
+      if (pokemonName === "Raichu" && moveName === "Stored Power" && level >= 11) {
+        addPercent("Sp.Def", jpMoveName(moveName), -30, spDefenseBase, "（命中ごと10%低下・最大30%）", "opponent");
+      }
+
+      return Array.from(rows.values())
+        .map((row) => ({ ...row, details: Array.from(row.details.values()) }))
+        .sort((a, b) => targetOrder[a.target] - targetOrder[b.target] || a.order - b.order);
+    }
+
+    function renderStatusAdjustmentRows(rows, body = el.damageStatusBody) {
+      body.innerHTML = "";
+      const card = body.closest(".panel");
+      if (card) card.hidden = !rows.length;
+      if (!rows.length) {
+        return;
+      }
+
+      rows.forEach((adjustment) => {
+        const row = document.createElement("tr");
+        const target = document.createElement("td");
+        const targetLabel = document.createElement("code");
+        targetLabel.className = `status-adjustment-target${adjustment.side === "opponent" ? " opponent" : ""}`;
+        targetLabel.textContent = adjustment.target;
+        target.appendChild(targetLabel);
+
+        const source = document.createElement("td");
+        source.className = "status-adjustment-source";
+        source.textContent = adjustment.content;
+
+        const details = document.createElement("td");
+        const detailList = document.createElement("div");
+        detailList.className = "status-adjustment-details";
+        adjustment.details.forEach((detail) => {
+          const line = document.createElement("div");
+          line.className = "status-adjustment-detail";
+          const sign = document.createElement("span");
+          sign.className = `status-adjustment-sign ${detail.sign === "+" ? "positive" : "negative"}`;
+          sign.textContent = detail.sign;
+          const expression = detail.kind === "percent"
+            ? `${formatNumber(detail.base, 1)}*${formatNumber(detail.amount, 1)}%`
+            : formatNumber(detail.amount, 2);
+          line.append(sign, document.createTextNode(expression));
+          if (detail.suffix) {
+            const suffix = document.createElement("span");
+            suffix.className = "status-adjustment-suffix";
+            suffix.textContent = detail.suffix;
+            line.appendChild(suffix);
+          }
+          detailList.appendChild(line);
+        });
+        details.appendChild(detailList);
+        row.append(target, source, details);
+        body.appendChild(row);
+      });
+    }
+
+    function statusAdjustmentValueRows(stats, moveResults, adjustmentRows) {
+      const grouped = new Map();
+      const pokemon = selectedPokemon();
+      const baseStats = pokemon ? pokemonStats(pokemon.name, number(el.levelRange.value, 15)) : null;
+      const baseValues = {
+        self: {
+          Atk: stats.baseAttack,
+          "Sp.Atk": stats.baseSpAttack,
+          Def: number(baseStats && baseStats.defense, 0),
+          "Sp.Def": number(baseStats && baseStats.sp_defense, 0)
+        },
+        opponent: {
+          Def: Math.max(0, number(el.targetDefense.value, 0)),
+          "Sp.Def": Math.max(0, number(el.targetSpDefense.value, 0))
+        }
+      };
+
+      adjustmentRows.forEach((adjustment) => {
+        const key = `${adjustment.target}\u0000${adjustment.side}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            target: adjustment.target,
+            side: adjustment.side,
+            order: adjustment.order,
+            details: []
+          });
+        }
+        grouped.get(key).details.push(...adjustment.details);
+      });
+
+      const effectiveDefenseValues = (target) => {
+        const physical = target === "Def";
+        return (moveResults || [])
+          .filter((result) => (String(result.part.dmgType).trim() === "Atk") === physical)
+          .flatMap((result) => result.effectiveDefenses || [])
+          .filter(Number.isFinite);
+      };
+
+      return Array.from(grouped.values()).map((group) => {
+        const before = number(baseValues[group.side] && baseValues[group.side][group.target], 0);
+        let after = before;
+        let afterText = "";
+        let direction = "";
+        const valueWithDelta = (value) => `${formatNumber(value, 1)}（${signedNumber(value - before, 1)}）`;
+
+        if (group.side === "self" && group.target === "Atk") {
+          after = stats.attack;
+        } else if (group.side === "self" && group.target === "Sp.Atk") {
+          after = stats.spAttack;
+        } else if (group.side === "opponent" && (group.target === "Def" || group.target === "Sp.Def")) {
+          const effectiveValues = effectiveDefenseValues(group.target);
+          if (effectiveValues.length) {
+            const minValue = Math.min(...effectiveValues);
+            const maxValue = Math.max(...effectiveValues);
+            after = minValue;
+            afterText = Math.abs(minValue - maxValue) < 0.000001
+              ? valueWithDelta(minValue)
+              : `${formatNumber(minValue, 1)}〜${formatNumber(maxValue, 1)}（${signedNumber(minValue - before, 1)}〜${signedNumber(maxValue - before, 1)}）`;
+            if (maxValue < before - 0.000001) direction = "decreased";
+            else if (minValue > before + 0.000001) direction = "increased";
+          } else {
+            after = targetDefenseDetails(group.target === "Def" ? "Atk" : "SpAtk").effective;
+          }
+        } else {
+          group.details.forEach((detail) => {
+            const signedAmount = detail.sign === "-" ? -detail.amount : detail.amount;
+            after += detail.kind === "percent"
+              ? detail.base * signedAmount / 100
+              : signedAmount;
+          });
+        }
+
+        if (!direction) {
+          if (after > before + 0.000001) direction = "increased";
+          else if (after < before - 0.000001) direction = "decreased";
+        }
+
+        return {
+          target: group.target,
+          side: group.side,
+          order: group.order,
+          beforeText: formatNumber(before, 1),
+          afterText: afterText || valueWithDelta(after),
+          direction
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    function renderStatusAdjustmentValueRows(rows, body = el.damageStatusValueBody) {
+      body.innerHTML = "";
+      if (!rows.length) {
+        return;
+      }
+
+      rows.forEach((valueRow) => {
+        const row = document.createElement("tr");
+        const target = document.createElement("td");
+        const targetLabel = document.createElement("code");
+        targetLabel.className = `status-adjustment-target${valueRow.side === "opponent" ? " opponent" : ""}`;
+        targetLabel.textContent = valueRow.target;
+        target.appendChild(targetLabel);
+
+        const before = document.createElement("td");
+        before.textContent = valueRow.beforeText;
+
+        const after = document.createElement("td");
+        after.className = `status-value-after${valueRow.direction ? ` ${valueRow.direction}` : ""}`;
+        after.textContent = valueRow.afterText;
+
+        row.append(target, before, after);
+        body.appendChild(row);
+      });
+    }
+
+    function supportStatusAdjustmentRows(mode, stats) {
+      const shieldMode = mode === "shield";
+      const itemRows = shieldMode ? selectedShieldItems() : selectedHealingItems();
+      const effectTier = shieldMode ? shieldEffectTierFor : healingEffectTierFor;
+      const rows = new Map();
+      let rowOrder = 0;
+      const targetOrder = { HP: 0, Atk: 1, "Sp.Atk": 2 };
+      const attackPercentBase = stats.baseAttack + stats.attackFlat;
+      const spAttackPercentBase = stats.baseSpAttack + stats.spAttackFlat;
+      const ensureRow = (target, content) => {
+        const key = `${target}\u0000${content}`;
+        if (!rows.has(key)) {
+          rows.set(key, {
+            target,
+            content,
+            side: "self",
+            order: rowOrder,
+            details: new Map()
+          });
+          rowOrder += 1;
+        }
+        return rows.get(key);
+      };
+      const addDetail = (target, content, amount, kind = "number", base = 0) => {
+        const numericAmount = number(amount, 0);
+        if (Math.abs(numericAmount) < 0.000001) return;
+        const sign = numericAmount < 0 ? "-" : "+";
+        const normalizedBase = Math.abs(number(base, 0));
+        const row = ensureRow(target, content);
+        const key = `${kind}\u0000${sign}\u0000${normalizedBase}`;
+        const current = row.details.get(key);
+        if (current) {
+          current.amount += Math.abs(numericAmount);
+          return;
+        }
+        row.details.set(key, {
+          kind,
+          sign,
+          amount: Math.abs(numericAmount),
+          base: normalizedBase,
+          suffix: ""
+        });
+      };
+      const addNumber = (target, content, amount) => addDetail(target, content, amount);
+      const addPercent = (target, content, percent, base) => addDetail(target, content, percent, "percent", base);
+
+      itemRows.forEach(({ item, level: itemLevel }) => {
+        const content = jpItemName(item);
+        (item.stats || []).forEach((stat) => {
+          const target = stat.label === "Attack"
+            ? "Atk"
+            : stat.label === "Sp. Attack"
+              ? "Sp.Atk"
+              : shieldMode && stat.label === "HP"
+                ? "HP"
+                : "";
+          if (!target) return;
+          const value = itemLevelValue(itemLevel, stat);
+          const base = target === "Atk"
+            ? attackPercentBase
+            : target === "Sp.Atk"
+              ? spAttackPercentBase
+              : stats.baseHp;
+          if (stat.percent) addPercent(target, content, value, base);
+          else addNumber(target, content, value);
+        });
+
+        const prefix = shieldMode ? "shield" : "healing";
+        if (item.name === "Attack Weight") {
+          addNumber("Atk", content, conditionNumber(`${prefix}AttackWeightStacks`, 0, 6) * effectTier(item.name));
+        }
+        if (item.name === "Sp. Atk Specs") {
+          addNumber("Sp.Atk", content, conditionNumber(`${prefix}SpAtkSpecsStacks`, 0, 6) * effectTier(item.name));
+        }
+        if (item.name === "Weakness Policy") {
+          addPercent("Atk", content, conditionNumber(`${prefix}WeaknessPolicyStacks`, 0, 4) * effectTier(item.name), attackPercentBase);
+        }
+        if (item.name === "Accel Bracer") {
+          addPercent("Atk", content, conditionNumber(`${prefix}AccelBracerStacks`, 0, 20) * effectTier(item.name), attackPercentBase);
+        }
+        if (item.name === "Drive Lens") {
+          addPercent("Sp.Atk", content, conditionNumber(`${prefix}DriveLensStacks`, 0, 20) * effectTier(item.name), spAttackPercentBase);
+        }
+        if (item.name === "Wise Glasses") {
+          addPercent("Sp.Atk", content, effectTier(item.name), spAttackPercentBase);
+        }
+      });
+
+      addNumber("Atk", "手動補正", number(el[shieldMode ? "shieldManualAttack" : "healingManualAttack"].value, 0));
+      addNumber("Sp.Atk", "手動補正", number(el[shieldMode ? "shieldManualSpAttack" : "healingManualSpAttack"].value, 0));
+      if (shieldMode) {
+        addNumber("HP", "手動補正", number(el.shieldManualHp.value, 0));
+      }
+
+      return Array.from(rows.values())
+        .map((row) => ({ ...row, details: Array.from(row.details.values()) }))
+        .sort((a, b) => targetOrder[a.target] - targetOrder[b.target] || a.order - b.order);
+    }
+
+    function supportStatusValueRows(stats, adjustmentRows) {
+      const beforeValues = {
+        HP: number(stats.baseHp, 0),
+        Atk: number(stats.baseAttack, 0),
+        "Sp.Atk": number(stats.baseSpAttack, 0)
+      };
+      const afterValues = {
+        HP: number(stats.maxHp, beforeValues.HP),
+        Atk: number(stats.attack, beforeValues.Atk),
+        "Sp.Atk": number(stats.spAttack, beforeValues["Sp.Atk"])
+      };
+      const grouped = new Map();
+      adjustmentRows.forEach((adjustment) => {
+        if (!grouped.has(adjustment.target)) {
+          grouped.set(adjustment.target, {
+            target: adjustment.target,
+            side: "self",
+            order: adjustment.order
+          });
+        }
+      });
+      return Array.from(grouped.values()).map((group) => {
+        const before = beforeValues[group.target];
+        const after = afterValues[group.target];
+        return {
+          ...group,
+          beforeText: formatNumber(before, 1),
+          afterText: `${formatNumber(after, 1)}（${signedNumber(after - before, 1)}）`,
+          direction: after > before + 0.000001
+            ? "increased"
+            : after < before - 0.000001
+              ? "decreased"
+              : ""
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    function shieldAdjustmentRows(selfBaseShield, allyBaseShield, rescueHoodPercent, manualShieldPercent, shieldFlat, count, fireSpinAttackTrigger) {
+      const rows = new Map();
+      const add = (content, formula, suffix = "") => {
+        if (!formula) return;
+        if (!rows.has(content)) rows.set(content, { content, details: [] });
+        rows.get(content).details.push({ formula, suffix });
+      };
+      const percentFormula = (base, percent) => {
+        const value = number(percent, 0);
+        return value ? `${value < 0 ? "-" : "+"}${formatNumber(base, 1)}*${formatNumber(Math.abs(value), 1)}%` : "";
+      };
+      if (manualShieldPercent) {
+        if (selfBaseShield > 0) add("手動シールド補正", percentFormula(selfBaseShield, manualShieldPercent), "（自分）");
+        if (allyBaseShield > 0) add("手動シールド補正", percentFormula(allyBaseShield, manualShieldPercent), "（味方）");
+      }
+      if (rescueHoodPercent && allyBaseShield > 0) {
+        add(jpItemName("Rescue Hood"), percentFormula(allyBaseShield, rescueHoodPercent), "（味方）");
+      }
+      if (shieldFlat) {
+        const formula = `${shieldFlat < 0 ? "-" : "+"}${formatNumber(Math.abs(shieldFlat), 1)}`;
+        if (selfBaseShield > 0) add("手動固定値", formula, "（自分・1回ごと）");
+        if (allyBaseShield > 0) add("手動固定値", formula, "（味方・1回ごと）");
+      }
+      if (count > 1) {
+        add(fireSpinAttackTrigger ? "シールド獲得回数" : "回数／対象数", `×${formatNumber(count, 0)}`);
+      }
+      return Array.from(rows.values());
+    }
+
+    function healingAdjustmentRows(basePerApplication, bigRootPercent, rescueHoodPercent, manualPercent, healingFlat, count) {
+      const rows = new Map();
+      const add = (content, formula, suffix = "") => {
+        if (!formula) return;
+        if (!rows.has(content)) rows.set(content, { content, details: [] });
+        rows.get(content).details.push({ formula, suffix });
+      };
+      const percentFormula = (base, percent) => {
+        const value = number(percent, 0);
+        return value ? `${value < 0 ? "-" : "+"}${formatNumber(base, 1)}*${formatNumber(Math.abs(value), 1)}%` : "";
+      };
+      if (bigRootPercent) {
+        add(jpItemName("Big Root"), percentFormula(basePerApplication, bigRootPercent), "（自分）");
+      }
+      if (rescueHoodPercent) {
+        add(jpItemName("Rescue Hood"), percentFormula(basePerApplication, rescueHoodPercent), "（味方）");
+      }
+      if (manualPercent) {
+        add("手動回復補正", percentFormula(basePerApplication, manualPercent), "（自分）");
+        add("手動回復補正", percentFormula(basePerApplication, manualPercent), "（味方）");
+      }
+      if (healingFlat) {
+        add(
+          "手動固定値",
+          `${healingFlat < 0 ? "-" : "+"}${formatNumber(Math.abs(healingFlat), 1)}`,
+          "（各回復判定）"
+        );
+      }
+      if (count > 1) {
+        add("回数／対象数", `×${formatNumber(count, 0)}`);
+      }
+      return Array.from(rows.values());
+    }
+
+    function damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks) {
+      const rows = new Map();
+      const addFormula = (content, formula, suffix = "") => {
+        if (!formula) return;
+        if (!rows.has(content)) rows.set(content, { content, details: [] });
+        rows.get(content).details.push({ formula, suffix });
+      };
+      const signedPercentFormula = (base, percent) => {
+        const value = number(percent, 0);
+        if (Math.abs(value) < 0.000001) return "";
+        return `${value < 0 ? "-" : "+"}${formatNumber(base, 1)}*${formatNumber(Math.abs(value), 1)}%`;
+      };
+
+      const beforeCritical = (moveResults || []).reduce(
+        (sum, result) => sum + result.perHitBase * result.hitCount,
+        0
+      );
+      if (el.criticalHit.checked && beforeCritical > 0) {
+        addFormula("急所", signedPercentFormula(beforeCritical, 100));
+        selectedItems().forEach(({ item, level: itemLevel }) => {
+          const criticalDamageBonus = (item.stats || [])
+            .filter((stat) => stat.label === "Critical-Hit Damage Modifier")
+            .reduce((sum, stat) => sum + itemLevelValue(itemLevel, stat), 0);
+          if (criticalDamageBonus) {
+            addFormula(jpItemName(item), signedPercentFormula(beforeCritical, criticalDamageBonus));
+          }
+        });
+      }
+
+      const beforeYveltal = (moveResults || []).reduce(
+        (sum, result) => sum + result.perHitAfterCrit * result.hitCount,
+        0
+      ) + extras.reduce((sum, entry) => sum + entry.raw, 0);
+      const afterYveltal = (moveResults || []).reduce(
+        (sum, result) => sum + result.totalAfterCrit,
+        0
+      ) + extras.reduce((sum, entry) => (
+        sum + applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
+      ), 0);
+      const yveltalDelta = afterYveltal - beforeYveltal;
+      if (yveltalDelta && beforeYveltal > 0) {
+        const equivalentPercent = yveltalDelta / beforeYveltal * 100;
+        addFormula(
+          "ダークオーラ",
+          signedPercentFormula(beforeYveltal, equivalentPercent),
+          "（各ヒットのはかいカウンタ数を反映）"
+        );
+      }
+
+      extras.forEach((entry) => addFormula(entry.name, entry.formula || `${entry.raw < 0 ? "-" : "+"}${formatNumber(Math.abs(entry.raw), 1)}`));
+
+      const multiplierBase = afterYveltal;
+      const manualDamagePercent = number(el.manualDamagePercent.value, 0);
+      if (manualDamagePercent) {
+        addFormula("手動ダメージ補正", signedPercentFormula(multiplierBase, manualDamagePercent));
+      }
+      if (hasItem("Energy Amplifier") && el.energyAmpProc.checked) {
+        addFormula(
+          jpItemName("Energy Amplifier"),
+          signedPercentFormula(multiplierBase, effectTierFor("Energy Amplifier"))
+        );
+      }
+      if (el.groudonBuff.checked) {
+        addFormula("グラードン", signedPercentFormula(multiplierBase, 50));
+      }
+      if (el.rayquazaBuff.checked) {
+        addFormula("レックウザ", signedPercentFormula(multiplierBase, 40), "（シールド中）");
+      }
+
+      return Array.from(rows.values());
+    }
+
+    function appendDamageAdjustmentFormula(element, formula) {
+      String(formula || "").split(/([+-])/).forEach((token) => {
+        if (token !== "+" && token !== "-") {
+          element.appendChild(document.createTextNode(token));
+          return;
+        }
+        const sign = document.createElement("span");
+        sign.className = `status-adjustment-sign ${token === "+" ? "positive" : "negative"}`;
+        sign.textContent = token;
+        element.appendChild(sign);
+      });
+    }
+
+    function renderDamageAdjustmentRows(rows, body = el.damageAdjustmentBody, emptyMessage = "ダメージ補正なし") {
+      body.innerHTML = "";
+      const card = body.closest(".panel");
+      if (card) card.hidden = !rows.length;
+      if (!rows.length) {
+        return;
+      }
+
+      rows.forEach((adjustment) => {
+        const row = document.createElement("tr");
+        const source = document.createElement("td");
+        source.className = "damage-adjustment-source";
+        source.textContent = adjustment.content;
+
+        const detail = document.createElement("td");
+        const formulas = document.createElement("div");
+        formulas.className = "damage-adjustment-formulas";
+        adjustment.details.forEach((entry) => {
+          const formula = document.createElement("div");
+          formula.className = "damage-adjustment-formula";
+          appendDamageAdjustmentFormula(formula, entry.formula);
+          if (entry.suffix) {
+            const suffix = document.createElement("span");
+            suffix.className = "status-adjustment-suffix";
+            suffix.textContent = entry.suffix;
+            formula.appendChild(suffix);
+          }
+          formulas.appendChild(formula);
+        });
+        detail.appendChild(formulas);
+        row.append(source, detail);
+        body.appendChild(row);
+      });
     }
 
     function createDefenseSequenceState() {
@@ -8515,42 +9904,6 @@
       el.targetSpDefense.value = stats ? stats.sp_defense : 0;
     }
 
-    function renderItemEffects() {
-      el.itemEffects.innerHTML = "";
-      selectedItems().forEach(({ item, level }) => {
-        const note = document.createElement("div");
-        note.className = "effect-note";
-        const tier = level < 10 ? item.level1 : level < 20 ? item.level10 : item.level20;
-        const effect = item.description3 && tier ? `（${jpStat(item.description3)}: ${tier}）` : "";
-        note.textContent = `${jpItemName(item)}${effect}: ${jpItemEffect(item)}`;
-        el.itemEffects.appendChild(note);
-      });
-    }
-
-    function renderShieldItemEffects() {
-      el.shieldItemEffects.innerHTML = "";
-      selectedShieldItems().forEach(({ item, level }) => {
-        const note = document.createElement("div");
-        note.className = "effect-note";
-        const tier = level < 10 ? item.level1 : level < 20 ? item.level10 : item.level20;
-        const effect = item.description3 && tier ? `（${jpStat(item.description3)}: ${tier}）` : "";
-        note.textContent = `${jpItemName(item)}${effect}: ${jpItemEffect(item)}`;
-        el.shieldItemEffects.appendChild(note);
-      });
-    }
-
-    function renderHealingItemEffects() {
-      el.healingItemEffects.innerHTML = "";
-      selectedHealingItems().forEach(({ item, level }) => {
-        const note = document.createElement("div");
-        note.className = "effect-note";
-        const tier = level < 10 ? item.level1 : level < 20 ? item.level10 : item.level20;
-        const effect = item.description3 && tier ? `（${jpStat(item.description3)}: ${tier}）` : "";
-        note.textContent = `${jpItemName(item)}${effect}: ${jpItemEffect(item)}`;
-        el.healingItemEffects.appendChild(note);
-      });
-    }
-
     function updateShieldAll() {
       if (!el.shieldPokemonSelect) return;
       updateShieldConditionVisibility();
@@ -8578,19 +9931,22 @@
       const allyShieldMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualShieldPercent) / 100);
       const shieldFlat = number(el.manualShieldFlat.value, 0);
 
-      el.shieldAttackStat.textContent = formatNumber(stats.attack, 1);
-      el.shieldSpAttackStat.textContent = formatNumber(stats.spAttack, 1);
-      el.shieldHpStat.textContent = formatNumber(stats.maxHp, 0);
-
       if (!choice || !parts.length) {
+        const targetEntries = choice?.entries || [];
+        const showsSelfResult = !choice || targetEntries.some((part) => part.targetScope !== "ally");
+        const showsAllyResult = !choice || targetEntries.some((part) => part.targetScope !== "self");
+        el.shieldSelfResultCard.hidden = !showsSelfResult;
+        el.shieldAllyResultCard.hidden = !showsAllyResult;
+        el.shieldTargetTotalGrid.classList.toggle("single-target", showsSelfResult !== showsAllyResult);
         el.shieldSelfAmount.textContent = "0";
-        el.shieldSelfAmountSub.textContent = "現在のレベルで計算できるシールド式なし";
+        renderCalculationFormula(el.shieldSelfFormula, "現在のレベルで計算できるシールド式なし");
         el.shieldAllyAmount.textContent = "0";
-        el.shieldAllyAmountSub.textContent = "現在のレベルで計算できるシールド式なし";
-        el.shieldFormulaText.textContent = "-";
-        el.shieldBreakdownBody.innerHTML = "";
+        renderCalculationFormula(el.shieldAllyFormula, "現在のレベルで計算できるシールド式なし");
         el.shieldLearnChipRow.innerHTML = "";
-        renderShieldItemEffects();
+        const statusRows = supportStatusAdjustmentRows("shield", stats);
+        renderStatusAdjustmentRows(statusRows, el.shieldStatusBody);
+        renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.shieldStatusValueBody);
+        renderDamageAdjustmentRows([], el.shieldAdjustmentBody, "シールド補正なし");
         return;
       }
 
@@ -8613,7 +9969,6 @@
         };
       });
 
-      const baseShield = results.reduce((sum, result) => sum + result.value, 0);
       const selfBaseShield = results
         .filter((result) => result.part.targetScope !== "ally")
         .reduce((sum, result) => sum + result.value, 0);
@@ -8629,23 +9984,35 @@
       const selfTotalShield = selfPerApplication * count;
       const allyTotalShield = allyPerApplication * count;
       const moveTitle = `${choice.slotLabel}${choice.displayName ? ` - ${jpMoveName(choice.displayName)}` : ""}`;
-      const rescueHoodSummary = rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : "";
+      const selfFormulaResults = results.filter((result) => result.part.targetScope !== "ally");
+      const allyFormulaResults = results.filter((result) => result.part.targetScope !== "self");
+      const showsSelfResult = selfFormulaResults.length > 0;
+      const showsAllyResult = allyFormulaResults.length > 0;
+      el.shieldSelfResultCard.hidden = !showsSelfResult;
+      el.shieldAllyResultCard.hidden = !showsAllyResult;
+      el.shieldTargetTotalGrid.classList.toggle("single-target", showsSelfResult !== showsAllyResult);
+
+      const shieldSelfFormula = selfFormulaResults.length
+        ? applyPostCalculationFormula(
+          sumFormulaExpressions(selfFormulaResults, level),
+          [manualShieldPercent],
+          shieldFlat,
+          count
+        )
+        : "この技は自分にシールドを付与しません";
+      const shieldAllyFormula = allyFormulaResults.length
+        ? applyPostCalculationFormula(
+          sumFormulaExpressions(allyFormulaResults, level),
+          [rescueHoodPercent, manualShieldPercent],
+          shieldFlat,
+          count
+        )
+        : "この技は味方にシールドを付与しません";
+      renderCalculationFormula(el.shieldSelfFormula, shieldSelfFormula);
+      renderCalculationFormula(el.shieldAllyFormula, shieldAllyFormula);
 
       el.shieldSelfAmount.textContent = selfTotalShield;
-      el.shieldSelfAmountSub.textContent = count > 1
-        ? `1回あたり ${selfPerApplication} × ${formatNumber(count, 0)}回/対象`
-        : `基礎 ${baseShield} / 補正後 ${selfPerApplication}`;
       el.shieldAllyAmount.textContent = allyTotalShield;
-      el.shieldAllyAmountSub.textContent = count > 1
-        ? `1回あたり ${allyPerApplication} × ${formatNumber(count, 0)}回/対象${rescueHoodSummary}`
-        : `基礎 ${baseShield} / 補正後 ${allyPerApplication}${rescueHoodSummary}`;
-
-      if (results.length === 1) {
-        const result = results[0];
-        el.shieldFormulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base} = ${result.value}（小数点以下は切り捨て）`;
-      } else {
-        el.shieldFormulaText.textContent = `${moveTitle}: ${results.length}項目を合算 = ${baseShield}（各項目で小数点以下は切り捨て）`;
-      }
 
       el.shieldLearnChipRow.innerHTML = "";
       const learnChip = document.createElement("span");
@@ -8658,42 +10025,14 @@
       typeChip.textContent = `${moveTitle} / 自分・味方を個別計算`;
       el.shieldLearnChipRow.appendChild(typeChip);
 
-      const partRows = results.map((result, index) => {
-        return [
-          `シールド式 ${index + 1}`,
-          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.value}`
-        ];
-      });
-
-      const rows = [
-        ["計算対象", `${moveTitle} / ${results.length > 1 ? "複数項目を合算" : jpMoveLabel(results[0].part.label)}`],
-        ...partRows,
-        ["基礎シールド", selfBaseShield === allyBaseShield
-          ? formatNumber(baseShield, 0)
-          : `自分 ${formatNumber(selfBaseShield, 0)} / 味方 ${formatNumber(allyBaseShield, 0)}`],
-        ["自分: シールド補正", `×${formatNumber(selfShieldMultiplier, 3)} / 固定 ${formatNumber(shieldFlat, 1)}`],
-        ["自分: 1回あたり", formatNumber(selfPerApplication, 0)],
-        ["自分: 合計シールド", formatNumber(selfTotalShield, 0)],
-        ["味方: レスキューフード補正", rescueHoodPercent ? `+${formatNumber(rescueHoodPercent, 1)}%` : "なし"],
-        ["味方: シールド補正", `×${formatNumber(allyShieldMultiplier, 3)} / 固定 ${formatNumber(shieldFlat, 1)}`],
-        ["味方: 1回あたり", formatNumber(allyPerApplication, 0)],
-        ["味方: 合計シールド", formatNumber(allyTotalShield, 0)],
-        ["回数/対象数", formatNumber(count, 0)],
-      ];
-
-      if (fireSpinAttackTrigger) {
-        rows.splice(1, 0,
-          ["計算前提", "ほのおのうず発動後、継続ダメージと通常攻撃（強化含む）がすべて命中し、上限6回分のシールドを獲得"],
-          ["付与対象", "自分のみ（味方へのシールドは発生しない）"]
-        );
-      }
-
-      if (stats.hpFlat || stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
-        rows.splice(1, 0, ["能力補正", `最大HP +${formatNumber(stats.hpFlat, 0)} / 攻撃 +${formatNumber(stats.attackFlat, 1)} / 攻撃 +${formatNumber(stats.attackPercent, 1)}% / 特攻 +${formatNumber(stats.spAttackFlat, 1)} / 特攻 +${formatNumber(stats.spAttackPercent, 1)}%`]);
-      }
-
-      el.shieldBreakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
-      renderShieldItemEffects();
+      const statusRows = supportStatusAdjustmentRows("shield", stats);
+      renderStatusAdjustmentRows(statusRows, el.shieldStatusBody);
+      renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.shieldStatusValueBody);
+      renderDamageAdjustmentRows(
+        shieldAdjustmentRows(selfBaseShield, allyBaseShield, rescueHoodPercent, manualShieldPercent, shieldFlat, count, fireSpinAttackTrigger),
+        el.shieldAdjustmentBody,
+        "シールド補正なし"
+      );
     }
 
     function updateHealingAll() {
@@ -8713,18 +10052,16 @@
       const allyHealingMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualPercent) / 100);
       const healingFlat = number(el.manualHealingFlat.value, 0);
 
-      el.healingAttackStat.textContent = formatNumber(stats.attack, 1);
-      el.healingSpAttackStat.textContent = formatNumber(stats.spAttack, 1);
-
       if (!choice || !parts.length) {
         el.healingSelfAmount.textContent = "0";
-        el.healingSelfAmountSub.textContent = "現在のレベルで計算できる回復式なし";
+        renderCalculationFormula(el.healingSelfFormula, "現在のレベルで計算できる回復式なし");
         el.healingAllyAmount.textContent = "0";
-        el.healingAllyAmountSub.textContent = "現在のレベルで計算できる回復式なし";
-        el.healingFormulaText.textContent = "-";
-        el.healingBreakdownBody.innerHTML = "";
+        renderCalculationFormula(el.healingAllyFormula, "現在のレベルで計算できる回復式なし");
         el.healingLearnChipRow.innerHTML = "";
-        renderHealingItemEffects();
+        const statusRows = supportStatusAdjustmentRows("healing", stats);
+        renderStatusAdjustmentRows(statusRows, el.healingStatusBody);
+        renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.healingStatusValueBody);
+        renderDamageAdjustmentRows([], el.healingAdjustmentBody, "回復補正なし");
         return;
       }
 
@@ -8769,23 +10106,35 @@
       const allyHealing = calculateTargetHealing(allyHealingMultiplier);
       const basePerApplication = results.reduce((sum, result) => sum + result.baseValue * result.hitCount, 0);
       const moveTitle = `${choice.slotLabel}${choice.displayName ? ` - ${jpMoveName(choice.displayName)}` : ""}`;
+      const healingFormulaForTarget = (percentCorrections) => {
+        const perApplicationExpressions = results.map((result) => {
+          return applyPostCalculationFormula(
+            rsbFormulaExpression(result, level),
+            percentCorrections,
+            healingFlat,
+            result.hitCount,
+            "ヒット"
+          );
+        });
+        const perApplicationFormula = perApplicationExpressions.length === 1
+          ? perApplicationExpressions[0]
+          : perApplicationExpressions.map((expression) => `(${expression})`).join(" + ");
+        return manualCount > 1
+          ? `(${perApplicationFormula}) × ${formatNumber(manualCount, 0)}回/対象`
+          : perApplicationFormula;
+      };
+
+      renderCalculationFormula(
+        el.healingSelfFormula,
+        healingFormulaForTarget([bigRootPercent, manualPercent])
+      );
+      renderCalculationFormula(
+        el.healingAllyFormula,
+        healingFormulaForTarget([rescueHoodPercent, manualPercent])
+      );
 
       el.healingSelfAmount.textContent = selfHealing.total;
-      el.healingSelfAmountSub.textContent = manualCount > 1
-        ? `1対象あたり ${selfHealing.perApplication} × ${formatNumber(manualCount, 0)}回/対象${bigRootPercent ? ` / おおきなねっこ +${formatNumber(bigRootPercent, 1)}%` : ""}`
-        : `基礎 ${basePerApplication} / 補正後 ${selfHealing.perApplication}${bigRootPercent ? ` / おおきなねっこ +${formatNumber(bigRootPercent, 1)}%` : ""}`;
       el.healingAllyAmount.textContent = allyHealing.total;
-      el.healingAllyAmountSub.textContent = manualCount > 1
-        ? `1対象あたり ${allyHealing.perApplication} × ${formatNumber(manualCount, 0)}回/対象${rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : ""}`
-        : `基礎 ${basePerApplication} / 補正後 ${allyHealing.perApplication}${rescueHoodPercent ? ` / レスキューフード +${formatNumber(rescueHoodPercent, 1)}%` : ""}`;
-
-      if (results.length === 1) {
-        const result = results[0];
-        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回` : "";
-        el.healingFormulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}（小数点以下は切り捨て）`;
-      } else {
-        el.healingFormulaText.textContent = `${moveTitle}: ${results.length}項目を合算 = ${basePerApplication}（各項目で小数点以下は切り捨て）`;
-      }
 
       el.healingLearnChipRow.innerHTML = "";
       const learnChip = document.createElement("span");
@@ -8798,40 +10147,18 @@
       typeChip.textContent = `${moveTitle} / 自分・味方を個別計算`;
       el.healingLearnChipRow.appendChild(typeChip);
 
-      const partRows = results.map((result, index) => {
-        const countText = result.hitCount > 1 ? ` × ${result.hitCount}回 = ${result.baseValue * result.hitCount}` : "";
-        return [
-          `回復式 ${index + 1}`,
-          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base} = ${result.baseValue}${countText}`
-        ];
-      });
-
-      const rows = [
-        ["計算対象", `${moveTitle} / ${jpMoveLabel(results[0].part.label)}`],
-        ...partRows,
-        ["基礎回復量", formatNumber(basePerApplication, 0)],
-        ["自分: おおきなねっこ補正", bigRootPercent ? `+${formatNumber(bigRootPercent, 1)}%` : "なし"],
-        ["自分: 回復補正", `×${formatNumber(selfHealingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
-        ["自分: 1回/1対象あたり", formatNumber(selfHealing.perApplication, 0)],
-        ["自分: 合計回復量", formatNumber(selfHealing.total, 0)],
-        ["味方: レスキューフード補正", rescueHoodPercent ? `+${formatNumber(rescueHoodPercent, 1)}%` : "なし"],
-        ["味方: 回復補正", `×${formatNumber(allyHealingMultiplier, 3)} / 固定 ${formatNumber(healingFlat, 1)}`],
-        ["味方: 1回/1対象あたり", formatNumber(allyHealing.perApplication, 0)],
-        ["味方: 合計回復量", formatNumber(allyHealing.total, 0)],
-        ["回数/対象数", formatNumber(manualCount, 0)],
-      ];
-
-      if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
-        rows.splice(1, 0, ["能力補正", `攻撃 +${formatNumber(stats.attackFlat, 1)} / 攻撃 +${formatNumber(stats.attackPercent, 1)}% / 特攻 +${formatNumber(stats.spAttackFlat, 1)} / 特攻 +${formatNumber(stats.spAttackPercent, 1)}%`]);
-      }
-
-      el.healingBreakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
-      renderHealingItemEffects();
+      const statusRows = supportStatusAdjustmentRows("healing", stats);
+      renderStatusAdjustmentRows(statusRows, el.healingStatusBody);
+      renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.healingStatusValueBody);
+      renderDamageAdjustmentRows(
+        healingAdjustmentRows(basePerApplication, bigRootPercent, rescueHoodPercent, manualPercent, healingFlat, manualCount),
+        el.healingAdjustmentBody,
+        "回復補正なし"
+      );
     }
 
     function updateAll() {
       updateConditionVisibility();
-      syncSpecialPokemonBuffs();
       el.levelValue.textContent = el.levelRange.value;
       el.targetLevelValue.textContent = el.targetLevelRange.value;
 
@@ -8839,10 +10166,6 @@
       const level = number(el.levelRange.value, 15);
       const stats = computeAttackerStats();
 
-      el.attackStat.textContent = formatNumber(stats.attack, 1);
-      el.spAttackStat.textContent = formatNumber(stats.spAttack, 1);
-      el.critRateStat.textContent = `${formatNumber(stats.critRate, 1)}%`;
-      el.critDamageStat.textContent = `${formatNumber(stats.critDamageMultiplier * 100, 1)}%`;
       if (!el.conditionSnorlaxFlailHp.hidden) {
         el.snorlaxFlailMaxHpNote.textContent = `計算に使用する最大HP: ${formatNumber(stats.maxHp, 0)}`;
       }
@@ -8851,23 +10174,33 @@
       if (!move) {
         el.rawDamage.textContent = "0";
         el.finalDamage.textContent = "0";
-        el.formulaText.textContent = "-";
-        el.breakdownBody.innerHTML = "";
+        renderCalculationFormula(el.rawDamageFormula, "計算できる技がありません");
+        renderCalculationFormula(el.finalDamageFormula, "計算できる技がありません");
+        renderStatusAdjustmentRows([]);
+        renderStatusAdjustmentValueRows([]);
+        renderDamageAdjustmentRows([]);
         return;
       }
 
       const extras = computeExtraDamages(stats);
-      let damageMultiplier = 1 + number(el.manualDamagePercent.value, 0) / 100;
+      const damageMultiplierTerms = [];
+      const addDamageMultiplierTerm = (label, percent) => {
+        const value = number(percent, 0);
+        if (Math.abs(value) < 0.000001) return;
+        damageMultiplierTerms.push({ label, percent: value });
+      };
+      addDamageMultiplierTerm("手動補正", number(el.manualDamagePercent.value, 0));
 
       if (hasItem("Energy Amplifier") && el.energyAmpProc.checked) {
-        damageMultiplier += effectTierFor("Energy Amplifier") / 100;
+        addDamageMultiplierTerm(jpItemName("Energy Amplifier"), effectTierFor("Energy Amplifier"));
       }
       if (el.groudonBuff.checked) {
-        damageMultiplier += 0.5;
+        addDamageMultiplierTerm("グラードン", 50);
       }
       if (el.rayquazaBuff.checked) {
-        damageMultiplier += 0.4;
+        addDamageMultiplierTerm("レックウザ", 40);
       }
+      const damageMultiplier = 1 + damageMultiplierTerms.reduce((sum, term) => sum + term.percent, 0) / 100;
 
       const yveltalDamageActive = selectedPokemon()?.name === "Yveltal";
       const initialYveltalMarks = yveltalDamageActive
@@ -8891,14 +10224,17 @@
         const perHitBase = Math.max(0, Math.floor(formulaBase * damageScale));
         const perHitAfterCrit = el.criticalHit.checked ? Math.floor(perHitBase * stats.critDamageMultiplier) : perHitBase;
         const yveltalHitDamages = [];
+        const yveltalMarksPerHit = [];
         let totalAfterCrit = 0;
         let totalRaw = 0;
         let totalReduced = 0;
         let perHitAfterMultiplier = 0;
+        const defenseDetails = [];
         const effectiveDefenses = [];
         const reducedHitDamages = [];
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
+          yveltalMarksPerHit.push(yveltalMarks);
           const afterMark = yveltalDamageActive
             ? applyYveltalDarkAuraDamage(perHitAfterCrit, yveltalMarks)
             : perHitAfterCrit;
@@ -8909,6 +10245,7 @@
           totalRaw += afterMultiplier;
           const hitDefenseModifiers = addDefenseModifiers(intrinsicDefenseModifiers(part), sequenceDefenseModifiers(defenseSequenceState));
           const hitDefense = targetDefenseDetails(part.dmgType, hitDefenseModifiers);
+          defenseDetails.push(hitDefense);
           effectiveDefenses.push(hitDefense.effective);
           const reducedHitDamage = Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
           reducedHitDamages.push(reducedHitDamage);
@@ -8933,9 +10270,11 @@
           perHitAfterCrit,
           perHitAfterMultiplier,
           yveltalHitDamages,
+          yveltalMarksPerHit,
           totalAfterCrit,
           totalRaw,
           totalReduced,
+          defenseDetails,
           effectiveDefenses,
           reducedHitDamages
         };
@@ -8961,35 +10300,80 @@
         );
       }, 0);
       const totalReduced = Math.max(0, moveReduced + extrasReduced);
+      const damagePercentCorrections = damageMultiplierTerms.map((term) => term.percent);
+      const baseDamageFormulaForResult = (result) => {
+        let expression = rsbFormulaExpression(result, level);
+        if (result.maxHpRatio) {
+          expression = `${expression} + ${formulaVariableValue(stats.maxHp, "hp", 0)} × ${formatNumber(result.maxHpRatio, 1)}%`;
+        }
+        if (result.damageScale !== 1) {
+          expression = `(${expression}) × ${formatNumber(result.damageScale * 100, 1)}%`;
+        }
+        if (el.criticalHit.checked) {
+          expression = `(${expression}) × ${formatNumber(stats.critDamageMultiplier * 100, 1)}%`;
+        }
+        return expression;
+      };
+      const moveHitFormula = (result, hitIndex, includeDefense) => {
+        const yveltalPercent = yveltalDamageActive
+          ? number(result.yveltalMarksPerHit[hitIndex], 0) * YVELTAL_DARK_AURA.damagePerStackPercent
+          : 0;
+        let expression = applyPostCalculationFormula(
+          baseDamageFormulaForResult(result),
+          [yveltalPercent, ...damagePercentCorrections]
+        );
+        if (includeDefense) {
+          expression = `(${expression}) × 600 ÷ (600 + ${defenseAdjustmentFormula(
+            result.defenseDetails[hitIndex],
+            result.part.dmgType
+          )})`;
+        }
+        return expression;
+      };
+      const extraDamageFormula = (entry, includeDefense) => {
+        const yveltalPercent = yveltalDamageActive
+          ? initialYveltalMarks * YVELTAL_DARK_AURA.damagePerStackPercent
+          : 0;
+        let expression = applyPostCalculationFormula(
+          entry.calculationFormula || formatNumber(entry.raw, 1),
+          [yveltalPercent, ...damagePercentCorrections]
+        );
+        if (includeDefense) {
+          expression = `(${expression}) × 600 ÷ (600 + ${defenseAdjustmentFormula(
+            targetDefenseDetails(entry.type),
+            entry.type
+          )})`;
+        }
+        return expression;
+      };
+      const rawDamageExpressions = moveResults.flatMap((result) => (
+        Array.from(
+          { length: result.hitCount },
+          (_, hitIndex) => moveHitFormula(result, hitIndex, false)
+        )
+      ));
+      rawDamageExpressions.push(...extras.map((entry) => extraDamageFormula(entry, false)));
+      const finalDamageExpressions = moveResults.flatMap((result) => (
+        Array.from(
+          { length: result.hitCount },
+          (_, hitIndex) => moveHitFormula(result, hitIndex, true)
+        )
+      ));
+      finalDamageExpressions.push(...extras.map((entry) => extraDamageFormula(entry, true)));
+
+      renderCalculationFormula(
+        el.rawDamageFormula,
+        groupedFormulaExpressions(rawDamageExpressions)
+      );
+      renderCalculationFormula(
+        el.finalDamageFormula,
+        groupedFormulaExpressions(finalDamageExpressions)
+      );
 
       el.rawDamage.textContent = totalRaw;
       el.finalDamage.textContent = totalReduced;
-      el.rawDamageSub.textContent = `技本体 ${moveRaw} / 追加 ${extrasRaw} / 倍率 ×${formatNumber(damageMultiplier, 3)}`;
-      el.finalDamageSub.textContent = el.targetSelect.value
-        ? `${el.targetSelect.options[el.targetSelect.selectedIndex].textContent} Lv${el.targetLevelRange.value} への推定`
-        : "相手未選択時は防御0として計算";
 
       const moveTitle = `${move.slotLabel}${move.displayName ? ` - ${jpMoveName(move.displayName)}` : ""}`;
-      if (moveResults.length === 1) {
-        const result = moveResults[0];
-        const hasYveltalAdjustment = yveltalDamageActive && (
-          result.hitCount > 1 || result.yveltalHitDamages.some((value) => value !== result.perHitAfterCrit)
-        );
-        const hitText = hasYveltalAdjustment
-          ? ` / はかい補正 ${result.yveltalHitDamages.join(" + ")} = ${formatNumber(result.totalAfterCrit, 0)}`
-          : result.hitCount > 1 ? ` × ${formatNumber(result.hitCount, 0)}ヒット = ${formatNumber(result.totalAfterCrit, 0)}` : "";
-        const scaleText = result.damageScale !== 1
-          ? ` = ${result.formulaBase} × ${formatNumber(result.damageScale * 100, 1)}% = ${result.perHitBase}`
-          : ` = ${result.perHitBase}`;
-        const maxHpText = result.maxHpRatio
-          ? ` + 最大HP${formatNumber(stats.maxHp, 0)} × ${formatNumber(result.maxHpRatio, 1)}%`
-          : "";
-        el.formulaText.textContent = `${moveTitle}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (Lv${level} - 1) + ${result.part.base}${maxHpText}${scaleText}${hitText}（各ヒットで小数点以下は切り捨て）`;
-      } else {
-        const totalHits = moveResults.reduce((sum, result) => sum + result.hitCount, 0);
-        el.formulaText.textContent = `${moveTitle}: ${moveResults.length}項目 / ${formatNumber(totalHits, 0)}ヒットを合算（各ヒットで小数点以下は切り捨て）`;
-      }
-
       el.learnChipRow.innerHTML = "";
       const learnChip = document.createElement("span");
       learnChip.className = level >= move.minLevel ? "chip good" : "chip warn";
@@ -9001,95 +10385,10 @@
       typeChip.textContent = `${moveTitle} / 全ヒット想定`;
       el.learnChipRow.appendChild(typeChip);
 
-      const partRows = moveResults.map((result, index) => {
-        const hitText = result.hitCount > 1
-          ? ` × ${formatNumber(result.hitCount, 0)}ヒット`
-          : "";
-        const markText = yveltalDamageActive && (
-          result.hitCount > 1 || result.yveltalHitDamages.some((value) => value !== result.perHitAfterCrit)
-        )
-          ? ` / はかい補正 ${result.yveltalHitDamages.join(" + ")}`
-          : "";
-        const critText = el.criticalHit.checked ? ` / 急所後 ${result.perHitAfterCrit}` : "";
-        const reducedHitsText = result.hitCount > 1 && new Set(result.effectiveDefenses).size > 1
-          ? ` / 防御後 ${result.reducedHitDamages.join(" + ")} = ${formatNumber(result.totalReduced, 0)}`
-          : "";
-        const scaleText = result.damageScale !== 1
-          ? ` = ${result.formulaBase} × ${formatNumber(result.damageScale * 100, 1)}% = ${result.perHitBase}`
-          : ` = ${result.perHitBase}`;
-        const maxHpText = result.maxHpRatio
-          ? ` + 最大HP${formatNumber(stats.maxHp, 0)} × ${formatNumber(result.maxHpRatio, 1)}%（${formatNumber(result.maxHpComponent, 0)}）`
-          : "";
-        return [
-          `技本体 ${index + 1}`,
-          `${jpMoveLabel(result.part.label)}: ${result.typeLabel}${formatNumber(result.moveStat, 1)} × ${result.part.ratio}% + ${result.part.slider} × (${level} - 1) + ${result.part.base}${maxHpText}${scaleText}${critText}${hitText}${markText} -> 防御前 ${formatNumber(result.totalRaw, 0)} / 防御後 ${formatNumber(result.totalReduced, 0)}${reducedHitsText}`
-        ];
-      });
-
-      const defenseReferences = moveResults.map((result) => {
-        const label = result.part.dmgType.trim() === "Atk" ? "防御" : "特防";
-        const base = result.part.dmgType.trim() === "Atk" ? number(el.targetDefense.value, 0) : number(el.targetSpDefense.value, 0);
-        const minDefense = Math.min(...result.effectiveDefenses);
-        const maxDefense = Math.max(...result.effectiveDefenses);
-        const effective = Math.abs(minDefense - maxDefense) < 0.000001
-          ? formatNumber(minDefense, 1)
-          : `${formatNumber(maxDefense, 1)} → ${formatNumber(minDefense, 1)}`;
-        return `${label} ${formatNumber(base, 1)} → 有効${label} ${effective}`;
-      }).filter((value, index, rows) => rows.indexOf(value) === index);
-      const activeDefenseLines = defenseModifierSummary(activeDefenseModifiers());
-      const automaticDefenseLines = automaticDefenseEffectNotes();
-
-      const rows = [
-        ["計算対象", `${moveTitle} / ${moveResults.length > 1 ? "複数項目を合算" : jpMoveLabel(moveResults[0].part.label)}`],
-        ...partRows,
-        ["技本体合計", `${formatNumber(moveRaw, 0)}（倍率適用後・防御前）`],
-        ["追加効果", extras.length ? extras.map((entry) => {
-          const afterMark = yveltalDamageActive
-            ? applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
-            : entry.raw;
-          return `${entry.name}: ${formatNumber(Math.floor(afterMark * damageMultiplier), 1)}`;
-        }).join(" / ") : "0"],
-        ["ダメージ倍率", `×${formatNumber(damageMultiplier, 3)}`],
-        ["防御参照", defenseReferences.join(" / ")]
-      ];
-
-      let detailRowIndex = 1;
-      if (isSnorlaxFlailAttackChoice(selectedPokemon(), move.choice)) {
-        rows.splice(detailRowIndex, 0, [
-          "じたばた条件",
-          `自分の残りHP ${formatNumber(clamp(number(el.snorlaxFlailHpPercent.value, 100), 0, 100), 0)}% / 最大HP ${formatNumber(stats.maxHp, 0)}`
-        ]);
-        detailRowIndex += 1;
-      }
-      if (yveltalDamageActive) {
-        rows.splice(detailRowIndex, 0, [
-          "ダークオーラ",
-          `はかいカウンタ 開始 ${formatNumber(initialYveltalMarks, 0)} / ${YVELTAL_DARK_AURA.maxStacks}（1個につき被ダメージ+${YVELTAL_DARK_AURA.damagePerStackPercent}%、強化攻撃・わざ・ユナイトわざの各ヒット後に付与）`
-        ]);
-        detailRowIndex += 1;
-      }
-      if (stats.attackFlat || stats.attackPercent || stats.spAttackFlat || stats.spAttackPercent) {
-        rows.splice(detailRowIndex, 0, ["能力補正", `攻撃 ${signedNumber(stats.attackFlat, 1)} / 攻撃 +${formatNumber(stats.attackPercent, 1)}% / 特攻 ${signedNumber(stats.spAttackFlat, 1)} / 特攻 +${formatNumber(stats.spAttackPercent, 1)}%`]);
-        detailRowIndex += 1;
-      }
-      if (stats.emblemLines.length) {
-        rows.splice(detailRowIndex, 0, ["サポートメダル", stats.emblemLines.join(" / ")]);
-        detailRowIndex += 1;
-      }
-      if (stats.specialBuffLines.length) {
-        rows.splice(detailRowIndex, 0, ["特殊ポケモン撃破バフ", stats.specialBuffLines.join(" / ")]);
-        detailRowIndex += 1;
-      }
-      if (activeDefenseLines.length) {
-        rows.splice(detailRowIndex, 0, ["防御・特防補正", activeDefenseLines.join(" / ")]);
-        detailRowIndex += 1;
-      }
-      if (automaticDefenseLines.length) {
-        rows.splice(detailRowIndex, 0, ["技内の自動補正", automaticDefenseLines.join(" / ")]);
-      }
-
-      el.breakdownBody.innerHTML = rows.map(([name, value]) => `<tr><td>${escapeHtml(name)}</td><td>${escapeHtml(value)}</td></tr>`).join("");
-      renderItemEffects();
+      const adjustmentRows = statusAdjustmentRows(stats, moveResults);
+      renderStatusAdjustmentRows(adjustmentRows);
+      renderStatusAdjustmentValueRows(statusAdjustmentValueRows(stats, moveResults, adjustmentRows));
+      renderDamageAdjustmentRows(damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks));
     }
 
     function escapeHtml(value) {
@@ -9404,6 +10703,11 @@
           closeMoveComboboxes();
         }
       });
+      document.querySelectorAll("[data-calculation-tip]").forEach((button) => {
+        const key = button.dataset.calculationTip;
+        button.addEventListener("click", () => toggleCalculationTip(key));
+        syncCalculationTip(key);
+      });
       el.navigationMenuButton.addEventListener("click", toggleCalculatorNavigation);
       el.navigationMenu.addEventListener("keydown", (event) => {
         const menuItems = Object.values(CALCULATOR_VIEWS).map((view) => el[view.buttonId]);
@@ -9539,10 +10843,14 @@
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "criticalHit", "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc", "chargingCharmProc",
-        "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "snorlaxFlailHpPercent", "sylveonHyperVoiceRange", "regiBuffSelect", "regidragoBuff", "groudonBuff", "rayquazaBuff"
+        "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "snorlaxFlailHpPercent", "sylveonHyperVoiceRange", "regidragoBuff", "groudonBuff", "rayquazaBuff"
       ].forEach((id) => {
         el[id].addEventListener("input", updateAll);
         el[id].addEventListener("change", updateAll);
+      });
+      document.querySelectorAll('input[name="regiBuff"]').forEach((input) => {
+        input.addEventListener("input", updateAll);
+        input.addEventListener("change", updateAll);
       });
 
       [
