@@ -1517,20 +1517,32 @@
     }
 
     .status-adjustment-table col:nth-child(1) {
-      width: 16%;
+      width: 15%;
     }
 
     .status-adjustment-table col:nth-child(2) {
-      width: 30%;
+      width: 10%;
     }
 
     .status-adjustment-table col:nth-child(3) {
-      width: 54%;
+      width: 28%;
     }
 
-    .status-value-table col:nth-child(2),
-    .status-value-table col:nth-child(3) {
-      width: 42%;
+    .status-adjustment-table col:nth-child(4) {
+      width: 47%;
+    }
+
+    .status-value-table col:nth-child(1) {
+      width: 15%;
+    }
+
+    .status-value-table col:nth-child(2) {
+      width: 10%;
+    }
+
+    .status-value-table col:nth-child(3),
+    .status-value-table col:nth-child(4) {
+      width: 37.5%;
     }
 
     .status-adjustment-target {
@@ -1542,6 +1554,17 @@
     }
 
     .status-adjustment-target.opponent {
+      color: var(--bad-ink);
+    }
+
+    .status-adjustment-scope {
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status-adjustment-scope.opponent {
       color: var(--bad-ink);
     }
 
@@ -3120,10 +3143,12 @@
                 <col>
                 <col>
                 <col>
+                <col>
               </colgroup>
               <thead>
                 <tr>
                   <th>対象値</th>
+                  <th>補正対象</th>
                   <th>内容</th>
                   <th>詳細</th>
                 </tr>
@@ -3135,10 +3160,12 @@
                 <col>
                 <col>
                 <col>
+                <col>
               </colgroup>
               <thead>
                 <tr>
                   <th>対象値</th>
+                  <th>補正対象</th>
                   <th>補正前</th>
                   <th>補正後</th>
                 </tr>
@@ -3468,13 +3495,13 @@
               </div>
               <div class="result-section-body">
                 <table class="status-adjustment-table">
-                  <colgroup><col><col><col></colgroup>
-                  <thead><tr><th>対象値</th><th>内容</th><th>詳細</th></tr></thead>
+                  <colgroup><col><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正対象</th><th>内容</th><th>詳細</th></tr></thead>
                   <tbody id="shieldStatusBody"></tbody>
                 </table>
                 <table class="status-adjustment-table status-value-table" aria-label="シールド計算のステータス補正前後">
-                  <colgroup><col><col><col></colgroup>
-                  <thead><tr><th>対象値</th><th>補正前</th><th>補正後</th></tr></thead>
+                  <colgroup><col><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正対象</th><th>補正前</th><th>補正後</th></tr></thead>
                   <tbody id="shieldStatusValueBody"></tbody>
                 </table>
               </div>
@@ -3678,13 +3705,13 @@
               </div>
               <div class="result-section-body">
                 <table class="status-adjustment-table">
-                  <colgroup><col><col><col></colgroup>
-                  <thead><tr><th>対象値</th><th>内容</th><th>詳細</th></tr></thead>
+                  <colgroup><col><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正対象</th><th>内容</th><th>詳細</th></tr></thead>
                   <tbody id="healingStatusBody"></tbody>
                 </table>
                 <table class="status-adjustment-table status-value-table" aria-label="回復計算のステータス補正前後">
-                  <colgroup><col><col><col></colgroup>
-                  <thead><tr><th>対象値</th><th>補正前</th><th>補正後</th></tr></thead>
+                  <colgroup><col><col><col><col></colgroup>
+                  <thead><tr><th>対象値</th><th>補正対象</th><th>補正前</th><th>補正後</th></tr></thead>
                   <tbody id="healingStatusValueBody"></tbody>
                 </table>
               </div>
@@ -9375,6 +9402,12 @@
         targetLabel.textContent = adjustment.target;
         target.appendChild(targetLabel);
 
+        const scope = document.createElement("td");
+        const scopeLabel = document.createElement("span");
+        scopeLabel.className = `status-adjustment-scope${adjustment.side === "self" ? "" : " opponent"}`;
+        scopeLabel.textContent = adjustment.side === "self" ? "自" : "他";
+        scope.appendChild(scopeLabel);
+
         const source = document.createElement("td");
         source.className = "status-adjustment-source";
         source.textContent = adjustment.content;
@@ -9401,7 +9434,7 @@
           detailList.appendChild(line);
         });
         details.appendChild(detailList);
-        row.append(target, source, details);
+        row.append(target, scope, source, details);
         body.appendChild(row);
       });
     }
@@ -9508,6 +9541,12 @@
         targetLabel.textContent = valueRow.target;
         target.appendChild(targetLabel);
 
+        const scope = document.createElement("td");
+        const scopeLabel = document.createElement("span");
+        scopeLabel.className = `status-adjustment-scope${valueRow.side === "self" ? "" : " opponent"}`;
+        scopeLabel.textContent = valueRow.side === "self" ? "自" : "他";
+        scope.appendChild(scopeLabel);
+
         const before = document.createElement("td");
         before.textContent = valueRow.beforeText;
 
@@ -9515,7 +9554,7 @@
         after.className = `status-value-after${valueRow.direction ? ` ${valueRow.direction}` : ""}`;
         after.textContent = valueRow.afterText;
 
-        row.append(target, before, after);
+        row.append(target, scope, before, after);
         body.appendChild(row);
       });
     }
