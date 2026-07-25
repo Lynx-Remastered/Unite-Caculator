@@ -1628,6 +1628,18 @@
       width: 70%;
     }
 
+    .damage-adjustment-value-table col:nth-child(1) {
+      width: 25%;
+    }
+
+    .damage-adjustment-value-table col:nth-child(2) {
+      width: 55%;
+    }
+
+    .damage-adjustment-value-table col:nth-child(3) {
+      width: 20%;
+    }
+
     .damage-adjustment-source {
       font-weight: 800;
     }
@@ -1640,6 +1652,24 @@
     .damage-adjustment-formula {
       line-height: 1.35;
       overflow-wrap: anywhere;
+    }
+
+    .damage-adjustment-value-heading,
+    .damage-adjustment-value-cell {
+      text-align: right;
+    }
+
+    .damage-adjustment-value {
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .damage-adjustment-value.positive {
+      color: var(--status-positive);
+    }
+
+    .damage-adjustment-value.negative {
+      color: var(--status-negative);
     }
 
     .ranking-controls {
@@ -3180,8 +3210,9 @@
             <h2>ダメージ補正</h2>
           </div>
           <div class="result-section-body">
-            <table class="damage-adjustment-table">
+            <table class="damage-adjustment-table damage-adjustment-value-table">
               <colgroup>
+                <col>
                 <col>
                 <col>
               </colgroup>
@@ -3189,6 +3220,7 @@
                 <tr>
                   <th>項目</th>
                   <th>詳細</th>
+                  <th class="damage-adjustment-value-heading">補正値</th>
                 </tr>
               </thead>
               <tbody id="damageAdjustmentBody"></tbody>
@@ -9807,10 +9839,10 @@
 
     function damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks, percentTerms) {
       const rows = new Map();
-      const addFormula = (content, formula, suffix = "") => {
+      const addFormula = (content, formula, suffix = "", value = 0) => {
         if (!formula) return;
         if (!rows.has(content)) rows.set(content, { content, details: [] });
-        rows.get(content).details.push({ formula, suffix });
+        rows.get(content).details.push({ formula, suffix, value: number(value, 0) });
       };
       const signedPercentFormula = (base, percent) => {
         const value = number(percent, 0);
@@ -9823,13 +9855,18 @@
         0
       );
       if (el.criticalHit.checked && beforeCritical > 0) {
-        addFormula("急所", signedPercentFormula(beforeCritical, 100));
+        addFormula("急所", signedPercentFormula(beforeCritical, 100), "", beforeCritical);
         selectedItems().forEach(({ item, level: itemLevel }) => {
           const criticalDamageBonus = (item.stats || [])
             .filter((stat) => stat.label === "Critical-Hit Damage Modifier")
             .reduce((sum, stat) => sum + itemLevelValue(itemLevel, stat), 0);
           if (criticalDamageBonus) {
-            addFormula(jpItemName(item), signedPercentFormula(beforeCritical, criticalDamageBonus));
+            addFormula(
+              jpItemName(item),
+              signedPercentFormula(beforeCritical, criticalDamageBonus),
+              "",
+              beforeCritical * criticalDamageBonus / 100
+            );
           }
         });
       }
@@ -9850,7 +9887,8 @@
         addFormula(
           "ダークオーラ",
           signedPercentFormula(beforeYveltal, equivalentPercent),
-          "（各ヒットのはかいカウンタ数を反映）"
+          "（各ヒットのはかいカウンタ数を反映）",
+          yveltalDelta
         );
       }
 
@@ -9862,15 +9900,27 @@
         const total = result.perHitBase * hitCount;
         addFormula(
           "技固有ダメージ補正",
-          `${jpMoveLabel(result.part.label)}: ${perHitFormula}${hitCount > 1 ? `*${formatNumber(hitCount, 0)}ヒット` : ""}=${formatNumber(total, 0)}`
+          `${jpMoveLabel(result.part.label)}: ${perHitFormula}${hitCount > 1 ? `*${formatNumber(hitCount, 0)}ヒット` : ""}=${formatNumber(total, 0)}`,
+          "",
+          (result.perHitBase - result.formulaBase) * hitCount
         );
       });
 
-      extras.forEach((entry) => addFormula(entry.name, entry.formula || `${entry.raw < 0 ? "-" : "+"}${formatNumber(Math.abs(entry.raw), 1)}`));
+      extras.forEach((entry) => addFormula(
+        entry.name,
+        entry.formula || `${entry.raw < 0 ? "-" : "+"}${formatNumber(Math.abs(entry.raw), 1)}`,
+        "",
+        entry.raw
+      ));
 
       const multiplierBase = afterYveltal;
       (percentTerms || []).forEach((term) => {
-        addFormula(term.label, signedPercentFormula(multiplierBase, term.percent), term.suffix || "");
+        addFormula(
+          term.label,
+          signedPercentFormula(multiplierBase, term.percent),
+          term.suffix || "",
+          multiplierBase * number(term.percent, 0) / 100
+        );
       });
 
       return Array.from(rows.values());
@@ -9892,6 +9942,7 @@
     function renderDamageAdjustmentRows(rows, body = el.damageAdjustmentBody) {
       body.innerHTML = "";
       const card = body.closest(".panel");
+      const showsAdjustmentValue = Boolean(body.closest(".damage-adjustment-value-table"));
       if (card) card.hidden = !rows.length;
       if (!rows.length) {
         return;
@@ -9919,7 +9970,21 @@
           formulas.appendChild(formula);
         });
         detail.appendChild(formulas);
+
         row.append(source, detail);
+        if (showsAdjustmentValue) {
+          const valueCell = document.createElement("td");
+          valueCell.className = "damage-adjustment-value-cell";
+          const value = adjustment.details.reduce(
+            (sum, entry) => sum + number(entry.value, 0),
+            0
+          );
+          const valueLabel = document.createElement("span");
+          valueLabel.className = `damage-adjustment-value${value > 0 ? " positive" : value < 0 ? " negative" : ""}`;
+          valueLabel.textContent = signedNumber(value, 2);
+          valueCell.appendChild(valueLabel);
+          row.appendChild(valueCell);
+        }
         body.appendChild(row);
       });
     }
