@@ -3175,7 +3175,7 @@
           </div>
         </section>
 
-        <section class="panel result-panel">
+        <section id="damageAdjustmentCard" class="panel result-panel" hidden>
           <div class="result-head">
             <h2>ダメージ補正</h2>
           </div>
@@ -3507,7 +3507,7 @@
               </div>
             </section>
 
-            <section class="panel result-panel">
+            <section id="shieldAdjustmentCard" class="panel result-panel" hidden>
               <div class="result-head">
                 <h2>シールド補正</h2>
               </div>
@@ -3717,7 +3717,7 @@
               </div>
             </section>
 
-            <section class="panel result-panel">
+            <section id="healingAdjustmentCard" class="panel result-panel" hidden>
               <div class="result-head">
                 <h2>回復補正</h2>
               </div>
@@ -4986,7 +4986,7 @@
         "targetLevelRange", "targetLevelValue", "targetDefense", "targetSpDefense",
         "rawDamage", "rawDamageFormula", "rawDamageResult",
         "finalDamage", "finalDamageFormula", "finalDamageResult",
-        "damageStatusBody", "damageStatusValueBody", "damageAdjustmentBody", "learnChipRow", "manualAttack", "manualHp",
+        "damageStatusBody", "damageStatusValueBody", "damageAdjustmentCard", "damageAdjustmentBody", "learnChipRow", "manualAttack", "manualHp",
         "manualSpAttack", "manualDamagePercent", "manualExtraDamage", "criticalHit",
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
@@ -4994,6 +4994,7 @@
         "conditionYveltalMarks", "yveltalMarkStacks", "yveltalDarkAuraNote", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
         "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
         "conditionDamageVariant", "damageVariantSelect", "damageConditionPanel",
+        "conditionChoiceSpecs", "conditionRazorClaw",
         "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
         "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
@@ -5015,7 +5016,7 @@
         "shieldTargetTotalGrid", "shieldSelfResultCard", "shieldAllyResultCard",
         "shieldSelfAmount", "shieldSelfFormula", "shieldSelfResult",
         "shieldAllyAmount", "shieldAllyFormula", "shieldAllyResult",
-        "shieldStatusBody", "shieldStatusValueBody", "shieldAdjustmentBody", "shieldLearnChipRow",
+        "shieldStatusBody", "shieldStatusValueBody", "shieldAdjustmentCard", "shieldAdjustmentBody", "shieldLearnChipRow",
         "healingPokemonSelect",
         "healingLevelRange", "healingLevelValue", "healingMoveChoices", "healingEffectRow", "healingEffectSelect",
         "healingApplyBuildButton", "healingClearItemsButton",
@@ -5028,7 +5029,7 @@
         "manualHealingPercent", "manualHealingFlat", "healingCount",
         "healingSelfAmount", "healingSelfFormula", "healingSelfResult",
         "healingAllyAmount", "healingAllyFormula", "healingAllyResult",
-        "healingStatusBody", "healingStatusValueBody", "healingAdjustmentBody", "healingLearnChipRow",
+        "healingStatusBody", "healingStatusValueBody", "healingAdjustmentCard", "healingAdjustmentBody", "healingLearnChipRow",
         "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
         "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
         "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
@@ -5409,6 +5410,18 @@
       return state.moveChoices.find((choice) => choice.slotKey === state.selectedMoveSlot && !choice.disabled)
         || state.moveChoices.find((choice) => !choice.disabled)
         || null;
+    }
+
+    function isNormalOrBoostedAttackChoice(choice = selectedMoveChoice()) {
+      return /(?:^|-)(?:basic|boosted)$/.test(String(choice?.slotKey || ""));
+    }
+
+    function choiceSpecsCanTrigger(choice = selectedMoveChoice()) {
+      return Boolean(choice) && !isNormalOrBoostedAttackChoice(choice);
+    }
+
+    function razorClawCanTrigger(choice = selectedMoveChoice()) {
+      return Boolean(choice) && isNormalOrBoostedAttackChoice(choice);
     }
 
     function normalizedMovePartLabel(label) {
@@ -8607,14 +8620,14 @@
         conditionWeaknessPolicy: "Weakness Policy",
         conditionAccelBracer: "Accel Bracer",
         conditionDriveLens: "Drive Lens",
-        conditionChoiceSpecs: "Choice Specs",
         conditionChargingCharm: "Charging Charm",
-        conditionRazorClaw: "Razor Claw",
         conditionEnergyAmp: "Energy Amplifier"
       };
       Object.entries(map).forEach(([id, itemName]) => {
         document.getElementById(id).hidden = !names.has(itemName);
       });
+      el.conditionChoiceSpecs.hidden = !names.has("Choice Specs") || !choiceSpecsCanTrigger();
+      el.conditionRazorClaw.hidden = !names.has("Razor Claw") || !razorClawCanTrigger();
       const yveltalSelected = selectedPokemon()?.name === "Yveltal";
       el.conditionYveltalMarks.hidden = !yveltalSelected;
       if (yveltalSelected) {
@@ -9102,8 +9115,9 @@
 
     function computeExtraDamages(stats) {
       const extras = [];
+      const choice = selectedMoveChoice();
 
-      if (hasItem("Choice Specs") && el.choiceSpecsProc.checked) {
+      if (hasItem("Choice Specs") && el.choiceSpecsProc.checked && choiceSpecsCanTrigger(choice)) {
         const percent = effectTierFor("Choice Specs");
         const flat = selectedItemLevel("Choice Specs") < 10 ? 40 : selectedItemLevel("Choice Specs") < 20 ? 50 : 60;
         const raw = Math.floor(Math.floor(stats.spAttack * percent / 100) + flat);
@@ -9129,7 +9143,7 @@
         });
       }
 
-      if (hasItem("Razor Claw") && el.razorClawProc.checked) {
+      if (hasItem("Razor Claw") && el.razorClawProc.checked && razorClawCanTrigger(choice)) {
         const percent = effectTierFor("Razor Claw");
         const flat = selectedItemLevel("Razor Claw") < 10 ? 10 : selectedItemLevel("Razor Claw") < 20 ? 15 : 20;
         const raw = Math.floor(Math.floor(stats.attack * percent / 100) + flat);
@@ -9695,7 +9709,23 @@
       }).sort((a, b) => a.order - b.order);
     }
 
-    function shieldAdjustmentRows(selfBaseShield, allyBaseShield, rescueHoodPercent, manualShieldPercent, shieldFlat, count, fireSpinAttackTrigger) {
+    function percentCorrectionTermsForTarget(terms, target) {
+      return (terms || []).filter((term) => (
+        !term.targets || term.targets.includes(target)
+      ));
+    }
+
+    function percentCorrectionValues(terms, target) {
+      return percentCorrectionTermsForTarget(terms, target).map((term) => number(term.percent, 0));
+    }
+
+    function percentCorrectionMultiplier(terms, target) {
+      const totalPercent = percentCorrectionValues(terms, target)
+        .reduce((sum, percent) => sum + percent, 0);
+      return Math.max(0, 1 + totalPercent / 100);
+    }
+
+    function shieldAdjustmentRows(selfBaseShield, allyBaseShield, percentTerms, shieldFlat, count, fireSpinAttackTrigger) {
       const rows = new Map();
       const add = (content, formula, suffix = "") => {
         if (!formula) return;
@@ -9706,13 +9736,12 @@
         const value = number(percent, 0);
         return value ? `${value < 0 ? "-" : "+"}${formatNumber(base, 1)}*${formatNumber(Math.abs(value), 1)}%` : "";
       };
-      if (manualShieldPercent) {
-        if (selfBaseShield > 0) add("手動シールド補正", percentFormula(selfBaseShield, manualShieldPercent), "（自分）");
-        if (allyBaseShield > 0) add("手動シールド補正", percentFormula(allyBaseShield, manualShieldPercent), "（味方）");
-      }
-      if (rescueHoodPercent && allyBaseShield > 0) {
-        add(jpItemName("Rescue Hood"), percentFormula(allyBaseShield, rescueHoodPercent), "（味方）");
-      }
+      percentCorrectionTermsForTarget(percentTerms, "self").forEach((term) => {
+        if (selfBaseShield > 0) add(term.label, percentFormula(selfBaseShield, term.percent), "（自分）");
+      });
+      percentCorrectionTermsForTarget(percentTerms, "ally").forEach((term) => {
+        if (allyBaseShield > 0) add(term.label, percentFormula(allyBaseShield, term.percent), "（味方）");
+      });
       if (shieldFlat) {
         const formula = `${shieldFlat < 0 ? "-" : "+"}${formatNumber(Math.abs(shieldFlat), 1)}`;
         if (selfBaseShield > 0) add("手動固定値", formula, "（自分・1回ごと）");
@@ -9724,7 +9753,7 @@
       return Array.from(rows.values());
     }
 
-    function healingAdjustmentRows(basePerApplication, bigRootPercent, rescueHoodPercent, manualPercent, healingFlat, count) {
+    function healingAdjustmentRows(basePerApplication, percentTerms, healingFlat, count) {
       const rows = new Map();
       const add = (content, formula, suffix = "") => {
         if (!formula) return;
@@ -9735,16 +9764,12 @@
         const value = number(percent, 0);
         return value ? `${value < 0 ? "-" : "+"}${formatNumber(base, 1)}*${formatNumber(Math.abs(value), 1)}%` : "";
       };
-      if (bigRootPercent) {
-        add(jpItemName("Big Root"), percentFormula(basePerApplication, bigRootPercent), "（自分）");
-      }
-      if (rescueHoodPercent) {
-        add(jpItemName("Rescue Hood"), percentFormula(basePerApplication, rescueHoodPercent), "（味方）");
-      }
-      if (manualPercent) {
-        add("手動回復補正", percentFormula(basePerApplication, manualPercent), "（自分）");
-        add("手動回復補正", percentFormula(basePerApplication, manualPercent), "（味方）");
-      }
+      percentCorrectionTermsForTarget(percentTerms, "self").forEach((term) => {
+        add(term.label, percentFormula(basePerApplication, term.percent), "（自分）");
+      });
+      percentCorrectionTermsForTarget(percentTerms, "ally").forEach((term) => {
+        add(term.label, percentFormula(basePerApplication, term.percent), "（味方）");
+      });
       if (healingFlat) {
         add(
           "手動固定値",
@@ -9758,7 +9783,7 @@
       return Array.from(rows.values());
     }
 
-    function damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks) {
+    function damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks, percentTerms) {
       const rows = new Map();
       const addFormula = (content, formula, suffix = "") => {
         if (!formula) return;
@@ -9807,25 +9832,24 @@
         );
       }
 
+      (moveResults || []).forEach((result) => {
+        const damageScale = Math.max(0, number(result.damageScale, 1));
+        if (Math.abs(damageScale - 1) < 0.000001) return;
+        const hitCount = Math.max(1, number(result.hitCount, 1));
+        const perHitFormula = `${formatNumber(result.formulaBase, 1)}*${formatNumber(damageScale * 100, 1)}%`;
+        const total = result.perHitBase * hitCount;
+        addFormula(
+          "技固有ダメージ補正",
+          `${jpMoveLabel(result.part.label)}: ${perHitFormula}${hitCount > 1 ? `*${formatNumber(hitCount, 0)}ヒット` : ""}=${formatNumber(total, 0)}`
+        );
+      });
+
       extras.forEach((entry) => addFormula(entry.name, entry.formula || `${entry.raw < 0 ? "-" : "+"}${formatNumber(Math.abs(entry.raw), 1)}`));
 
       const multiplierBase = afterYveltal;
-      const manualDamagePercent = number(el.manualDamagePercent.value, 0);
-      if (manualDamagePercent) {
-        addFormula("手動ダメージ補正", signedPercentFormula(multiplierBase, manualDamagePercent));
-      }
-      if (hasItem("Energy Amplifier") && el.energyAmpProc.checked) {
-        addFormula(
-          jpItemName("Energy Amplifier"),
-          signedPercentFormula(multiplierBase, effectTierFor("Energy Amplifier"))
-        );
-      }
-      if (el.groudonBuff.checked) {
-        addFormula("グラードン", signedPercentFormula(multiplierBase, 50));
-      }
-      if (el.rayquazaBuff.checked) {
-        addFormula("レックウザ", signedPercentFormula(multiplierBase, 40), "（シールド中）");
-      }
+      (percentTerms || []).forEach((term) => {
+        addFormula(term.label, signedPercentFormula(multiplierBase, term.percent), term.suffix || "");
+      });
 
       return Array.from(rows.values());
     }
@@ -9843,7 +9867,7 @@
       });
     }
 
-    function renderDamageAdjustmentRows(rows, body = el.damageAdjustmentBody, emptyMessage = "ダメージ補正なし") {
+    function renderDamageAdjustmentRows(rows, body = el.damageAdjustmentBody) {
       body.innerHTML = "";
       const card = body.closest(".panel");
       if (card) card.hidden = !rows.length;
@@ -9966,8 +9990,20 @@
         ? shieldEffectTierFor("Rescue Hood")
         : 0;
       const manualShieldPercent = number(el.manualShieldPercent.value, 0);
-      const selfShieldMultiplier = Math.max(0, 1 + manualShieldPercent / 100);
-      const allyShieldMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualShieldPercent) / 100);
+      const shieldPercentTerms = [
+        {
+          label: "手動シールド補正",
+          percent: manualShieldPercent,
+          targets: ["self", "ally"]
+        },
+        {
+          label: jpItemName("Rescue Hood"),
+          percent: rescueHoodPercent,
+          targets: ["ally"]
+        }
+      ].filter((term) => Math.abs(term.percent) >= 0.000001);
+      const selfShieldMultiplier = percentCorrectionMultiplier(shieldPercentTerms, "self");
+      const allyShieldMultiplier = percentCorrectionMultiplier(shieldPercentTerms, "ally");
       const shieldFlat = number(el.manualShieldFlat.value, 0);
 
       if (!choice || !parts.length) {
@@ -9985,7 +10021,7 @@
         const statusRows = supportStatusAdjustmentRows("shield", stats);
         renderStatusAdjustmentRows(statusRows, el.shieldStatusBody);
         renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.shieldStatusValueBody);
-        renderDamageAdjustmentRows([], el.shieldAdjustmentBody, "シールド補正なし");
+        renderDamageAdjustmentRows([], el.shieldAdjustmentBody);
         return;
       }
 
@@ -10034,7 +10070,7 @@
       const shieldSelfFormula = selfFormulaResults.length
         ? applyPostCalculationFormula(
           sumFormulaExpressions(selfFormulaResults, level),
-          [manualShieldPercent],
+          percentCorrectionValues(shieldPercentTerms, "self"),
           shieldFlat,
           count
         )
@@ -10042,7 +10078,7 @@
       const shieldAllyFormula = allyFormulaResults.length
         ? applyPostCalculationFormula(
           sumFormulaExpressions(allyFormulaResults, level),
-          [rescueHoodPercent, manualShieldPercent],
+          percentCorrectionValues(shieldPercentTerms, "ally"),
           shieldFlat,
           count
         )
@@ -10068,9 +10104,8 @@
       renderStatusAdjustmentRows(statusRows, el.shieldStatusBody);
       renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.shieldStatusValueBody);
       renderDamageAdjustmentRows(
-        shieldAdjustmentRows(selfBaseShield, allyBaseShield, rescueHoodPercent, manualShieldPercent, shieldFlat, count, fireSpinAttackTrigger),
-        el.shieldAdjustmentBody,
-        "シールド補正なし"
+        shieldAdjustmentRows(selfBaseShield, allyBaseShield, shieldPercentTerms, shieldFlat, count, fireSpinAttackTrigger),
+        el.shieldAdjustmentBody
       );
     }
 
@@ -10087,8 +10122,25 @@
       const bigRootPercent = hasHealingItem("Big Root") ? healingEffectTierFor("Big Root") : 0;
       const rescueHoodPercent = hasHealingItem("Rescue Hood") ? healingEffectTierFor("Rescue Hood") : 0;
       const manualPercent = number(el.manualHealingPercent.value, 0);
-      const selfHealingMultiplier = Math.max(0, 1 + (bigRootPercent + manualPercent) / 100);
-      const allyHealingMultiplier = Math.max(0, 1 + (rescueHoodPercent + manualPercent) / 100);
+      const healingPercentTerms = [
+        {
+          label: jpItemName("Big Root"),
+          percent: bigRootPercent,
+          targets: ["self"]
+        },
+        {
+          label: jpItemName("Rescue Hood"),
+          percent: rescueHoodPercent,
+          targets: ["ally"]
+        },
+        {
+          label: "手動回復補正",
+          percent: manualPercent,
+          targets: ["self", "ally"]
+        }
+      ].filter((term) => Math.abs(term.percent) >= 0.000001);
+      const selfHealingMultiplier = percentCorrectionMultiplier(healingPercentTerms, "self");
+      const allyHealingMultiplier = percentCorrectionMultiplier(healingPercentTerms, "ally");
       const healingFlat = number(el.manualHealingFlat.value, 0);
 
       if (!choice || !parts.length) {
@@ -10100,7 +10152,7 @@
         const statusRows = supportStatusAdjustmentRows("healing", stats);
         renderStatusAdjustmentRows(statusRows, el.healingStatusBody);
         renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.healingStatusValueBody);
-        renderDamageAdjustmentRows([], el.healingAdjustmentBody, "回復補正なし");
+        renderDamageAdjustmentRows([], el.healingAdjustmentBody);
         return;
       }
 
@@ -10165,11 +10217,11 @@
 
       renderCalculationFormula(
         el.healingSelfFormula,
-        healingFormulaForTarget([bigRootPercent, manualPercent])
+        healingFormulaForTarget(percentCorrectionValues(healingPercentTerms, "self"))
       );
       renderCalculationFormula(
         el.healingAllyFormula,
-        healingFormulaForTarget([rescueHoodPercent, manualPercent])
+        healingFormulaForTarget(percentCorrectionValues(healingPercentTerms, "ally"))
       );
 
       el.healingSelfAmount.textContent = selfHealing.total;
@@ -10190,9 +10242,8 @@
       renderStatusAdjustmentRows(statusRows, el.healingStatusBody);
       renderStatusAdjustmentValueRows(supportStatusValueRows(stats, statusRows), el.healingStatusValueBody);
       renderDamageAdjustmentRows(
-        healingAdjustmentRows(basePerApplication, bigRootPercent, rescueHoodPercent, manualPercent, healingFlat, manualCount),
-        el.healingAdjustmentBody,
-        "回復補正なし"
+        healingAdjustmentRows(basePerApplication, healingPercentTerms, healingFlat, manualCount),
+        el.healingAdjustmentBody
       );
     }
 
@@ -10223,12 +10274,12 @@
 
       const extras = computeExtraDamages(stats);
       const damageMultiplierTerms = [];
-      const addDamageMultiplierTerm = (label, percent) => {
+      const addDamageMultiplierTerm = (label, percent, suffix = "") => {
         const value = number(percent, 0);
         if (Math.abs(value) < 0.000001) return;
-        damageMultiplierTerms.push({ label, percent: value });
+        damageMultiplierTerms.push({ label, percent: value, suffix });
       };
-      addDamageMultiplierTerm("手動補正", number(el.manualDamagePercent.value, 0));
+      addDamageMultiplierTerm("手動ダメージ補正", number(el.manualDamagePercent.value, 0));
 
       if (hasItem("Energy Amplifier") && el.energyAmpProc.checked) {
         addDamageMultiplierTerm(jpItemName("Energy Amplifier"), effectTierFor("Energy Amplifier"));
@@ -10237,9 +10288,9 @@
         addDamageMultiplierTerm("グラードン", 50);
       }
       if (el.rayquazaBuff.checked) {
-        addDamageMultiplierTerm("レックウザ", 40);
+        addDamageMultiplierTerm("レックウザ", 40, "（シールド中）");
       }
-      const damageMultiplier = 1 + damageMultiplierTerms.reduce((sum, term) => sum + term.percent, 0) / 100;
+      const damageMultiplier = percentCorrectionMultiplier(damageMultiplierTerms);
 
       const yveltalDamageActive = selectedPokemon()?.name === "Yveltal";
       const initialYveltalMarks = yveltalDamageActive
@@ -10339,7 +10390,7 @@
         );
       }, 0);
       const totalReduced = Math.max(0, moveReduced + extrasReduced);
-      const damagePercentCorrections = damageMultiplierTerms.map((term) => term.percent);
+      const damagePercentCorrections = percentCorrectionValues(damageMultiplierTerms);
       const baseDamageFormulaForResult = (result) => {
         let expression = rsbFormulaExpression(result, level);
         if (result.maxHpRatio) {
@@ -10427,7 +10478,13 @@
       const adjustmentRows = statusAdjustmentRows(stats, moveResults);
       renderStatusAdjustmentRows(adjustmentRows);
       renderStatusAdjustmentValueRows(statusAdjustmentValueRows(stats, moveResults, adjustmentRows));
-      renderDamageAdjustmentRows(damageAdjustmentRows(stats, moveResults, extras, initialYveltalMarks));
+      renderDamageAdjustmentRows(damageAdjustmentRows(
+        stats,
+        moveResults,
+        extras,
+        initialYveltalMarks,
+        damageMultiplierTerms
+      ));
     }
 
     function escapeHtml(value) {
