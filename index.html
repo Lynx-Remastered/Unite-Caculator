@@ -852,6 +852,49 @@
       border-color: var(--accent-2);
     }
 
+    .item-row.held-item-required {
+      border-color: rgba(var(--accent-2-rgb), 0.48);
+      background: rgba(var(--accent-2-rgb), 0.08);
+    }
+
+    .item-row.held-item-required .held-item-trigger:disabled,
+    .item-row.held-item-required input[type="number"]:disabled {
+      border-color: rgba(var(--accent-2-rgb), 0.48);
+      background: rgba(var(--accent-2-rgb), 0.12);
+      color: var(--ink);
+      cursor: not-allowed;
+      opacity: 1;
+      -webkit-text-fill-color: var(--ink);
+    }
+
+    .held-item-trigger:disabled .held-item-chevron {
+      color: var(--accent-2);
+      font-size: 12px;
+    }
+
+    .held-item-level-locked {
+      position: relative;
+    }
+
+    .held-item-level-locked::after {
+      content: " 🔒";
+      position: absolute;
+      right: 7px;
+      bottom: 0;
+      width: 16px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: var(--accent-2);
+      font-size: 12px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .held-item-level-locked input[type="number"] {
+      padding-right: 30px;
+    }
+
     .held-item-icon,
     .held-item-icon-placeholder {
       width: 24px;
@@ -928,6 +971,14 @@
     .held-item-option[aria-selected="true"] {
       border-color: rgba(var(--accent-2-rgb), 0.38);
       background: rgba(var(--accent-2-rgb), 0.14);
+    }
+
+    .held-item-option:disabled {
+      border-color: transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: not-allowed;
+      opacity: 0.5;
     }
 
     .pokemon-select-picker {
@@ -4108,6 +4159,16 @@
       "Wise Glasses": { name: "ものしりメガネ", effect: "特攻を割合でさらに上げます。" }
     };
 
+    const EXCLUSIVE_HELD_ITEM_OWNERS = Object.freeze({
+      "Charizardite X": "Mega-Charizard-X",
+      "Charizardite Y": "Mega-Charizard-Y",
+      "Gyaradosite": "Mega-Gyarados",
+      "Lucarionite": "Mega-Lucario",
+      "Mewtwonite X": "MewtwoX",
+      "Mewtwonite Y": "MewtwoY",
+      "Rusted Sword": "Zacian"
+    });
+
     const STAT_JA = {
       "Attack": "攻撃",
       "Sp. Attack": "特攻",
@@ -4799,21 +4860,83 @@
       });
     }
 
+    function requiredHeldItemForPokemon(pokemonName) {
+      return Object.keys(EXCLUSIVE_HELD_ITEM_OWNERS)
+        .find((itemName) => EXCLUSIVE_HELD_ITEM_OWNERS[itemName] === pokemonName) || "";
+    }
+
+    function exclusiveHeldItemLabel(itemName) {
+      const owner = EXCLUSIVE_HELD_ITEM_OWNERS[itemName];
+      return owner ? `${jpItemName(itemName)}（${jpPokemonName(owner)}専用）` : jpItemName(itemName);
+    }
+
     function syncHeldItemPicker(select) {
       const picker = select.closest(".held-item-picker");
       if (!picker) return;
       const selected = select.options[select.selectedIndex] || select.options[0];
       const value = selected ? selected.value : "";
-      const label = selected ? selected.textContent : "なし";
+      const locked = select.dataset.heldItemLocked === "true";
+      const label = locked && value ? `${jpItemName(value)}（専用・固定）` : selected ? selected.textContent : "なし";
       const trigger = picker.querySelector(".held-item-trigger");
       const name = picker.querySelector(".held-item-trigger-name");
       const icon = picker.querySelector(".held-item-trigger-icon");
+      const chevron = picker.querySelector(".held-item-chevron");
       if (name) name.textContent = label;
       if (icon) icon.replaceChildren(createHeldItemIcon(value));
       picker.querySelectorAll(".held-item-option").forEach((option) => {
+        const nativeOption = [...select.options].find((entry) => entry.value === option.dataset.value);
+        const optionName = option.querySelector("span:last-child");
+        if (optionName && nativeOption) optionName.textContent = nativeOption.textContent;
+        option.disabled = locked || Boolean(nativeOption && nativeOption.disabled);
+        option.setAttribute("aria-disabled", option.disabled ? "true" : "false");
         option.setAttribute("aria-selected", option.dataset.value === value ? "true" : "false");
+        option.title = nativeOption ? nativeOption.title : "";
       });
-      if (trigger) trigger.title = label;
+      if (chevron) chevron.textContent = locked ? "🔒" : "▼";
+      if (trigger) {
+        trigger.disabled = locked;
+        trigger.setAttribute("aria-label", locked ? `${jpItemName(value)}は専用持ち物のため外せません` : "持ち物を選択");
+        trigger.title = locked ? `${jpItemName(value)}は${jpPokemonName(EXCLUSIVE_HELD_ITEM_OWNERS[value])}の必須持ち物です` : label;
+      }
+      picker.closest(".item-row")?.classList.toggle("held-item-required", locked);
+    }
+
+    function enforceHeldItemRestrictions(pokemonName, selectPrefix) {
+      const selects = Array.from({ length: 3 }, (_, index) => el[`${selectPrefix}${index}`]);
+      const levelPrefix = selectPrefix.replace(/Select$/, "Level");
+      const requiredItem = requiredHeldItemForPokemon(pokemonName);
+      const selectedValues = selects.map((select) => select.value);
+
+      if (requiredItem && selectedValues[0] !== requiredItem) {
+        const regularItems = selectedValues
+          .filter((itemName) => itemName && !EXCLUSIVE_HELD_ITEM_OWNERS[itemName])
+          .slice(0, 2);
+        selects[0].value = requiredItem;
+        selects[1].value = regularItems[0] || "";
+        selects[2].value = regularItems[1] || "";
+      }
+
+      selects.forEach((select, index) => {
+        if (index > 0 && EXCLUSIVE_HELD_ITEM_OWNERS[select.value]) select.value = "";
+        if (!requiredItem && EXCLUSIVE_HELD_ITEM_OWNERS[select.value]) select.value = "";
+
+        const locked = Boolean(requiredItem && index === 0);
+        select.dataset.heldItemLocked = locked ? "true" : "false";
+        select.disabled = locked;
+        const levelInput = el[`${levelPrefix}${index}`];
+        levelInput.disabled = locked;
+        levelInput.title = locked ? `${jpItemName(requiredItem)}は専用持ち物のためレベルも固定です` : "";
+        levelInput.parentElement?.classList.toggle("held-item-level-locked", locked);
+
+        [...select.options].forEach((option) => {
+          if (!option.dataset.baseLabel) option.dataset.baseLabel = option.textContent;
+          const owner = EXCLUSIVE_HELD_ITEM_OWNERS[option.value];
+          option.textContent = owner ? exclusiveHeldItemLabel(option.value) : option.dataset.baseLabel;
+          option.disabled = Boolean(owner);
+          option.title = owner ? `${jpItemName(option.value)}は${jpPokemonName(owner)}専用です` : "";
+        });
+        syncHeldItemPicker(select);
+      });
     }
 
     function enhanceHeldItemSelect(select) {
@@ -4859,6 +4982,7 @@
         optionName.textContent = nativeOption.textContent;
         option.append(createHeldItemIcon(nativeOption.value), optionName);
         option.addEventListener("click", () => {
+          if (nativeOption.disabled || select.disabled) return;
           select.value = nativeOption.value;
           select.dispatchEvent(new Event("change", { bubbles: true }));
           syncHeldItemPicker(select);
@@ -4869,6 +4993,7 @@
       });
 
       trigger.addEventListener("click", () => {
+        if (trigger.disabled) return;
         const willOpen = menu.hidden;
         closeHeldItemPickers(willOpen ? picker : null);
         menu.hidden = !willOpen;
@@ -4878,10 +5003,6 @@
       select.addEventListener("change", () => syncHeldItemPicker(select));
       picker.append(trigger, menu);
       syncHeldItemPicker(select);
-    }
-
-    function syncHeldItemPickers() {
-      document.querySelectorAll("select.held-item-native").forEach(syncHeldItemPicker);
     }
 
     function createPokemonSelectIcon(name) {
@@ -7833,7 +7954,7 @@
         el[`itemSelect${i}`].value = items[i] || "";
         el[`itemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "itemSelect");
       updateAll();
     }
 
@@ -8420,7 +8541,8 @@
         el[`itemSelect${i}`].value = "";
         el[`itemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      const pokemon = selectedPokemon();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "itemSelect");
       updateAll();
     }
 
@@ -8432,7 +8554,7 @@
         el[`shieldItemSelect${i}`].value = items[i] || "";
         el[`shieldItemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "shieldItemSelect");
       updateShieldMoveOptions();
       updateShieldAll();
     }
@@ -8442,7 +8564,8 @@
         el[`shieldItemSelect${i}`].value = "";
         el[`shieldItemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      const pokemon = selectedShieldPokemon();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "shieldItemSelect");
       updateShieldMoveOptions();
       updateShieldAll();
     }
@@ -8455,7 +8578,7 @@
         el[`healingItemSelect${i}`].value = items[i] || "";
         el[`healingItemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "healingItemSelect");
       updateHealingAll();
     }
 
@@ -8464,7 +8587,8 @@
         el[`healingItemSelect${i}`].value = "";
         el[`healingItemLevel${i}`].value = 40;
       }
-      syncHeldItemPickers();
+      const pokemon = selectedHealingPokemon();
+      enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "healingItemSelect");
       updateHealingAll();
     }
 
@@ -10972,12 +11096,18 @@
       });
 
       for (let i = 0; i < 3; i += 1) {
-        el[`itemSelect${i}`].addEventListener("change", updateAll);
+        el[`itemSelect${i}`].addEventListener("change", () => {
+          const pokemon = selectedPokemon();
+          enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "itemSelect");
+          updateAll();
+        });
         el[`itemLevel${i}`].addEventListener("input", (event) => {
           event.target.value = clamp(number(event.target.value, 40), 1, 40);
           updateAll();
         });
         el[`shieldItemSelect${i}`].addEventListener("change", () => {
+          const pokemon = selectedShieldPokemon();
+          enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "shieldItemSelect");
           updateShieldMoveOptions();
           updateShieldAll();
         });
@@ -10986,7 +11116,11 @@
           updateShieldMoveOptions();
           updateShieldAll();
         });
-        el[`healingItemSelect${i}`].addEventListener("change", updateHealingAll);
+        el[`healingItemSelect${i}`].addEventListener("change", () => {
+          const pokemon = selectedHealingPokemon();
+          enforceHeldItemRestrictions(pokemon ? pokemon.name : "", "healingItemSelect");
+          updateHealingAll();
+        });
         el[`healingItemLevel${i}`].addEventListener("input", (event) => {
           event.target.value = clamp(number(event.target.value, 40), 1, 40);
           updateHealingAll();
