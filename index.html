@@ -2956,6 +2956,10 @@
               <span>ドライブレンズの段階</span>
               <input id="driveLensStacks" type="number" min="0" max="20" value="0">
             </div>
+            <label id="conditionPlusPower" class="check-row">
+              <span>プラスパワー発動中（攻撃・特攻+20%）</span>
+              <input id="plusPowerProc" type="checkbox">
+            </label>
             <label id="conditionChoiceSpecs" class="check-row" hidden>
               <span>こだわりメガネの追加ダメージ</span>
               <input id="choiceSpecsProc" type="checkbox">
@@ -4391,6 +4395,7 @@
       regice: { name: "レジアイス", attackPercent: 0, spAttackPercent: 0, description: "3秒ごとに最大HPの5%回復" },
       registeel: { name: "レジスチル", attackPercent: 15, spAttackPercent: 15, description: "攻撃+15%・特攻+15%" }
     };
+    const PLUS_POWER_STAT_PERCENT = 20;
 
     const FALLBACK_EMBLEM_PRESETS = {
       Palkia: {
@@ -5147,9 +5152,9 @@
         "conditionYveltalMarks", "yveltalMarkStacks", "yveltalDarkAuraNote", "conditionSnorlaxFlailHp", "snorlaxFlailHpPercent", "snorlaxFlailMaxHpNote",
         "conditionSylveonHyperVoice", "sylveonHyperVoiceRange",
         "conditionDamageVariant", "damageVariantSelect", "damageConditionPanel",
-        "conditionChoiceSpecs", "conditionChargingCharm", "conditionRazorClaw", "conditionEnergyAmp",
+        "conditionPlusPower", "conditionChoiceSpecs", "conditionChargingCharm", "conditionRazorClaw", "conditionEnergyAmp",
         "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
-        "accelBracerStacks", "driveLensStacks", "choiceSpecsProc",
+        "accelBracerStacks", "driveLensStacks", "plusPowerProc", "choiceSpecsProc",
         "chargingCharmProc", "razorClawProc", "energyAmpProc",
         "applyEmblemButton", "clearEmblemButton", "emblemSlots", "emblemSlotCount",
         "emblemEditor", "emblemEditorTitle", "emblemEditorDone", "emblemEditorIcon", "emblemEditorPlaceholder",
@@ -9122,6 +9127,10 @@
       if (hasItem("Wise Glasses")) {
         spAttackPercent += effectTierFor("Wise Glasses");
       }
+      if (el.plusPowerProc.checked) {
+        attackPercent += PLUS_POWER_STAT_PERCENT;
+        spAttackPercent += PLUS_POWER_STAT_PERCENT;
+      }
 
       const regiBuff = REGI_BUFFS[selectedRegiBuffValue()] || REGI_BUFFS.none;
       attackPercent += regiBuff.attackPercent;
@@ -9487,6 +9496,11 @@
 
       addNumber("Atk", "手動補正", number(el.manualAttack.value, 0));
       addNumber("Sp.Atk", "手動補正", number(el.manualSpAttack.value, 0));
+
+      if (el.plusPowerProc.checked) {
+        addPercent("Atk", "プラスパワー", PLUS_POWER_STAT_PERCENT, attackPercentBase);
+        addPercent("Sp.Atk", "プラスパワー", PLUS_POWER_STAT_PERCENT, spAttackPercentBase);
+      }
 
       const regiBuff = REGI_BUFFS[selectedRegiBuffValue()] || REGI_BUFFS.none;
       if (regiBuff.name === "レジスチル") {
@@ -10768,6 +10782,7 @@
           ["chargingCharmProc", "conditionChargingCharm", "じゅうてんチャーム追加ダメージ"],
           ["razorClawProc", "conditionRazorClaw", "するどいツメ追加ダメージ"],
           ["energyAmpProc", "conditionEnergyAmp", "エナジーアンプ発動中"],
+          ["plusPowerProc", "conditionPlusPower", "プラスパワー発動中"],
           ["regidragoBuff", "", "レジドラゴ撃破バフ"],
           ["groudonBuff", "", "グラードン撃破バフ"],
           ["rayquazaBuff", "", "レックウザ撃破バフ"]
@@ -11159,7 +11174,7 @@
         "manualDefenseReductionPercent", "manualSpDefenseReductionPercent", "manualDefenseReductionFlat", "manualSpDefenseReductionFlat",
         "manualDefenseIgnorePercent", "manualSpDefenseIgnorePercent", "manualDefensePenetrationFlat", "manualSpDefensePenetrationFlat",
         "criticalHit", "attackWeightStacks", "aeosCookieStacks", "spAtkSpecsStacks", "weaknessPolicyStacks",
-        "accelBracerStacks", "driveLensStacks", "choiceSpecsProc", "chargingCharmProc",
+        "accelBracerStacks", "driveLensStacks", "plusPowerProc", "choiceSpecsProc", "chargingCharmProc",
         "razorClawProc", "energyAmpProc", "yveltalMarkStacks", "snorlaxFlailHpPercent", "sylveonHyperVoiceRange", "regidragoBuff", "groudonBuff", "rayquazaBuff"
       ].forEach((id) => {
         el[id].addEventListener("input", updateAll);
