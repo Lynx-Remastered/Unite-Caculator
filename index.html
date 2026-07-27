@@ -691,6 +691,30 @@
       min-width: 0;
     }
 
+    .target-hp-row {
+      display: grid;
+      grid-column: 1 / -1;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .target-hp-input-row {
+      display: grid;
+      grid-template-columns: minmax(116px, 0.45fr) minmax(0, 1fr);
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .target-hp-label {
+      color: var(--label);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .target-hp-summary {
+      margin-top: 0;
+    }
+
     .ranking-pokemon-level-row {
       grid-column: span 2;
     }
@@ -2727,6 +2751,8 @@
       .target-total-grid,
       .condition-row,
       .button-row,
+      .target-defense-row,
+      .target-hp-input-row,
       .ranking-controls,
       .feedback-grid,
       .feedback-actions {
@@ -3174,6 +3200,17 @@
                 </label>
               </div>
               <div class="target-defense-row">
+                <div class="target-hp-row">
+                  <span class="target-hp-label">相手の残りHP</span>
+                  <span class="target-hp-input-row">
+                    <select id="targetHpMode" aria-label="相手の残りHPの入力方法">
+                      <option value="percent">割合（%）</option>
+                      <option value="value">数値</option>
+                    </select>
+                    <input id="targetHpValue" type="number" min="0" max="100" value="100" step="1" inputmode="decimal">
+                  </span>
+                  <span id="targetHpSummary" class="effect-note target-hp-summary" aria-live="polite"></span>
+                </div>
                 <label>
                   防御
                   <input id="targetDefense" type="number" min="-599" value="0" step="1">
@@ -4541,6 +4578,7 @@
       selectedBalanceFilterKeys: [],
       defenseEffectValues: {},
       suppressTargetAutoFill: false,
+      targetHpMode: "percent",
       calculationValueVisibility: {
         rawDamage: true,
         finalDamage: true,
@@ -5141,7 +5179,7 @@
         "modeToggleButton", "themeSelect",
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
-        "targetLevelRange", "targetLevelValue", "targetDefense", "targetSpDefense",
+        "targetLevelRange", "targetLevelValue", "targetHpMode", "targetHpValue", "targetHpSummary", "targetDefense", "targetSpDefense",
         "rawDamage", "rawDamageFormula", "rawDamageResult",
         "finalDamage", "finalDamageFormula", "finalDamageResult",
         "damageStatusBody", "damageStatusValueBody", "damageAdjustmentCard", "damageAdjustmentBody", "learnChipRow", "manualAttack", "manualHp",
@@ -5462,7 +5500,7 @@
 
     function renderCalculationFormula(element, text) {
       const source = String(text || "-");
-      const tokenPattern = /-?\d+(?:\.\d+)?\((?:atk|spatk|hp|lv|def|spdef)\)|追加効果|防御後|有効(?:防御|特防)|-?\d+(?:\.\d+)?% (?:防御|特防)(?:低下|無視)|× -?\d+(?:\.\d+)?(?:%|ヒット|回\/対象)?/g;
+      const tokenPattern = /-?\d+(?:\.\d+)?\((?:atk|spatk|hp|targethp|targetmaxhp|targetmissinghp|lv|def|spdef)\)|追加効果|防御後|有効(?:防御|特防)|-?\d+(?:\.\d+)?% (?:防御|特防)(?:低下|無視)|× -?\d+(?:\.\d+)?(?:%|ヒット|回\/対象)?/g;
       const fragment = document.createDocumentFragment();
       let lastIndex = 0;
       let match;
@@ -5473,7 +5511,7 @@
         }
         const token = document.createElement("span");
         token.className = "calculation-formula-token";
-        if (/\((?:atk|spatk|hp)\)$/.test(match[0])) token.classList.add("stat");
+        if (/\((?:atk|spatk|hp|targethp|targetmaxhp|targetmissinghp)\)$/.test(match[0])) token.classList.add("stat");
         else if (/\(lv\)$/.test(match[0])) token.classList.add("level");
         else if (/\((?:def|spdef)\)$/.test(match[0]) || /^(?:防御後|有効(?:防御|特防)|-?\d+(?:\.\d+)?% (?:防御|特防)(?:低下|無視))$/.test(match[0])) token.classList.add("defense");
         else if (match[0] === "追加効果") token.classList.add("extra");
@@ -6710,6 +6748,7 @@
 
     function isAutoIncludedDamageEntry(entry) {
       const label = String(entry.label || "").toLowerCase();
+      if (number(entry.targetHpRatio, 0) > 0) return true;
       if (/(heal|healing|shield|max hp|defense|sp\.?\s*def|spdef|attack speed|movement speed|cooldown|cdr|increase|reduction)/i.test(label)) {
         return false;
       }
@@ -6922,8 +6961,70 @@
       };
     }
 
+    function parseTargetHpDamage(text) {
+      const normalizedSource = String(text || "")
+        .replace(/[’‘]/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+      const thresholdMatch = normalizedSource.match(/\b(?:at\s+or\s+)?(?:below|under)\s+(\d+(?:\.\d+)?)\s*%\s*(?:of\s+)?(?:(?:their|its|the\s+target's?)\s+)?(?:remaining\s+|current\s+|max(?:imum)?\s+)?HP/i);
+      const thresholdContext = thresholdMatch
+        ? normalizedSource.slice(Math.max(0, thresholdMatch.index - 80), thresholdMatch.index + thresholdMatch[0].length + 40)
+        : "";
+      const maxRemainingPercent = thresholdMatch && /\b(?:enemies?|enemy|targets?|target|opposing)\b/i.test(thresholdContext)
+        ? number(thresholdMatch[1], 0)
+        : 0;
+      const source = normalizedSource
+        .replace(/\b(?:at\s+or\s+)?(?:below|above|under|over)\s+\d+(?:\.\d+)?\s*%\s*(?:of\s+)?(?:(?:their|its|the\s+target's?)\s+)?(?:remaining|current|missing|max(?:imum)?)\s*HP/gi, "")
+        .trim();
+      if (!source) return null;
+
+      const basisPattern = "(remaining|current|missing|max(?:imum)?)";
+      const ownerPattern = "(?:(?:(?:the\\s+)?(?:(?:main|initial|first|secondary)\\s+)?(?:enemies?|enemy(?:'s)?|targets?|target(?:'s)?|opposing\\s+Pok(?:e|é)mon(?:'s)?)|their|its)\\s+)?";
+      const patterns = [
+        new RegExp(`(\\d+(?:\\.\\d+)?)\\s*%\\s*(?:of\\s+)?${ownerPattern}${basisPattern}\\s*HP`, "i"),
+        new RegExp(`(\\d+(?:\\.\\d+)?)\\s*%\\s*${basisPattern}\\s*HP\\s*(?:of\\s+${ownerPattern})?`, "i")
+      ];
+      const match = patterns.map((pattern) => source.match(pattern)).find(Boolean);
+      if (!match) return null;
+      const matchIndex = Math.max(0, number(match.index, 0));
+      const targetNamedInFormula = /\b(?:enemies?|enemy|targets?|target|opposing)\b/i.test(match[0]);
+      const nearbyBefore = source.slice(Math.max(0, matchIndex - 80), matchIndex);
+      const nearbyAfter = source.slice(matchIndex + match[0].length, matchIndex + match[0].length + 80);
+      const opponentExplicit = targetNamedInFormula
+        || /\b(?:to|against)\s+(?:the\s+)?(?:enemies?|enemy|targets?|target|opposing)\b/i.test(nearbyAfter)
+        || /\b(?:enemies?|enemy|targets?|target|opposing)\b.{0,50}\b(?:takes?|receives?)\b/i.test(nearbyBefore);
+      const selfCostContext = source.slice(Math.max(0, matchIndex - 50), matchIndex);
+      const describesSelfCost = /\b(?:the\s+)?user\s+(?:instead\s+)?(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
+        || /\b(?:itself|their\s+own)\s+(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
+        || /\binstead\s+(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
+        || /\blosing\s*$/i.test(selfCostContext);
+      if (describesSelfCost && !targetNamedInFormula) return null;
+
+      const rawBasis = String(match[2] || "").toLowerCase();
+      const basis = rawBasis.startsWith("max")
+        ? "max"
+        : rawBasis === "missing"
+          ? "missing"
+          : "remaining";
+      return {
+        ratio: number(match[1], 0),
+        basis,
+        opponentExplicit,
+        maxRemainingPercent,
+        levelScale: /\b(?:x|×)\s*\(\s*Level\s*-\s*1\s*\)/i.test(source),
+        bypassDefense: /\b(?:true|piercing)\s+damage\b/i.test(source)
+      };
+    }
+
+    function isTargetHpDamageEntry(label, text) {
+      const source = `${label || ""} ${text || ""}`;
+      return /(damage|execute|poison|dot|tick)/i.test(source)
+        && !/(heal|healing|shield)/i.test(label || "");
+    }
+
     function addRsbEntries(entries, rsb, ownerName, groupName, minLevel, suffix, meta = {}) {
       if (!rsb) return;
+      const firstEntryIndex = entries.length;
 
       const prefixes = [
         { key: "", name: "" },
@@ -6942,12 +7043,27 @@
 
       prefixes.forEach((prefix) => {
         const ratioRaw = getRsbField(rsb, prefix.key, "ratio");
-        const dmgType = String(getRsbField(rsb, prefix.key, "dmg_type") || "").trim();
+        const rawDmgType = String(getRsbField(rsb, prefix.key, "dmg_type") || "").trim();
         const exception = String(getRsbField(rsb, prefix.key, "exception") || "");
-        if (ratioRaw === "" || ratioRaw === undefined || ratioRaw === null) return;
-        if (!dmgType || exception === "True") return;
-
         const label = String(getRsbField(rsb, prefix.key, "label") || prefix.name || "Damage");
+        const targetHpText = [
+          getRsbField(rsb, prefix.key, "true_desc"),
+          getRsbField(rsb, prefix.key, "notes"),
+          getRsbField(rsb, prefix.key, "rsb_info")
+        ].filter(Boolean).join(" ");
+        const targetHpDamage = isTargetHpDamageEntry(label, targetHpText)
+          ? parseTargetHpDamage(targetHpText)
+          : null;
+        const hasStandardFormula = ratioRaw !== "" && ratioRaw !== undefined && ratioRaw !== null && rawDmgType && exception !== "True";
+        const hasTargetHpFormula = Boolean(targetHpDamage && (
+          exception === "True"
+          || (hasStandardFormula && targetHpDamage.opponentExplicit)
+        ));
+        if (!hasStandardFormula && !hasTargetHpFormula) return;
+
+        const dmgType = rawDmgType
+          || String(rsb.dmg_type || meta.defaultDmgType || "Atk").trim()
+          || "Atk";
         const ratio = number(ratioRaw, 0);
         const slider = number(getRsbField(rsb, prefix.key, "slider"), 0);
         const base = number(getRsbField(rsb, prefix.key, "base"), 0);
@@ -6968,6 +7084,18 @@
           slider,
           base,
           dmgType,
+          targetHpRatio: hasTargetHpFormula ? targetHpDamage.ratio : 0,
+          targetHpBasis: hasTargetHpFormula ? targetHpDamage.basis : "",
+          targetHpLevelScale: Boolean(hasTargetHpFormula && targetHpDamage.levelScale),
+          targetHpMaxRemainingPercent: hasTargetHpFormula ? targetHpDamage.maxRemainingPercent : 0,
+          bypassDefense: Boolean(hasTargetHpFormula && targetHpDamage.bypassDefense && !hasStandardFormula),
+          targetHpOnly: Boolean(hasTargetHpFormula && !hasStandardFormula),
+          targetHpSourceScore: hasTargetHpFormula
+            ? (targetHpDamage.opponentExplicit ? 4 : 0)
+              + (prefix.key ? 2 : 0)
+              + (/(additional|execute|slam|bonus)/i.test(label) ? 2 : 0)
+              - (targetHpText.length > 180 ? 2 : 0)
+            : 0,
           minLevel: enhanced ? number(meta.enhancedMinLevel, minLevel) : number(minLevel, 1),
           notes,
           contextText: [rsb.true_desc, rsb.notes, rsb.rsb_info].filter(Boolean).join(" "),
@@ -6982,6 +7110,32 @@
           iconUrl: meta.iconUrl || ""
         });
       });
+
+      const targetHpGroups = new Map();
+      entries.slice(firstEntryIndex).forEach((entry) => {
+        if (!entry.targetHpRatio) return;
+        const key = `${entry.enhanced ? "enhanced" : "regular"}:${entry.targetHpBasis}:${entry.targetHpRatio}:${entry.targetHpLevelScale ? "level" : "flat"}:${entry.targetHpMaxRemainingPercent || 0}`;
+        if (!targetHpGroups.has(key)) targetHpGroups.set(key, []);
+        targetHpGroups.get(key).push(entry);
+      });
+      targetHpGroups.forEach((group) => {
+        if (group.length <= 1) return;
+        const targetHpOnlyEntries = group.filter((entry) => entry.targetHpOnly);
+        const keep = targetHpOnlyEntries.length
+          ? new Set(targetHpOnlyEntries)
+          : new Set([group.slice().sort((a, b) => b.targetHpSourceScore - a.targetHpSourceScore)[0]]);
+        group.forEach((entry) => {
+          if (keep.has(entry)) return;
+          entry.targetHpRatio = 0;
+          entry.targetHpBasis = "";
+          entry.targetHpLevelScale = false;
+          entry.targetHpMaxRemainingPercent = 0;
+          entry.bypassDefense = false;
+        });
+      });
+      entries.slice(firstEntryIndex).forEach((entry) => {
+        delete entry.targetHpSourceScore;
+      });
     }
 
     function updateMoveOptions() {
@@ -6994,6 +7148,7 @@
       const move1 = skills.find((skill) => skill.ability === "Move 1");
       const move2 = skills.find((skill) => skill.ability === "Move 2");
       const unite = skills.find((skill) => skill.ability === "Unite Move");
+      const passives = skills.filter((skill) => skill.ability === "Passive");
 
       const createChoice = ({ slotKey, slotLabel, node, rsb, groupName, minLevel, iconName, hideWhenNoDamage = false }) => {
         if (!node || !rsb) return;
@@ -7005,6 +7160,7 @@
           slotLabel,
           displayName,
           iconUrl,
+          defaultDmgType: /special/i.test(String(pokemon.damage_type || "")) ? "SpAtk" : "Atk",
           enhancedMinLevel: node.level2 || minLevel || node.level1 || node.level || 1
         });
         if (!entries.length && hideWhenNoDamage) return;
@@ -7027,6 +7183,18 @@
         state.moveChoices.push(choice);
         state.moveEntries.push(...entries);
       };
+
+      passives.forEach((passive, index) => {
+        createChoice({
+          slotKey: `passive-${index}`,
+          slotLabel: "特性",
+          node: passive,
+          rsb: passive.rsb,
+          groupName: "Passive",
+          minLevel: passive.level || 1,
+          hideWhenNoDamage: true
+        });
+      });
 
       createChoice({
         slotKey: "basic",
@@ -7218,6 +7386,7 @@
       const move1 = skills.find((skill) => skill.ability === "Move 1");
       const move2 = skills.find((skill) => skill.ability === "Move 2");
       const unite = skills.find((skill) => skill.ability === "Unite Move");
+      const passives = skills.filter((skill) => skill.ability === "Passive");
 
       const createChoice = ({ slotKey, slotLabel, node, rsb, groupName, minLevel, iconName, hideWhenNoDamage = false }) => {
         if (!node || !rsb) return;
@@ -7229,6 +7398,7 @@
           slotLabel,
           displayName,
           iconUrl,
+          defaultDmgType: /special/i.test(String(pokemon.damage_type || "")) ? "SpAtk" : "Atk",
           enhancedMinLevel: node.level2 || minLevel || node.level1 || node.level || 1
         });
         if (!entries.length && hideWhenNoDamage) return;
@@ -7253,6 +7423,9 @@
         });
       };
 
+      passives.forEach((passive, index) => {
+        createChoice({ slotKey: `passive-${index}`, slotLabel: "特性", node: passive, rsb: passive.rsb, groupName: "Passive", minLevel: passive.level || 1, hideWhenNoDamage: true });
+      });
       createChoice({ slotKey: "basic", slotLabel: "通常", node: basic, rsb: basic && basic.rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
       createChoice({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
       [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
@@ -7419,7 +7592,7 @@
       return { base, effective };
     }
 
-    function calculateRankingDamage({ pokemon, choice, parts, level, stats, itemRows, targetDefense, targetSpDefense, singleHit = false }) {
+    function calculateRankingDamage({ pokemon, choice, parts, level, stats, itemRows, targetMaxHp, targetDefense, targetSpDefense, singleHit = false }) {
       const sequenceState = rankingDefenseSequenceState(pokemon.name, choice.displayName, level);
       const yveltalDamageActive = pokemon.name === "Yveltal";
       const yveltalAppliesMarks = yveltalDarkAuraAppliesMarks(pokemon, choice.slotKey);
@@ -7434,7 +7607,12 @@
         const moveStat = String(part.dmgType).trim() === "Atk" ? stats.attack : stats.spAttack;
         const statComponent = Math.floor(part.ratio * moveStat / 100);
         const levelComponent = part.slider * (level - 1);
-        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + part.base));
+        const targetHpRatio = Math.max(0, number(part.targetHpRatio, 0))
+          * (part.targetHpLevelScale ? Math.max(0, level - 1) : 1);
+        const targetHpConditionMet = !number(part.targetHpMaxRemainingPercent, 0);
+        const targetHpBase = part.targetHpBasis === "missing" ? 0 : Math.max(0, number(targetMaxHp, 0));
+        const targetHpComponent = targetHpConditionMet ? Math.floor(targetHpBase * targetHpRatio / 100) : 0;
+        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + part.base + targetHpComponent));
         const damageScale = Math.max(0, number(part.damageScale, 1));
         const perHitBase = Math.max(0, Math.floor(formulaBase * damageScale));
         const hitCount = Math.max(1, number(part.hitCount, 1));
@@ -7449,7 +7627,9 @@
           addDefenseModifiers(modifiers, rankingIntrinsicDefenseModifiers(pokemon.name, choice.displayName, part));
           addDefenseModifiers(modifiers, sequenceDefenseModifiers(sequenceState));
           const defense = rankingDefenseDetails(part.dmgType, targetDefense, targetSpDefense, modifiers);
-          const reduced = Math.floor(afterMultiplier * 600 / (600 + defense.effective));
+          const reduced = part.bypassDefense
+            ? afterMultiplier
+            : Math.floor(afterMultiplier * 600 / (600 + defense.effective));
           totalReduced += reduced;
           if (reduced > bestSingleReduced || (reduced === bestSingleReduced && afterMultiplier > bestSingleRaw)) {
             bestSingleRaw = afterMultiplier;
@@ -7556,6 +7736,7 @@
       el.rankingTargetLevelValue.textContent = targetLevel;
       const targetPokemon = state.pokemon.find((pokemon) => pokemon.name === el.rankingTargetSelect.value);
       const targetStats = targetPokemon ? pokemonStats(targetPokemon.name, targetLevel) : null;
+      const targetMaxHp = number(targetStats && targetStats.hp, 0);
       const targetDefense = number(targetStats && targetStats.defense, 0);
       const targetSpDefense = number(targetStats && targetStats.sp_defense, 0);
       const filter = el.rankingSlotFilter.value;
@@ -7577,6 +7758,7 @@
                 level,
                 stats,
                 itemRows,
+                targetMaxHp,
                 targetDefense,
                 targetSpDefense,
                 singleHit
@@ -9303,6 +9485,21 @@
     function computeExtraDamages(stats) {
       const extras = [];
       const choice = selectedMoveChoice();
+      const targetHp = targetHpState();
+
+      if (hasItem("Muscle Band") && /^(?:basic|boosted|snorlax-flail-)/.test(choice?.slotKey || "")) {
+        const percent = effectTierFor("Muscle Band");
+        const cap = percent * 120;
+        const uncapped = Math.floor(targetHp.remainingHp * percent / 100);
+        const raw = Math.min(uncapped, cap);
+        extras.push({
+          name: jpItemName("Muscle Band"),
+          raw,
+          type: "Atk",
+          formula: `+${formatNumber(targetHp.remainingHp, 0)}*${formatNumber(percent, 1)}%（上限${formatNumber(cap, 0)}）`,
+          calculationFormula: `${formulaVariableValue(targetHp.remainingHp, "targethp", 0)} × ${formatNumber(percent, 1)}%（上限 ${formatNumber(cap, 0)}）`
+        });
+      }
 
       if (hasItem("Choice Specs") && el.choiceSpecsProc.checked && choiceSpecsCanTrigger(choice)) {
         const percent = effectTierFor("Choice Specs");
@@ -10031,6 +10228,20 @@
       }
 
       (moveResults || []).forEach((result) => {
+        if (result.targetHpComponent > 0) {
+          const basisLabel = result.part.targetHpBasis === "max"
+            ? "相手の最大HP"
+            : result.part.targetHpBasis === "missing"
+              ? "相手の減少HP"
+              : "相手の残りHP";
+          addFormula(
+            "相手HP割合ダメージ",
+            `${jpMoveLabel(result.part.label)}: ${formatNumber(result.targetHpBaseValue, 0)}*${formatNumber(result.targetHpEffectiveRatio, 1)}%`,
+            `（${basisLabel}基準）`,
+            result.targetHpComponent * Math.max(1, number(result.hitCount, 1))
+          );
+        }
+
         const damageScale = Math.max(0, number(result.damageScale, 1));
         if (Math.abs(damageScale - 1) < 0.000001) return;
         const hitCount = Math.max(1, number(result.hitCount, 1));
@@ -10183,6 +10394,69 @@
       return Math.floor(raw * 600 / (600 + defense));
     }
 
+    function selectedTargetMaxHp() {
+      const targetName = el.targetSelect.value;
+      const level = number(el.targetLevelRange.value, 15);
+      const stats = targetName ? pokemonStats(targetName, level) : null;
+      return Math.max(0, number(stats && stats.hp, 0));
+    }
+
+    function targetHpState(mode = el.targetHpMode.value) {
+      const maxHp = selectedTargetMaxHp();
+      const inputValue = Math.max(0, number(el.targetHpValue.value, mode === "percent" ? 100 : maxHp));
+      const remainingHp = mode === "percent"
+        ? maxHp * clamp(inputValue, 0, 100) / 100
+        : maxHp > 0
+          ? clamp(inputValue, 0, maxHp)
+          : inputValue;
+      const remainingPercent = maxHp > 0 ? remainingHp / maxHp * 100 : 0;
+      return {
+        maxHp,
+        remainingHp,
+        missingHp: Math.max(0, maxHp - remainingHp),
+        remainingPercent
+      };
+    }
+
+    function targetHpBasisValue(targetHp, basis) {
+      if (basis === "max") return targetHp.maxHp;
+      if (basis === "missing") return targetHp.missingHp;
+      return targetHp.remainingHp;
+    }
+
+    function syncTargetHpControl() {
+      const mode = el.targetHpMode.value;
+      const maxHp = selectedTargetMaxHp();
+      if (mode === "value" && maxHp > 0 && number(el.targetHpValue.value, 0) > maxHp) {
+        el.targetHpValue.value = String(Math.round(maxHp));
+      }
+      const targetHp = targetHpState(mode);
+      if (mode === "percent") {
+        el.targetHpValue.max = "100";
+      } else if (targetHp.maxHp > 0) {
+        el.targetHpValue.max = String(targetHp.maxHp);
+      } else {
+        el.targetHpValue.removeAttribute("max");
+      }
+      el.targetHpValue.step = mode === "percent" ? "1" : "1";
+      el.targetHpValue.setAttribute("aria-label", mode === "percent" ? "相手の残りHP割合" : "相手の残りHP数値");
+      el.targetHpSummary.textContent = targetHp.maxHp > 0
+        ? `最大HP ${formatNumber(targetHp.maxHp, 0)} / 残りHP ${formatNumber(targetHp.remainingHp, 0)}（${formatNumber(targetHp.remainingPercent, 1)}%） / 減少HP ${formatNumber(targetHp.missingHp, 0)}`
+        : `残りHP ${formatNumber(targetHp.remainingHp, 0)}（相手ポケモン未選択）`;
+    }
+
+    function changeTargetHpMode() {
+      const previousMode = state.targetHpMode || "percent";
+      const previous = targetHpState(previousMode);
+      const nextMode = el.targetHpMode.value;
+      state.targetHpMode = nextMode;
+      el.targetHpValue.value = nextMode === "percent"
+        ? String(Math.round(previous.remainingPercent * 10) / 10)
+        : String(Math.round(previous.remainingHp));
+      syncTargetHpControl();
+      updateAll();
+    }
+
     function syncTargetStats() {
       if (state.suppressTargetAutoFill) return;
       const targetName = el.targetSelect.value;
@@ -10190,6 +10464,7 @@
       const stats = targetName ? pokemonStats(targetName, level) : null;
       el.targetDefense.value = stats ? stats.defense : 0;
       el.targetSpDefense.value = stats ? stats.sp_defense : 0;
+      syncTargetHpControl();
     }
 
     function updateShieldAll() {
@@ -10476,10 +10751,12 @@
       updateConditionVisibility();
       el.levelValue.textContent = el.levelRange.value;
       el.targetLevelValue.textContent = el.targetLevelRange.value;
+      syncTargetHpControl();
 
       const move = selectedMove();
       const level = number(el.levelRange.value, 15);
       const stats = computeAttackerStats();
+      const targetHp = targetHpState();
 
       if (!el.conditionSnorlaxFlailHp.hidden) {
         el.snorlaxFlailMaxHpNote.textContent = `計算に使用する最大HP: ${formatNumber(stats.maxHp, 0)}`;
@@ -10533,8 +10810,16 @@
         const baseComponent = part.base;
         const maxHpRatio = Math.max(0, number(part.maxHpRatio, 0));
         const maxHpComponent = Math.floor(maxHpRatio * stats.maxHp / 100);
+        const targetHpRatio = Math.max(0, number(part.targetHpRatio, 0));
+        const targetHpConditionMet = !number(part.targetHpMaxRemainingPercent, 0)
+          || targetHp.remainingPercent <= number(part.targetHpMaxRemainingPercent, 0);
+        const targetHpEffectiveRatio = targetHpConditionMet
+          ? targetHpRatio * (part.targetHpLevelScale ? Math.max(0, level - 1) : 1)
+          : 0;
+        const targetHpBaseValue = targetHpBasisValue(targetHp, part.targetHpBasis);
+        const targetHpComponent = Math.floor(targetHpEffectiveRatio * targetHpBaseValue / 100);
         const hitCount = Math.max(1, number(part.hitCount, 1));
-        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent + maxHpComponent));
+        const formulaBase = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent + maxHpComponent + targetHpComponent));
         const damageScale = Math.max(0, number(part.damageScale, 1));
         const perHitBase = Math.max(0, Math.floor(formulaBase * damageScale));
         const perHitAfterCrit = el.criticalHit.checked ? Math.floor(perHitBase * stats.critDamageMultiplier) : perHitBase;
@@ -10562,7 +10847,9 @@
           const hitDefense = targetDefenseDetails(part.dmgType, hitDefenseModifiers);
           defenseDetails.push(hitDefense);
           effectiveDefenses.push(hitDefense.effective);
-          const reducedHitDamage = Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
+          const reducedHitDamage = part.bypassDefense
+            ? afterMultiplier
+            : Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
           reducedHitDamages.push(reducedHitDamage);
           totalReduced += reducedHitDamage;
           if (yveltalAppliesMarks) yveltalMarks = Math.min(YVELTAL_DARK_AURA.maxStacks, yveltalMarks + 1);
@@ -10578,6 +10865,11 @@
           baseComponent,
           maxHpRatio,
           maxHpComponent,
+          targetHpRatio,
+          targetHpConditionMet,
+          targetHpEffectiveRatio,
+          targetHpBaseValue,
+          targetHpComponent,
           formulaBase,
           damageScale,
           hitCount,
@@ -10617,10 +10909,26 @@
       const totalReduced = Math.max(0, moveReduced + extrasReduced);
       const damagePercentCorrections = percentCorrectionValues(damageMultiplierTerms);
       const baseDamageFormulaForResult = (result) => {
-        let expression = rsbFormulaExpression(result, level);
+        const hasStandardFormula = Math.abs(number(result.part.ratio, 0))
+          + Math.abs(number(result.part.slider, 0))
+          + Math.abs(number(result.part.base, 0)) > 0;
+        const terms = [];
+        if (hasStandardFormula) terms.push(rsbFormulaExpression(result, level));
         if (result.maxHpRatio) {
-          expression = `${expression} + ${formulaVariableValue(stats.maxHp, "hp", 0)} × ${formatNumber(result.maxHpRatio, 1)}%`;
+          terms.push(`${formulaVariableValue(stats.maxHp, "hp", 0)} × ${formatNumber(result.maxHpRatio, 1)}%`);
         }
+        if (result.targetHpRatio && result.targetHpConditionMet) {
+          const targetHpKey = result.part.targetHpBasis === "max"
+            ? "targetmaxhp"
+            : result.part.targetHpBasis === "missing"
+              ? "targetmissinghp"
+              : "targethp";
+          const ratioExpression = result.part.targetHpLevelScale
+            ? `${formatNumber(result.targetHpRatio, 1)}% × (${formulaVariableValue(level, "lv", 0)} - 1)`
+            : `${formatNumber(result.targetHpEffectiveRatio, 1)}%`;
+          terms.push(`${formulaVariableValue(result.targetHpBaseValue, targetHpKey, 0)} × ${ratioExpression}`);
+        }
+        let expression = terms.join(" + ") || "0";
         if (result.damageScale !== 1) {
           expression = `(${expression}) × ${formatNumber(result.damageScale * 100, 1)}%`;
         }
@@ -10637,11 +10945,13 @@
           baseDamageFormulaForResult(result),
           [yveltalPercent, ...damagePercentCorrections]
         );
-        if (includeDefense) {
+        if (includeDefense && !result.part.bypassDefense) {
           expression = `(${expression}) × 600 ÷ (600 + ${defenseAdjustmentFormula(
             result.defenseDetails[hitIndex],
             result.part.dmgType
           )})`;
+        } else if (includeDefense && result.part.bypassDefense) {
+          expression = `${expression}（固定ダメージ）`;
         }
         return expression;
       };
@@ -10765,6 +11075,7 @@
     function feedbackDamageContext() {
       const pokemon = selectedPokemon();
       const move = selectedMove();
+      const targetHp = targetHpState();
       const conditions = feedbackConditionSummary(
         [
           ["attackWeightStacks", "conditionAttackWeight", "もうこうダンベル"],
@@ -10802,7 +11113,7 @@
         `- 技: ${move ? feedbackMoveText(move.choice, move.parts) : "未選択"}`,
         `- 持ち物: ${feedbackItemsText(selectedItems())}`,
         `- 条件: ${conditions}`,
-        `- 相手: ${selectedOptionLabel(el.targetSelect)} Lv${el.targetLevelRange.value}（防御 ${el.targetDefense.value} / 特防 ${el.targetSpDefense.value}）`,
+        `- 相手: ${selectedOptionLabel(el.targetSelect)} Lv${el.targetLevelRange.value}（残りHP ${formatNumber(targetHp.remainingHp, 0)} / ${formatNumber(targetHp.remainingPercent, 1)}%、最大HP ${formatNumber(targetHp.maxHp, 0)}、防御 ${el.targetDefense.value} / 特防 ${el.targetSpDefense.value}）`,
         `- 計算結果: 基礎ダメージ ${el.rawDamage.textContent} / 防御込み推定 ${el.finalDamage.textContent}`
       ];
     }
@@ -11152,6 +11463,9 @@
         syncTargetStats();
         updateAll();
       });
+      el.targetHpMode.addEventListener("change", changeTargetHpMode);
+      el.targetHpValue.addEventListener("input", updateAll);
+      el.targetHpValue.addEventListener("change", updateAll);
       ["targetDefense", "targetSpDefense"].forEach((id) => {
         el[id].addEventListener("input", () => {
           state.suppressTargetAutoFill = true;
