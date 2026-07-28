@@ -691,6 +691,11 @@
       min-width: 0;
     }
 
+    .condition-row.target-falinks-damage-row {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(0, 1fr) minmax(150px, 0.7fr);
+    }
+
     .target-hp-row {
       display: grid;
       grid-column: 1 / -1;
@@ -703,6 +708,21 @@
       grid-template-columns: minmax(116px, 0.45fr) minmax(0, 1fr);
       gap: 8px;
       min-width: 0;
+    }
+
+    #targetFalinksDamageTarget,
+    #targetHpMode,
+    #targetHpValue {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    #targetFalinksDamageTarget option,
+    #targetHpMode option {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .target-hp-label {
@@ -2759,6 +2779,10 @@
         grid-template-columns: 1fr;
       }
 
+      .condition-row.target-falinks-damage-row {
+        grid-template-columns: 1fr;
+      }
+
       .ranking-pokemon-level-row {
         grid-column: 1 / -1;
       }
@@ -3199,6 +3223,14 @@
                   </div>
                 </label>
               </div>
+              <label id="targetFalinksDamageRow" class="condition-row target-falinks-damage-row" hidden>
+                <span>タイレーツの被弾対象</span>
+                <select id="targetFalinksDamageTarget">
+                  <option value="brass">ヘイチョウ（90%）</option>
+                  <option value="trooper">ヘイ（10%）</option>
+                  <option value="total" selected>合計（最大110%）</option>
+                </select>
+              </label>
               <div class="target-defense-row">
                 <div class="target-hp-row">
                   <span class="target-hp-label">相手の残りHP</span>
@@ -5179,7 +5211,8 @@
         "modeToggleButton", "themeSelect",
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
-        "targetLevelRange", "targetLevelValue", "targetHpMode", "targetHpValue", "targetHpSummary", "targetDefense", "targetSpDefense",
+        "targetLevelRange", "targetLevelValue", "targetFalinksDamageRow", "targetFalinksDamageTarget",
+        "targetHpMode", "targetHpValue", "targetHpSummary", "targetDefense", "targetSpDefense",
         "rawDamage", "rawDamageFormula", "rawDamageResult",
         "finalDamage", "finalDamageFormula", "finalDamageResult",
         "damageStatusBody", "damageStatusValueBody", "damageAdjustmentCard", "damageAdjustmentBody", "learnChipRow", "manualAttack", "manualHp",
@@ -10394,6 +10427,47 @@
       return Math.floor(raw * 600 / (600 + defense));
     }
 
+    const FALINKS_DAMAGE_TARGETS = {
+      brass: {
+        label: "ヘイチョウ",
+        multiplier: 0.9,
+        formula: "90%"
+      },
+      trooper: {
+        label: "ヘイ",
+        multiplier: 0.1,
+        formula: "10%"
+      },
+      total: {
+        label: "合計",
+        multiplier: 1.1,
+        formula: "110%（上限）"
+      }
+    };
+
+    function selectedFalinksDamageTarget() {
+      if (el.targetSelect.value !== "Falinks") return null;
+      return FALINKS_DAMAGE_TARGETS[el.targetFalinksDamageTarget.value]
+        || FALINKS_DAMAGE_TARGETS.total;
+    }
+
+    function applyFalinksDamageTarget(damage) {
+      const target = selectedFalinksDamageTarget();
+      if (!target) return damage;
+      return Math.floor(damage * target.multiplier);
+    }
+
+    function falinksDamageFormula(expression) {
+      const target = selectedFalinksDamageTarget();
+      return target ? `(${expression}) × ${target.formula}` : expression;
+    }
+
+    function syncFalinksDamageControl() {
+      const isFalinks = el.targetSelect.value === "Falinks";
+      el.targetFalinksDamageRow.hidden = !isFalinks;
+      el.targetFalinksDamageTarget.disabled = !isFalinks;
+    }
+
     function selectedTargetMaxHp() {
       const targetName = el.targetSelect.value;
       const level = number(el.targetLevelRange.value, 15);
@@ -10751,6 +10825,7 @@
       updateConditionVisibility();
       el.levelValue.textContent = el.levelRange.value;
       el.targetLevelValue.textContent = el.targetLevelRange.value;
+      syncFalinksDamageControl();
       syncTargetHpControl();
 
       const move = selectedMove();
@@ -10850,8 +10925,9 @@
           const reducedHitDamage = part.bypassDefense
             ? afterMultiplier
             : Math.floor(afterMultiplier * 600 / (600 + hitDefense.effective));
-          reducedHitDamages.push(reducedHitDamage);
-          totalReduced += reducedHitDamage;
+          const targetAdjustedHitDamage = applyFalinksDamageTarget(reducedHitDamage);
+          reducedHitDamages.push(targetAdjustedHitDamage);
+          totalReduced += targetAdjustedHitDamage;
           if (yveltalAppliesMarks) yveltalMarks = Math.min(YVELTAL_DARK_AURA.maxStacks, yveltalMarks + 1);
           advanceDefenseSequence(defenseSequenceState, part.dmgType);
         }
@@ -10901,10 +10977,10 @@
         const afterMark = yveltalDamageActive
           ? applyYveltalDarkAuraDamage(entry.raw, initialYveltalMarks)
           : entry.raw;
-        return sum + reduceByDefense(
+        return sum + applyFalinksDamageTarget(reduceByDefense(
           Math.floor(afterMark * damageMultiplier),
           entry.type
-        );
+        ));
       }, 0);
       const totalReduced = Math.max(0, moveReduced + extrasReduced);
       const damagePercentCorrections = percentCorrectionValues(damageMultiplierTerms);
@@ -10953,7 +11029,7 @@
         } else if (includeDefense && result.part.bypassDefense) {
           expression = `${expression}（固定ダメージ）`;
         }
-        return expression;
+        return includeDefense ? falinksDamageFormula(expression) : expression;
       };
       const extraDamageFormula = (entry, includeDefense) => {
         const yveltalPercent = yveltalDamageActive
@@ -10969,7 +11045,7 @@
             entry.type
           )})`;
         }
-        return expression;
+        return includeDefense ? falinksDamageFormula(expression) : expression;
       };
       const rawDamageExpressions = moveResults.flatMap((result) => (
         Array.from(
@@ -11107,13 +11183,17 @@
         ]
       );
 
+      const falinksDamageTarget = selectedFalinksDamageTarget();
+      const targetDetail = falinksDamageTarget
+        ? `、被弾対象 ${falinksDamageTarget.label}`
+        : "";
       return [
         `- 画面: ${CALCULATOR_VIEWS.damage.title}`,
         `- 攻撃側: ${pokemon ? jpPokemonName(pokemon) : "未選択"} Lv${el.levelRange.value}`,
         `- 技: ${move ? feedbackMoveText(move.choice, move.parts) : "未選択"}`,
         `- 持ち物: ${feedbackItemsText(selectedItems())}`,
         `- 条件: ${conditions}`,
-        `- 相手: ${selectedOptionLabel(el.targetSelect)} Lv${el.targetLevelRange.value}（残りHP ${formatNumber(targetHp.remainingHp, 0)} / ${formatNumber(targetHp.remainingPercent, 1)}%、最大HP ${formatNumber(targetHp.maxHp, 0)}、防御 ${el.targetDefense.value} / 特防 ${el.targetSpDefense.value}）`,
+        `- 相手: ${selectedOptionLabel(el.targetSelect)} Lv${el.targetLevelRange.value}（残りHP ${formatNumber(targetHp.remainingHp, 0)} / ${formatNumber(targetHp.remainingPercent, 1)}%、最大HP ${formatNumber(targetHp.maxHp, 0)}、防御 ${el.targetDefense.value} / 特防 ${el.targetSpDefense.value}${targetDetail}）`,
         `- 計算結果: 基礎ダメージ ${el.rawDamage.textContent} / 防御込み推定 ${el.finalDamage.textContent}`
       ];
     }
@@ -11466,6 +11546,7 @@
       el.targetHpMode.addEventListener("change", changeTargetHpMode);
       el.targetHpValue.addEventListener("input", updateAll);
       el.targetHpValue.addEventListener("change", updateAll);
+      el.targetFalinksDamageTarget.addEventListener("change", updateAll);
       ["targetDefense", "targetSpDefense"].forEach((id) => {
         el[id].addEventListener("input", () => {
           state.suppressTargetAutoFill = true;
