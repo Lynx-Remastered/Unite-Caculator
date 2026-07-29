@@ -1844,6 +1844,16 @@
       margin-top: 8px;
     }
 
+    .healing-ranking-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    #healingRankingLimitSelect,
+    #healingRankingLimitSelect option {
+      font-size: 12px;
+    }
+
     .ranking-table-wrap {
       overflow-x: auto;
       padding: 0 14px 14px;
@@ -1970,6 +1980,41 @@
       color: var(--muted);
       font-size: 11px;
       font-weight: 800;
+    }
+
+    .healing-ranking-table {
+      min-width: 760px;
+    }
+
+    .healing-ranking-table col:nth-child(1) {
+      width: 64px;
+    }
+
+    .healing-ranking-table col:nth-child(2) {
+      width: 170px;
+    }
+
+    .healing-ranking-table col:nth-child(3) {
+      width: 320px;
+    }
+
+    .healing-ranking-table col:nth-child(4) {
+      width: 80px;
+    }
+
+    .healing-ranking-table col:nth-child(5) {
+      width: 110px;
+    }
+
+    .healing-ranking-table col:nth-child(6) {
+      width: 140px;
+    }
+
+    .healing-ranking-table th:nth-child(4),
+    .healing-ranking-table th:nth-child(5),
+    .healing-ranking-table td:nth-child(4),
+    .healing-ranking-table td:nth-child(5) {
+      text-align: left;
     }
 
     .slow-ranking-table {
@@ -2247,7 +2292,8 @@
       white-space: nowrap;
     }
 
-    .slow-move-icon-trigger {
+    .slow-move-icon-trigger,
+    .healing-move-icon-trigger {
       display: grid;
       place-items: center;
       width: 34px;
@@ -2262,13 +2308,17 @@
 
     .slow-move-icon-trigger:hover,
     .slow-move-icon-trigger:focus-visible,
-    .slow-move-icon-trigger[aria-expanded="true"] {
+    .slow-move-icon-trigger[aria-expanded="true"],
+    .healing-move-icon-trigger:hover,
+    .healing-move-icon-trigger:focus-visible,
+    .healing-move-icon-trigger[aria-expanded="true"] {
       border-color: var(--accent-2);
       background: rgba(var(--accent-2-rgb), 0.1);
       outline: none;
     }
 
-    .slow-ranking-table .slow-move-icon-trigger img {
+    .slow-ranking-table .slow-move-icon-trigger img,
+    .healing-ranking-table .healing-move-icon-trigger img {
       width: 30px;
       height: 30px;
       object-fit: contain;
@@ -2315,6 +2365,22 @@
     .slow-move-tooltip-part strong {
       color: var(--accent-2);
       font-weight: 900;
+    }
+
+    .healing-move-icon-trigger:hover,
+    .healing-move-icon-trigger:focus-visible,
+    .healing-move-icon-trigger[aria-expanded="true"] {
+      border-color: var(--success);
+      background: color-mix(in srgb, var(--success) 12%, transparent);
+    }
+
+    .healing-move-tooltip {
+      border-color: var(--success);
+    }
+
+    .healing-move-tooltip .slow-move-tooltip-title,
+    .healing-move-tooltip .slow-move-tooltip-part strong {
+      color: var(--success);
     }
 
     .acceleration-ranking-percent,
@@ -3217,6 +3283,10 @@
         grid-template-columns: 1fr;
       }
 
+      .healing-ranking-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .condition-row.target-falinks-damage-row {
         grid-template-columns: 1fr;
       }
@@ -3286,6 +3356,167 @@
 
       .total-value {
         font-size: 42px;
+      }
+
+      .healing-ranking-table-wrap {
+        overflow: visible;
+        padding: 0 10px 12px;
+      }
+
+      .healing-ranking-table {
+        display: block;
+        width: 100% !important;
+        min-width: 0;
+        table-layout: auto;
+      }
+
+      .healing-ranking-table colgroup,
+      .healing-ranking-table thead {
+        display: none;
+      }
+
+      .healing-ranking-table tbody {
+        display: grid;
+        gap: 10px;
+      }
+
+      .healing-ranking-table tr {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        grid-template-areas:
+          "rank pokemon"
+          "move move"
+          "hits healing"
+          "assumption assumption";
+        gap: 8px 12px;
+        align-items: center;
+        padding: 11px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-2);
+      }
+
+      .healing-ranking-table td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .healing-ranking-table tr.healing-ranking-empty {
+        display: block;
+      }
+
+      .healing-ranking-table tr.healing-ranking-empty td {
+        width: 100%;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .healing-ranking-table td:nth-child(1) {
+        grid-area: rank;
+        width: auto;
+        color: var(--accent-2);
+        text-align: left;
+      }
+
+      .healing-ranking-table td:nth-child(1)::before {
+        content: "順位 ";
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .healing-ranking-table td:nth-child(2) {
+        grid-area: pokemon;
+      }
+
+      .healing-ranking-table td:nth-child(3) {
+        grid-area: move;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+      }
+
+      .healing-ranking-table td:nth-child(4),
+      .healing-ranking-table td:nth-child(5) {
+        display: grid;
+        gap: 2px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .healing-ranking-table td:nth-child(4) {
+        grid-area: hits;
+      }
+
+      .healing-ranking-table td:nth-child(4)::before {
+        content: "回復回数";
+      }
+
+      .healing-ranking-table td:nth-child(5) {
+        grid-area: healing;
+      }
+
+      .healing-ranking-table td:nth-child(5)::before {
+        content: "回復量";
+      }
+
+      .healing-ranking-table td:nth-child(4)::before,
+      .healing-ranking-table td:nth-child(5)::before,
+      .healing-ranking-table td:nth-child(6)::before {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .healing-ranking-table td:nth-child(6) {
+        grid-area: assumption;
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 8px;
+        align-items: center;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+      }
+
+      .healing-ranking-table td:nth-child(6)::before {
+        content: "持ち物";
+      }
+
+      .healing-ranking-table .ranking-pokemon,
+      .healing-ranking-table .ranking-move {
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 7px;
+      }
+
+      .healing-ranking-table .ranking-pokemon img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .healing-ranking-table .healing-move-icon-trigger {
+        width: 32px;
+        height: 32px;
+        min-height: 32px;
+      }
+
+      .healing-ranking-table .healing-move-icon-trigger img {
+        width: 28px;
+        height: 28px;
+      }
+
+      .healing-ranking-table .ranking-name {
+        white-space: nowrap;
+      }
+
+      .healing-ranking-table .ranking-note {
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .healing-ranking-table .ranking-item-icons {
+        min-height: 24px;
       }
 
       .slow-ranking-table-wrap {
@@ -3462,6 +3693,7 @@
               </button>
               <div id="rankingSubmenu" class="navigation-submenu" role="group" aria-label="ランキング" hidden>
                 <button id="rankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="rankingPanel">ダメージ<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+                <button id="healingRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="healingRankingPanel">回復<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
                 <button id="accelerationRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="accelerationRankingPanel">加速<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
                 <button id="slowRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="slowRankingPanel">減速<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
               </div>
@@ -4084,6 +4316,65 @@
                   </tr>
                 </thead>
                 <tbody id="rankingBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="healingRankingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>ランキング条件</h2>
+            </div>
+            <div class="panel-body stack">
+              <div class="ranking-controls healing-ranking-controls">
+                <label>
+                  使用者レベル
+                  <div class="range-row">
+                    <input id="healingRankingLevelRange" type="range" min="1" max="15" value="15">
+                    <span id="healingRankingLevelValue" class="range-value">15</span>
+                  </div>
+                </label>
+                <label>
+                  表示件数
+                  <select id="healingRankingLimitSelect">
+                    <option value="25">上位25件</option>
+                    <option value="50" selected>上位50件</option>
+                    <option value="100">上位100件</option>
+                    <option value="9999">全件</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel result-panel">
+            <div class="result-head">
+              <h2>回復量ランキング</h2>
+            </div>
+            <div class="ranking-table-wrap healing-ranking-table-wrap">
+              <table class="ranking-table healing-ranking-table">
+                <colgroup>
+                  <col>
+                  <col>
+                  <col>
+                  <col>
+                  <col>
+                  <col>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>順位</th>
+                    <th>ポケモン</th>
+                    <th>技・回復効果</th>
+                    <th>回復回数</th>
+                    <th>回復量</th>
+                    <th>持ち物</th>
+                  </tr>
+                </thead>
+                <tbody id="healingRankingBody"></tbody>
               </table>
             </div>
           </section>
@@ -5331,6 +5622,7 @@
       healingMoveEntries: [],
       healingMoveChoices: [],
       rankingRows: [],
+      healingRankingRows: [],
       slowRankingRows: [],
       accelerationRankingRows: [],
       selectedMoveSlot: "basic",
@@ -5380,6 +5672,7 @@
     const CALCULATOR_VIEWS = {
       damage: { title: "ダメージ計算", buttonId: "damageTabButton", panelId: "damagePanel" },
       ranking: { title: "ダメージランキング", buttonId: "rankingTabButton", panelId: "rankingPanel" },
+      healingRanking: { title: "回復ランキング", buttonId: "healingRankingTabButton", panelId: "healingRankingPanel" },
       slowRanking: { title: "減速ランキング", buttonId: "slowRankingTabButton", panelId: "slowRankingPanel" },
       accelerationRanking: { title: "加速ランキング", buttonId: "accelerationRankingTabButton", panelId: "accelerationRankingPanel" },
       shield: { title: "シールド量計算", buttonId: "shieldTabButton", panelId: "shieldPanel" },
@@ -5395,7 +5688,7 @@
       ranking: {
         buttonId: "rankingMenuButton",
         submenuId: "rankingSubmenu",
-        tabs: ["ranking", "accelerationRanking", "slowRanking"]
+        tabs: ["ranking", "healingRanking", "accelerationRanking", "slowRanking"]
       }
     };
 
@@ -5951,10 +6244,10 @@
     function bindElements() {
       [
         "loading", "loadingStatus", "loadingDetail", "retryLoadButton",
-        "errorBox", "calculator", "damageTabButton", "rankingTabButton", "slowRankingTabButton", "accelerationRankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
+        "errorBox", "calculator", "damageTabButton", "rankingTabButton", "healingRankingTabButton", "slowRankingTabButton", "accelerationRankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
         "calculatorNavigation", "navigationMenuButton", "navigationMenu", "calculatorViewTitle",
         "calculationMenuButton", "calculationSubmenu", "rankingMenuButton", "rankingSubmenu",
-        "damagePanel", "rankingPanel", "slowRankingPanel", "accelerationRankingPanel", "shieldPanel", "healingPanel", "balancePanel",
+        "damagePanel", "rankingPanel", "healingRankingPanel", "slowRankingPanel", "accelerationRankingPanel", "shieldPanel", "healingPanel", "balancePanel",
         "modeToggleButton", "themeSelect",
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
@@ -6008,6 +6301,7 @@
         "healingStatusBody", "healingStatusValueBody", "healingAdjustmentCard", "healingAdjustmentBody", "healingLearnChipRow",
         "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
         "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
+        "healingRankingLevelRange", "healingRankingLevelValue", "healingRankingLimitSelect", "healingRankingBody",
         "slowFilterOptions", "slowRankingSortOrder", "slowFilterStatus", "slowRankingBody",
         "accelerationFilterOptions", "accelerationRankingSortOrder", "accelerationFilterStatus", "accelerationRankingBody",
         "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
@@ -6133,6 +6427,7 @@
       syncNavigationGroups();
       closeCalculatorNavigation();
       if (selectedTab === "ranking") updateDamageRanking();
+      if (selectedTab === "healingRanking") updateHealingRanking();
       if (selectedTab === "slowRanking") updateSlowRanking();
       if (selectedTab === "accelerationRanking") updateAccelerationRanking();
       if (selectedTab === "shield") updateShieldAll();
@@ -7480,6 +7775,7 @@
       updateShieldAll();
       updateHealingAll();
       updateDamageRanking();
+      updateHealingRanking();
       updateSlowRanking();
       updateAccelerationRanking();
       updateBalanceTimeline();
@@ -7608,11 +7904,63 @@
       return { count: 1, note: "" };
     }
 
-    function inferHealingHitInfo(entry) {
-      const own = inferHitInfo(entry);
-      if (own.count > 1) return own;
+    const HEALING_TOTAL_HIT_COUNT_OVERRIDES = Object.freeze({
+      "Mega-Lucario|Close Combat": 16
+    });
 
+    const HEALING_HIT_COUNT_OVERRIDES = Object.freeze({
+      "Azumarill|Whirlpool|Healing - per Hit (Against Wilds)": { regular: 10 },
+      "Azumarill|Whirlpool|Healing - per Hit (Against Players)": { regular: 10 },
+      "Azumarill|Whirlpool|Healing -per Hit (Against Players)": { regular: 10 },
+      "Clefable|Moonlight|Heal - per Tick (per half second)": { regular: 6, upgraded: 8 },
+      "Comfey|Synthesis|Healing - Additional Per Flower": { regular: 8 },
+      "Comfey|Floral Healing|Healing - Additional Per Flower": { regular: 8 },
+      "Comfey|Flowery Fields Forever|Heal - per tick": { regular: 12 },
+      "Comfey|Flowery Fields Forever|Empowered Floral Healing Healing - Additional Per Flower": { regular: 8 },
+      "Empoleon|Hydro Cannon|Healing - Whirlpool (Torrent)": { regular: 6 },
+      "Goodra|Gooey|Healing (Per Tick)": { regular: 12 },
+      "Ho-Oh|Flamethrower|Healing (per tick of flamethrower)": { regular: 16, upgraded: 20 },
+      "Meowth|Assurance|Heal - Additional (Per Coin Mark)": { regular: 5 },
+      "Mimikyu|Shadow Claw|Healing - Per Hit": { regular: 5 },
+      "Vaporeon|Aqua Ring|Heal": { regular: 7 },
+      "Zoroark|Night Slash|Healing - Final Slash per Diagonal": { regular: 2 }
+    });
+
+    function inferHealingHitInfo(entry, level = 15) {
       const label = String(entry.label || "");
+      const countOverride = number(entry.healingHitCountOverride, 0);
+      if (countOverride > 0) {
+        const note = /subsequent/i.test(label)
+          ? `${formatNumber(countOverride, 0)}回（初回を除く）`
+          : countOverride > 1 ? `${formatNumber(countOverride, 0)}回` : "";
+        return { count: countOverride, note };
+      }
+
+      const configuredOverride = HEALING_HIT_COUNT_OVERRIDES[
+        `${entry.pokemonName || ""}|${entry.displayName || entry.ownerName || ""}|${label}`
+      ];
+      if (configuredOverride) {
+        const upgraded = level >= number(entry.enhancedMinLevel, 99);
+        const count = number(upgraded && configuredOverride.upgraded || configuredOverride.regular, 1);
+        return { count, note: count > 1 ? `${formatNumber(count, 0)}回` : "" };
+      }
+
+      const own = inferHitInfo(entry);
+      if (!/\bper\b/i.test(label)
+        && /\b(?:first|initial|second|third|fourth|fifth|final)\s+(?:hit|flame|star|wave|bolt|pulse|projectile|punch|kick|slash|leaf|seed|meteorite)\b/i.test(label)) {
+        return own;
+      }
+
+      const totalHitOverride = number(
+        HEALING_TOTAL_HIT_COUNT_OVERRIDES[`${entry.pokemonName || ""}|${entry.displayName || entry.ownerName || ""}`],
+        0
+      );
+      if (totalHitOverride > 1 && /subsequent/i.test(label)) {
+        const count = totalHitOverride - 1;
+        return { count, note: `${formatNumber(count, 0)}回（初回を除く）` };
+      }
+
+      if (own.count > 1) return own;
       if (!/\bper\b|hit|tick|cream|copy|target|diagonal/i.test(label)) {
         return own;
       }
@@ -8473,6 +8821,7 @@
     function rankingSlotMatches(choice, filter) {
       if (filter === "all") return true;
       if (filter === "move") return choice.slotKey.startsWith("move1") || choice.slotKey.startsWith("move2") || choice.slotKey === "unite";
+      if (filter === "passive") return choice.slotKey.startsWith("passive");
       if (filter === "basic") return choice.slotKey === "basic";
       if (filter === "boosted") return choice.slotKey === "boosted";
       if (filter === "move1") return choice.slotKey.startsWith("move1");
@@ -8642,6 +8991,357 @@
         ? `Lv${targetLevel}（防御${formatNumber(targetDefense, 0)} / 特防${formatNumber(targetSpDefense, 0)}）`
         : "相手なし（防御0 / 特防0）";
       el.rankingSummary.textContent = `攻撃側Lv${level} / 相手: ${targetText} / ${singleHit ? "単発（最大1ヒット）" : "技1回分"} / 推奨持ち物Lv40を使用 / 条件付き追加ダメージ・急所は未反映 / ${formatNumber(visibleRows.length, 0)}件表示（全${formatNumber(rows.length, 0)}件）`;
+    }
+
+    function recommendedHealingItemRows(pokemon) {
+      const build = pokemon && Array.isArray(pokemon.builds)
+        ? pokemon.builds.find((entry) => Array.isArray(entry.held_items))
+        : null;
+      return (build ? build.held_items : []).slice(0, 3).map((name, slot) => {
+        const item = state.heldItems.find((entry) => entry.name === name);
+        return item ? { item, level: 40, slot } : null;
+      }).filter(Boolean);
+    }
+
+    function computeRankingHealingStats(pokemon, level, itemRows) {
+      const baseStats = pokemon ? pokemonStats(pokemon.name, level) : null;
+      const baseAttack = number(baseStats && baseStats.attack, 0);
+      const baseSpAttack = number(baseStats && baseStats.sp_attack, 0);
+      let attackFlat = 0;
+      let spAttackFlat = 0;
+      let spAttackPercent = 0;
+
+      itemRows.forEach(({ item, level: itemLevel }) => {
+        (item.stats || []).forEach((stat) => {
+          const value = itemLevelValue(itemLevel, stat);
+          if (stat.label === "Attack") attackFlat += value;
+          if (stat.label === "Sp. Attack") spAttackFlat += value;
+        });
+      });
+      if (hasItemInRows(itemRows, "Wise Glasses")) {
+        spAttackPercent += effectTierForRows(itemRows, "Wise Glasses");
+      }
+
+      return {
+        attack: baseAttack + attackFlat,
+        spAttack: (baseSpAttack + spAttackFlat) * (1 + spAttackPercent / 100)
+      };
+    }
+
+    function healingRankingVariantsForChoice(pokemon, choice, level) {
+      if (!choice || choice.disabled || level < number(choice.minLevel, 1)) return [];
+      const variants = (choice.effectGroups || []).map((group) => {
+        const available = group.entries.filter((entry) => (
+          level >= number(entry.minLevel, 1) && isHealingEntry(entry)
+        ));
+        const enhanced = available.filter((entry) => entry.enhanced);
+        const parts = enhanced.length
+          ? enhanced
+          : available.filter((entry) => !entry.enhanced);
+        return {
+          key: group.key,
+          label: group.label,
+          parts
+        };
+      }).filter((variant) => variant.parts.length);
+
+      if (pokemon?.name === "Mega-Lucario" && choice.displayName === "Close Combat") {
+        const parts = variants.flatMap((variant) => variant.parts);
+        const firstHitParts = parts.filter((part) => /\bfirst hit\b/i.test(String(part.label || "")));
+        const subsequentHitParts = parts.filter((part) => /subsequent hits/i.test(String(part.label || "")));
+        if (firstHitParts.length && subsequentHitParts.length) {
+          return [
+            {
+              key: "normal-form",
+              label: "通常時",
+              displayLabel: "通常時",
+              parts: subsequentHitParts.map((part) => ({ ...part, healingHitCountOverride: 11 }))
+            },
+            {
+              key: "mega-form",
+              label: "メガ時",
+              displayLabel: "メガ時",
+              parts: [
+                ...firstHitParts.map((part) => ({ ...part, healingHitCountOverride: 1 })),
+                ...subsequentHitParts.map((part) => ({ ...part, healingHitCountOverride: 15 }))
+              ]
+            }
+          ];
+        }
+      }
+
+      if (pokemon?.name === "Meganium" && choice.displayName === "Petal Blizzard") {
+        const healingParts = variants
+          .filter((variant) => normalizeHealingLabel(variant.label) === "healing")
+          .flatMap((variant) => variant.parts);
+        if (healingParts.length) {
+          return [
+            {
+              key: "normal-form",
+              label: "通常時",
+              displayLabel: "通常時",
+              parts: healingParts.map((part) => ({ ...part, healingHitCountOverride: 1 }))
+            },
+            {
+              key: "full-bloom",
+              label: "満開時",
+              displayLabel: "満開時",
+              parts: [
+                ...healingParts.map((part) => ({ ...part, healingHitCountOverride: 1 })),
+                ...healingParts.map((part) => ({
+                  ...part,
+                  id: `${part.id}-full-bloom-extra`,
+                  healingHitCountOverride: 4,
+                  healingValueScale: 0.05
+                }))
+              ]
+            }
+          ];
+        }
+      }
+
+      return variants;
+    }
+
+    function calculateRankingHealing(parts, level, stats) {
+      let totalHealing = 0;
+      let totalHits = 0;
+      parts.forEach((part) => {
+        const moveStat = String(part.dmgType).trim() === "Atk" ? stats.attack : stats.spAttack;
+        const statComponent = Math.floor(part.ratio * moveStat / 100);
+        const levelComponent = part.slider * (level - 1);
+        const baseValue = Math.max(0, Math.floor(statComponent + levelComponent + part.base));
+        const scaledValue = Math.max(0, Math.floor(baseValue * number(part.healingValueScale, 1)));
+        const hitCount = Math.max(1, number(inferHealingHitInfo(part, level).count, 1));
+        totalHealing += scaledValue * hitCount;
+        totalHits += hitCount;
+      });
+      return { totalHealing, totalHits };
+    }
+
+    const HEALING_EFFECT_LABELS_JA = Object.freeze({
+      "Healing - per Cream (48 max)": "クリーム1個ごとの回復（最大48個）",
+      "Heal - First Hit": "初撃の回復",
+      "Healing - Empowered": "強化時の回復",
+      "Healing": "回復",
+      "Healing - Basic": "通常時の回復",
+      "Heal - per Copy": "分身1体ごとの回復",
+      "Heal": "回復",
+      "Healing - Final Slash per Diagonal": "斜め斬り1回ごとの最終斬撃回復",
+      "Healing (3x)": "回復（3回）",
+      "Healing - per Blade (5 blades)": "刃1枚ごとの回復（5枚）",
+      "Dark Aura - Healing": "ダークオーラによる回復",
+      "Empowered Floral Healing Healing": "強化フラワーヒールの回復",
+      "Healing (4x)": "回復（4回）",
+      "Healing - HoT (2x)": "継続回復（2回）",
+      "Healing - per Hit (3-5 hits)": "1ヒットごとの回復（3～5ヒット）",
+      "Healing - Boosted (Shield Stance)": "シールドフォルムの強化攻撃による回復",
+      "Heal - per Hit": "1ヒットごとの回復",
+      "Heal per hit per target (Queenly Majesty buff)": "1対象・1ヒットごとの回復（クイーンマジェスティ）",
+      "Heal - Landing": "着地時の回復",
+      "Healing - Boosted (per Hit - 2 Hits)": "強化攻撃1ヒットごとの回復（2ヒット）",
+      "Heal - per Hit (Subsequent Hits)": "2撃目以降・1ヒットごとの回復",
+      "Healing - Mark": "マークによる回復",
+      "Healing - Additional Per Flower": "花1個ごとの追加回復",
+      "Healing - per Target": "1対象ごとの回復",
+      "Healing - Revenge": "反撃時の回復",
+      "Healing - Whirlpool (Torrent)": "うずしおによる回復（げきりゅう中）",
+      "Healing (Per hit up to 4x based on number of Center hits)": "中心ヒット数に応じた回復（1ヒットごと・最大4回）",
+      "Healing (Gooey Center- Per hit up to 4x based on number of Center hits)": "ぬめぬめ状態の相手への中心ヒット回復（1ヒットごと・最大4回）",
+      "Heal - per Tick (per half second)": "0.5秒ごとの回復",
+      "Healing - Per Hit": "1ヒットごとの回復",
+      "Healing (Per Tick)": "1回ごとの回復",
+      "Healing - Gluttonous Fangs": "くいしんぼうのキバによる回復",
+      "Heal - Additional (Per Coin Mark)": "コインマーク1個ごとの追加回復",
+      "Additional Healing (Ally Snorlax) - Empowered": "味方カビゴンへの追加回復（強化時）",
+      "Heal - per tick": "1回ごとの回復",
+      "Additional Healing (Ally Snorlax) - Basic": "味方カビゴンへの追加回復（通常時）",
+      "Heal - per Boosted Attack": "強化攻撃1回ごとの回復",
+      "Empowered Floral Healing Healing - Additional Per Flower": "強化フラワーヒールの花1個ごとの追加回復",
+      "Healing - per Hit (Against Players)": "対プレイヤー・1ヒットごとの回復",
+      "Healing -per Hit (Against Players)": "対プレイヤー・1ヒットごとの回復",
+      "Healing - per Tick": "1回ごとの回復",
+      "Healing (per Unique Enemy)": "命中した相手1体ごとの回復",
+      "Healing (per tick of flamethrower)": "かえんほうしゃ1回ごとの回復",
+      "Healing - per Hit (Against Wilds)": "野生ポケモン・1ヒットごとの回復"
+    });
+
+    function jpHealingEffectLabel(label) {
+      return HEALING_EFFECT_LABELS_JA[String(label || "")] || "回復";
+    }
+
+    function updateHealingRanking() {
+      if (!el.healingRankingBody) return;
+      hideHealingRankingMoveTooltip(true);
+      const level = number(el.healingRankingLevelRange.value, 15);
+      const limit = number(el.healingRankingLimitSelect.value, 50);
+      const rows = [];
+      el.healingRankingLevelValue.textContent = level;
+
+      state.pokemon.filter((pokemon) => !pokemon.exclude_stats).forEach((pokemon) => {
+        const itemRows = recommendedHealingItemRows(pokemon);
+        const stats = computeRankingHealingStats(pokemon, level, itemRows);
+        healingChoicesForPokemon(pokemon, level)
+          .filter((choice) => !choice.disabled)
+          .forEach((choice) => {
+            healingRankingVariantsForChoice(pokemon, choice, level).forEach((variant) => {
+              const result = calculateRankingHealing(variant.parts, level, stats);
+              if (result.totalHealing <= 0) return;
+              rows.push({
+                pokemon,
+                choice,
+                variant,
+                itemRows,
+                level,
+                descriptionKey: choice.descriptionKey,
+                totalHealing: result.totalHealing,
+                totalHits: result.totalHits
+              });
+            });
+          });
+      });
+
+      rows.sort((a, b) => (
+        b.totalHealing - a.totalHealing
+        || jpPokemonName(a.pokemon).localeCompare(jpPokemonName(b.pokemon), "ja")
+        || jpMoveName(a.choice.displayName).localeCompare(jpMoveName(b.choice.displayName), "ja")
+      ));
+      state.healingRankingRows = rows;
+      const visibleRows = rows.slice(0, limit);
+
+      if (!visibleRows.length) {
+        el.healingRankingBody.innerHTML = `<tr class="healing-ranking-empty"><td colspan="6">現在の条件で表示できる回復効果がありません。</td></tr>`;
+      } else {
+        el.healingRankingBody.innerHTML = visibleRows.map((row, index) => {
+          const moveName = jpMoveName(row.choice.displayName);
+          const effectLabel = row.variant.displayLabel || jpHealingEffectLabel(row.variant.label);
+          const moveNote = `${effectLabel}${row.totalHits > 1 ? ` / ${formatNumber(row.totalHits, 0)}回分を合計` : ""}`;
+          const itemIcons = row.itemRows.length
+            ? row.itemRows.map((entry) => `<img src="${escapeHtml(heldItemIconUrl(entry.item.name))}" alt="${escapeHtml(jpItemName(entry.item))}" title="${escapeHtml(jpItemName(entry.item))}" onerror="this.onerror=null;this.src='${escapeHtml(brokenImageUrl())}';">`).join("")
+            : `<span class="ranking-item-empty" title="持ち物なし">なし</span>`;
+          return `<tr>
+            <td class="ranking-rank">${index + 1}</td>
+            <td>
+              <div class="ranking-pokemon">
+                <img src="${escapeHtml(pokemonThumbUrl(row.pokemon.name))}" alt="">
+                <span class="ranking-name">${escapeHtml(jpPokemonName(row.pokemon))}</span>
+              </div>
+            </td>
+            <td>
+              <div class="ranking-move">
+                <button
+                  class="healing-move-icon-trigger"
+                  type="button"
+                  data-healing-ranking-row-index="${index}"
+                  aria-label="${escapeHtml(moveName)}の技概要と回復仕様を表示"
+                  aria-expanded="false"
+                  aria-describedby="healingRankingMoveTooltip"
+                >
+                  <img src="${escapeHtml(row.choice.iconUrl || brokenImageUrl())}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${escapeHtml(brokenImageUrl())}';">
+                </button>
+                <span><span class="ranking-name">${escapeHtml(moveName)}</span><span class="ranking-note">${escapeHtml(moveNote)}</span></span>
+              </div>
+            </td>
+            <td class="ranking-number">${formatNumber(row.totalHits, 0)}</td>
+            <td class="ranking-number">${formatNumber(row.totalHealing, 0)}</td>
+            <td>
+              <div class="ranking-assumption">
+                <span class="ranking-item-icons" aria-label="持ち物">${itemIcons}</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join("");
+      }
+
+    }
+
+    let activeHealingRankingMoveTooltipTrigger = null;
+    let healingRankingMoveTooltipPinned = false;
+
+    function ensureHealingRankingMoveTooltip() {
+      let tooltip = document.getElementById("healingRankingMoveTooltip");
+      if (tooltip) return tooltip;
+      tooltip = document.createElement("div");
+      tooltip.id = "healingRankingMoveTooltip";
+      tooltip.className = "slow-move-tooltip healing-move-tooltip";
+      tooltip.setAttribute("role", "tooltip");
+      tooltip.hidden = true;
+      document.body.appendChild(tooltip);
+      return tooltip;
+    }
+
+    function localizedHealingRankingOverviewParts(row) {
+      const descriptionSources = [
+        state.wikiMoveDescriptionsJa && state.wikiMoveDescriptionsJa.entries || {},
+        state.slowDescriptionsJa && state.slowDescriptionsJa.entries || {}
+      ];
+      for (const entries of descriptionSources) {
+        const translated = row.descriptionKey && entries[row.descriptionKey];
+        if (!Array.isArray(translated) || !translated.length) continue;
+        const parts = translated
+          .map((part) => ({
+            label: String(part.label || "技の概要"),
+            text: cleanSlowDescription(part.text)
+          }))
+          .filter((part) => part.text && part.label === "技の概要");
+        if (parts.length) return parts;
+      }
+      return [{
+        label: "技の概要",
+        text: `${jpMoveName(row.choice.displayName)}には、HPを回復する効果があります。`
+      }];
+    }
+
+    function healingRankingDetailParts(row) {
+      const hitText = row.totalHits > 1
+        ? `1回の技使用で最大${formatNumber(row.totalHits, 0)}回の回復判定を合計し`
+        : "1回の回復判定として";
+      return [{
+        label: "回復仕様",
+        text: `使用者レベル${formatNumber(row.level, 0)}、推奨持ち物レベル40の条件で、${hitText}、回復量${formatNumber(row.totalHealing, 0)}として集計しています。回復量の割合補正と対象数は含めていません。`
+      }];
+    }
+
+    function showHealingRankingMoveTooltip(trigger, pinned = false) {
+      const rowIndex = number(trigger && trigger.dataset.healingRankingRowIndex, -1);
+      const row = state.healingRankingRows[rowIndex];
+      if (!trigger || !row) return;
+      const parts = [
+        ...localizedHealingRankingOverviewParts(row),
+        ...healingRankingDetailParts(row)
+      ];
+      const preservePin = activeHealingRankingMoveTooltipTrigger === trigger && healingRankingMoveTooltipPinned;
+      const tooltip = ensureHealingRankingMoveTooltip();
+      const body = parts.map((part) => (
+        `<div class="slow-move-tooltip-part">${part.label ? `<strong>${escapeHtml(part.label)}：</strong>` : ""}${escapeHtml(part.text)}</div>`
+      )).join("");
+      const variantLabel = row.variant.displayLabel ? `（${row.variant.displayLabel}）` : "";
+      tooltip.innerHTML = `<strong class="slow-move-tooltip-title">${escapeHtml(jpPokemonName(row.pokemon))} / ${escapeHtml(jpMoveName(row.choice.displayName))}${escapeHtml(variantLabel)}</strong>${body}`;
+      tooltip.hidden = false;
+      hideSlowMoveTooltip(true);
+      hideAccelerationMoveTooltip(true);
+      if (activeHealingRankingMoveTooltipTrigger && activeHealingRankingMoveTooltipTrigger !== trigger) {
+        activeHealingRankingMoveTooltipTrigger.setAttribute("aria-expanded", "false");
+      }
+      activeHealingRankingMoveTooltipTrigger = trigger;
+      healingRankingMoveTooltipPinned = pinned || preservePin;
+      tooltip.classList.toggle("is-pinned", healingRankingMoveTooltipPinned);
+      trigger.setAttribute("aria-expanded", "true");
+      positionSlowMoveTooltip(trigger, tooltip);
+    }
+
+    function hideHealingRankingMoveTooltip(force = false) {
+      if (healingRankingMoveTooltipPinned && !force) return;
+      const tooltip = document.getElementById("healingRankingMoveTooltip");
+      if (tooltip) {
+        tooltip.hidden = true;
+        tooltip.classList.remove("is-pinned");
+      }
+      if (activeHealingRankingMoveTooltipTrigger) {
+        activeHealingRankingMoveTooltipTrigger.setAttribute("aria-expanded", "false");
+      }
+      activeHealingRankingMoveTooltipTrigger = null;
+      healingRankingMoveTooltipPinned = false;
     }
 
     const SLOW_EFFECT_TEXT_FIELDS = [
@@ -10683,16 +11383,9 @@
       });
     }
 
-    function updateHealingMoveOptions() {
-      const pokemon = selectedHealingPokemon();
-      state.healingMoveEntries = [];
-      state.healingMoveChoices = [];
-      if (!pokemon) {
-        renderHealingMoveChoices();
-        return;
-      }
-
-      const level = number(el.healingLevelRange.value, 15);
+    function healingChoicesForPokemon(pokemon, level) {
+      const choices = [];
+      if (!pokemon) return choices;
       const skills = pokemon.skills || [];
       const passive = skills.find((skill) => skill.ability === "Passive" || skill.ability === "Passive Ability");
       const basic = skills.find((skill) => skill.ability === "Basic");
@@ -10700,10 +11393,11 @@
       const move2 = skills.find((skill) => skill.ability === "Move 2");
       const unite = skills.find((skill) => skill.ability === "Unite Move");
 
-      const createChoices = ({ slotKey, slotLabel, node, rsb, groupName, minLevel, iconName }) => {
+      const createChoices = ({ slotKey, slotLabel, node, rsb, rsbKey = "rsb", groupName, minLevel, iconName }) => {
         if (!node || !rsb) return;
         const displayName = slotKey === "basic" ? "通常攻撃" : slotKey === "boosted" ? "強化攻撃" : node.name || slotLabel;
         const iconUrl = skillIconUrl(pokemon.name, iconName || node.name || "Attack");
+        const descriptionKey = [pokemon.name, groupName || node.ability || "", node.name || "", rsbKey].join("::");
         const entries = [];
         addRsbEntries(entries, rsb, displayName, groupName || node.ability || "", minLevel || node.level1 || node.level || 1, "", {
           slotKey,
@@ -10717,6 +11411,7 @@
 
         const groups = new Map();
         healingEntries.forEach((entry) => {
+          entry.pokemonName = pokemon.name;
           const key = normalizeHealingLabel(entry.label);
           if (!groups.has(key)) groups.set(key, []);
           groups.get(key).push(entry);
@@ -10746,15 +11441,15 @@
           entries: healingEntries,
           effectGroups,
           variantLabel: effectGroups.length > 1 ? `${effectGroups.length}種類の回復効果` : effectGroups[0].label,
+          descriptionKey,
           disabled: !healingEntries.some((entry) => level >= number(entry.minLevel, 1))
         };
-        state.healingMoveChoices.push(choice);
-        state.healingMoveEntries.push(...healingEntries);
+        choices.push(choice);
       };
 
       createChoices({ slotKey: "passive", slotLabel: "特性", node: passive, rsb: passive && passive.rsb, groupName: "Passive", minLevel: 1 });
       createChoices({ slotKey: "basic", slotLabel: "通常", node: basic, rsb: basic && basic.rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
-      createChoices({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
+      createChoices({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, rsbKey: "boosted_rsb", groupName: "Basic", minLevel: 1, iconName: "Attack" });
 
       [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
         createChoices({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: node.level1 || node.level || 1 });
@@ -10763,6 +11458,15 @@
         createChoices({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: node.level1 || node.level || 1 });
       });
       createChoices({ slotKey: "unite", slotLabel: "ユナイト技", node: unite, rsb: unite && unite.rsb, groupName: "Unite Move", minLevel: unite && unite.level || 1 });
+
+      return choices;
+    }
+
+    function updateHealingMoveOptions() {
+      const pokemon = selectedHealingPokemon();
+      const level = number(el.healingLevelRange.value, 15);
+      state.healingMoveChoices = healingChoicesForPokemon(pokemon, level);
+      state.healingMoveEntries = state.healingMoveChoices.flatMap((choice) => choice.entries);
 
       if (!state.healingMoveChoices.some((choice) => choice.slotKey === state.selectedHealingMoveSlot && !choice.disabled)) {
         state.selectedHealingMoveSlot = (state.healingMoveChoices.find((choice) => !choice.disabled) || {}).slotKey || "";
@@ -13361,7 +14065,7 @@
         const levelComponent = part.slider * (level - 1);
         const baseComponent = part.base;
         const baseValue = Math.max(0, Math.floor(statComponent + levelComponent + baseComponent));
-        const hitInfo = inferHealingHitInfo(part);
+        const hitInfo = inferHealingHitInfo(part, level);
         return {
           part,
           typeLabel,
@@ -13897,6 +14601,14 @@
       ];
     }
 
+    function feedbackHealingRankingContext() {
+      return [
+        `- 画面: ${CALCULATOR_VIEWS.healingRanking.title}`,
+        `- 使用者レベル: Lv${el.healingRankingLevelRange.value}`,
+        `- 表示件数: ${selectedOptionLabel(el.healingRankingLimitSelect)}`
+      ];
+    }
+
     function feedbackSlowRankingContext() {
       return [
         `- 画面: ${CALCULATOR_VIEWS.slowRanking.title}`,
@@ -13931,6 +14643,7 @@
       const contextBuilders = {
         damage: feedbackDamageContext,
         ranking: feedbackRankingContext,
+        healingRanking: feedbackHealingRankingContext,
         slowRanking: feedbackSlowRankingContext,
         accelerationRanking: feedbackAccelerationRankingContext,
         shield: feedbackShieldContext,
@@ -14033,6 +14746,7 @@
     function wireEvents() {
       ensureSlowMoveTooltip();
       ensureAccelerationMoveTooltip();
+      ensureHealingRankingMoveTooltip();
       document.addEventListener("click", (event) => {
         if (!(event.target instanceof Element) || (!event.target.closest("#navigationMenuButton") && !event.target.closest("#navigationMenu"))) {
           closeCalculatorNavigation();
@@ -14052,6 +14766,9 @@
         if (!(event.target instanceof Element) || (!event.target.closest(".acceleration-move-icon-trigger") && !event.target.closest("#accelerationMoveTooltip"))) {
           hideAccelerationMoveTooltip(true);
         }
+        if (!(event.target instanceof Element) || (!event.target.closest(".healing-move-icon-trigger") && !event.target.closest("#healingRankingMoveTooltip"))) {
+          hideHealingRankingMoveTooltip(true);
+        }
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
@@ -14064,6 +14781,7 @@
           closeMoveComboboxes();
           hideSlowMoveTooltip(true);
           hideAccelerationMoveTooltip(true);
+          hideHealingRankingMoveTooltip(true);
         }
       });
       document.querySelectorAll("[data-calculation-tip]").forEach((button) => {
@@ -14136,6 +14854,50 @@
       });
       el.themeSelect.addEventListener("change", () => applyTheme(el.themeSelect.value));
       wireRankingColumnResizers();
+      el.healingRankingBody.addEventListener("mouseover", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".healing-move-icon-trigger")
+          : null;
+        const enteredFromOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && enteredFromOutside) showHealingRankingMoveTooltip(trigger);
+      });
+      el.healingRankingBody.addEventListener("mouseout", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".healing-move-icon-trigger")
+          : null;
+        const exitedToOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && exitedToOutside) hideHealingRankingMoveTooltip();
+      });
+      el.healingRankingBody.addEventListener("focusin", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".healing-move-icon-trigger")
+          : null;
+        if (trigger) showHealingRankingMoveTooltip(trigger);
+      });
+      el.healingRankingBody.addEventListener("focusout", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".healing-move-icon-trigger")
+          : null;
+        const exitedToOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && exitedToOutside) hideHealingRankingMoveTooltip();
+      });
+      el.healingRankingBody.addEventListener("click", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".healing-move-icon-trigger")
+          : null;
+        if (!trigger) return;
+        if (activeHealingRankingMoveTooltipTrigger === trigger && healingRankingMoveTooltipPinned) {
+          hideHealingRankingMoveTooltip(true);
+        } else {
+          showHealingRankingMoveTooltip(trigger, true);
+        }
+      });
       el.slowFilterOptions.addEventListener("change", (event) => {
         if (event.target instanceof HTMLInputElement && event.target.type === "checkbox") {
           updateSlowRanking();
@@ -14239,11 +15001,13 @@
       window.addEventListener("resize", () => {
         hideSlowMoveTooltip(true);
         hideAccelerationMoveTooltip(true);
+        hideHealingRankingMoveTooltip(true);
       });
       window.addEventListener("scroll", (event) => {
-        if (event.target instanceof Element && event.target.closest("#slowMoveTooltip, #accelerationMoveTooltip")) return;
+        if (event.target instanceof Element && event.target.closest("#slowMoveTooltip, #accelerationMoveTooltip, #healingRankingMoveTooltip")) return;
         hideSlowMoveTooltip(true);
         hideAccelerationMoveTooltip(true);
+        hideHealingRankingMoveTooltip(true);
       }, true);
 
       el.pokemonSelect.addEventListener("change", () => {
@@ -14349,6 +15113,11 @@
       ["rankingLevelRange", "rankingTargetSelect", "rankingTargetLevelRange", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit"].forEach((id) => {
         el[id].addEventListener("input", updateDamageRanking);
         el[id].addEventListener("change", updateDamageRanking);
+      });
+
+      ["healingRankingLevelRange", "healingRankingLimitSelect"].forEach((id) => {
+        el[id].addEventListener("input", updateHealingRanking);
+        el[id].addEventListener("change", updateHealingRanking);
       });
 
       el.damageVariantSelect.addEventListener("change", () => {
