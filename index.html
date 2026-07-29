@@ -8687,11 +8687,17 @@
       /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+(?:the\s+)?movement speed of\s+(?:those|opposing|enem(?:y|ies)|targets?|pok(?:é|e)mon)[^;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
       /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+(?:the\s+)?movement speed of\s+[^.;,%]{0,75}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
       /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+[^.;,%]{0,55}?movement speed[^.;,%]{0,40}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
-      /movement speed(?:\s+of\s+[^.;,%]{0,65}?)?\s+(?:is\s+)?(?:decreas(?:e|es|ed)|reduc(?:e|es|ed)|lowered)[^.;,%]{0,35}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)[^.;]{0,170}?\band\s+(?:their\s+|the\s+)?movement speed[^.;%]{0,45}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /\band\s+(?:their\s+|the\s+)?movement speed[^.;%]{0,45}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /movement speed(?:\s+of\s+[^.;,%]{0,65}?)?\s+(?:is\s+)?(?:also\s+)?(?:decreas(?:e|es|ed)|reduc(?:e|es|ed)|lowered)[^.;,%]{0,35}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /(\d+(?:\.\d+)?)%\s+(?:decreas(?:e|ed)|reduc(?:e|ed))\s+movement speed/gi,
+      /\bslow(?:s|ed|ing)?\s+by\s+(\d+(?:\.\d+)?)%/gi,
       /slow(?:s|ed|ing)?(?:\s+movement speed)?\s+[^.;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
+      /\bslow(?:s|ed|ing)?\s+(\d+(?:\.\d+)?)%/gi,
       /(?:appl(?:y|ies|ying)|inflict(?:s|ed|ing)?)\s+(?:a\s+)?(\d+(?:\.\d+)?)%\s+slow/gi,
       /(\d+(?:\.\d+)?)%\s+(?:movement speed\s+)?slow/gi,
       /movement speed (?:decrease|reduction)[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
+      /(?:increases?|strengthens?)\s+(?:the\s+)?movement speed (?:decrease|reduction)[^.;%]{0,100}?\s+to\s+(\d+(?:\.\d+)?)%/gi,
       /\bslow[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
       /\b(?:increases?|strengthens?)\s+the\s+slow\s+to\s+(\d+(?:\.\d+)?)%/gi
     ];
@@ -8718,12 +8724,26 @@
       if (/(?:opposing|enem(?:y|ies)|targets?|those(?:\s+that)?(?:\s+are)?\s+hit|them\b|linked target)/i.test(exact)) return true;
       if (/(?:the user|user's|itself|themselves|their own)/i.test(exact)) return false;
       if (/\b(?:slows?|slowed|slowing)\s+pok(?:é|e)mon\b/i.test(exact)) return true;
+      if (/(?:appl(?:y|ies|ying)|inflict(?:s|ed|ing)?)\s+(?:a\s+)?\d+(?:\.\d+)?%\s+slow/i.test(exact)) return true;
 
       const after = text.slice(match.index + match[0].length, Math.min(text.length, match.index + match[0].length + 100)).toLowerCase();
       if (/^\s*[,;]?\s*(?:while|during)\s+(?:charging|casting|using|breathing|snarling|moving backward|this move is being used|the move is being used)\b/i.test(after)) {
         return false;
       }
+      if (/^\s*(?:for\s+\d+(?:\.\d+)?s\s+)?(?:to|on)\s+(?:opposing|enem(?:y|ies)|targets?|pok(?:é|e)mon)/i.test(after)) {
+        return true;
+      }
       const before = text.slice(Math.max(0, match.index - 180), match.index).toLowerCase();
+      const beforeWide = text.slice(Math.max(0, match.index - 320), match.index).toLowerCase();
+      if (/target['’]s\s*$/i.test(before)
+          || /affected pok(?:é|e)mon['’]s[\s\S]{0,310}$/i.test(beforeWide)
+          || (/\btheir movement speed/i.test(exact) && (/\bwhen hitting an enemy\b/i.test(after) || /\bdealing damage\b[^.;]{0,45}$/i.test(before)))) {
+        return true;
+      }
+      if (/(?:opposing|enem(?:y|ies)|enemy players?|locked-on enemy|targets?|those hit|pok(?:é|e)mon (?:it |they )?hits?)[^.;]{0,100}$/i.test(before)
+          && !/(?:the user|user['’]s|itself|themselves)[^.;]{0,45}$/i.test(before)) {
+        return true;
+      }
       const targetIndex = lastSlowContextIndex(before, [
         /opposing(?![\s\S]*opposing)/i,
         /enem(?:y|ies)(?![\s\S]*enem(?:y|ies))/i,
@@ -8846,6 +8866,132 @@
       return 0;
     }
 
+    function speedDecayCount(value) {
+      const words = {
+        one: 1,
+        two: 2,
+        three: 3,
+        four: 4,
+        five: 5,
+        six: 6,
+        seven: 7,
+        eight: 8,
+        nine: 9,
+        ten: 10
+      };
+      const text = String(value || "").toLowerCase();
+      return words[text] || number(text, 0);
+    }
+
+    function speedDecayInterval(value) {
+      const text = String(value || "").toLowerCase();
+      if (text === "half") return 0.5;
+      if (text === "one") return 1;
+      return number(text, 0);
+    }
+
+    function speedDecayMinimum(context) {
+      const text = String(context || "");
+      const patterns = [
+        /(?:down\s+)?to\s+(?:a\s+)?minimum(?:\s+of)?\s+(\d+(?:\.\d+)?)%/i,
+        /\bminimum(?:\s+of)?\s+(\d+(?:\.\d+)?)%/i,
+        /\bdown\s+to\s+(?:a\s+)?(\d+(?:\.\d+)?)%/i,
+        /(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;]{0,160}?(?:down\s+)?to\s+(?:a\s+)?(\d+(?:\.\d+)?)%/i
+      ];
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) return number(match[1], 0);
+      }
+      return 0;
+    }
+
+    function speedDecaySpec(context) {
+      const text = String(context || "")
+        .replace(/\b(every|per)\s+(?:one\s+)?second\b/gi, "$1 1s")
+        .replace(/\b(every|per)\s+half\s+(?:a\s+)?second\b/gi, "$1 0.5s");
+      if (!/(?:decay|diminish)/i.test(text)) return null;
+      const countPattern = "(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
+      const intervalPattern = "(\\d+(?:\\.\\d+)?|half)\\s*(?:s(?:ec(?:ond)?s?)?|seconds?)?";
+      const minimum = speedDecayMinimum(text);
+      const amountFirst = new RegExp(
+        `(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;%]{0,80}?(?:by|at)?\\s+(\\d+(?:\\.\\d+)?)%\\s+(every|per|after)\\s+${intervalPattern}(?:[^.]{0,60}?up to\\s+${countPattern}\\s+times)?(?:[^.]{0,60}?\\bover\\s+(\\d+(?:\\.\\d+)?)s)?`,
+        "i"
+      ).exec(text);
+      if (amountFirst) {
+        const leadingCount = new RegExp(`up to\\s+${countPattern}\\s+times`, "i").exec(amountFirst[0]);
+        return {
+          amount: number(amountFirst[1], 0),
+          interval: speedDecayInterval(amountFirst[3]),
+          times: amountFirst[2].toLowerCase() === "after"
+            ? 1
+            : speedDecayCount(amountFirst[4] || (leadingCount && leadingCount[1])),
+          minimum,
+          duration: number(amountFirst[5], 0),
+          total: false
+        };
+      }
+      const countFirst = new RegExp(
+        `(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.]{0,40}?up to\\s+${countPattern}\\s+times[^.]{0,40}?(?:by|at)\\s+(\\d+(?:\\.\\d+)?)%\\s+(?:every|per)\\s+${intervalPattern}`,
+        "i"
+      ).exec(text);
+      if (countFirst) {
+        return {
+          amount: number(countFirst[2], 0),
+          interval: speedDecayInterval(countFirst[3]),
+          times: speedDecayCount(countFirst[1]),
+          minimum,
+          duration: 0,
+          total: false
+        };
+      }
+      const intervalFirst = new RegExp(
+        `(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;%]{0,80}?(?:every|per)\\s+${intervalPattern}\\s+(?:by|at)\\s+(\\d+(?:\\.\\d+)?)%`,
+        "i"
+      ).exec(text);
+      if (intervalFirst) {
+        return {
+          amount: number(intervalFirst[2], 0),
+          interval: speedDecayInterval(intervalFirst[1]),
+          times: 0,
+          minimum,
+          duration: 0,
+          total: false
+        };
+      }
+      const totalDecay = text.match(
+        /(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;%]{0,35}?\bby\s+(\d+(?:\.\d+)?)%\s+over\s+(\d+(?:\.\d+)?)s\b/i
+      );
+      if (totalDecay) {
+        return {
+          amount: number(totalDecay[1], 0),
+          interval: 0,
+          times: 1,
+          minimum,
+          duration: number(totalDecay[2], 0),
+          total: true
+        };
+      }
+      const transition = text.match(
+        /(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;%]{0,100}?(?:down\s+)?to\s+(?:a\s+)?(?:minimum(?:\s+of)?\s+)?(\d+(?:\.\d+)?)%[^.;]{0,40}?\b(?:over|for)\s+(\d+(?:\.\d+)?)s\b/i
+      );
+      const intervalOnly = new RegExp(
+        `(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?)[^.;]{0,80}?(?:every|per)\\s+${intervalPattern}`,
+        "i"
+      ).exec(text);
+      return {
+        amount: 0,
+        interval: intervalOnly ? speedDecayInterval(intervalOnly[1]) : 0,
+        times: 0,
+        minimum: transition ? number(transition[1], minimum) : minimum,
+        duration: transition ? number(transition[2], 0) : 0,
+        total: false
+      };
+    }
+
+    function slowDecaySpec(row) {
+      return speedDecaySpec(String(row && (row.slowDecayContext || row.slowContext) || ""));
+    }
+
     function japaneseSlowFallbackParts(row) {
       const details = [];
       const effect = row.stackMultiplier > 1
@@ -8856,9 +9002,21 @@
       if (row.variable) details.push("複数段階または時間経過で変化するため、ランキングには到達可能な最大値を使用しています。");
       const duration = slowEffectDuration(row);
       if (duration > 0) details.push(`減速の持続時間は${formatNumber(duration, 1)}秒です。`);
-      const decay = String(row.slowContext || "").match(/decay(?:s|ing)?\s+by\s+(\d+(?:\.\d+)?)%\s+every\s+(\d+(?:\.\d+)?)s/i);
+      const decay = slowDecaySpec(row);
       if (decay) {
-        details.push(`${formatNumber(number(decay[2], 0), 1)}秒ごとに${formatNumber(number(decay[1], 0), 1)}%ずつ減衰します。`);
+        const repeat = decay.times > 0 ? `、最大${formatNumber(decay.times, 0)}回` : "";
+        const finalPercent = decay.minimum > 0
+          ? decay.minimum
+          : decay.times > 0 && decay.amount > 0
+            ? Math.max(0, row.slowPercent - decay.amount * decay.times)
+            : 0;
+        const remaining = finalPercent > 0 ? `最終的に${formatNumber(finalPercent, 1)}%になります。` : "";
+        if (decay.amount > 0 && decay.interval > 0) {
+          details.push(`${formatNumber(decay.interval, 1)}秒ごとに${formatNumber(decay.amount, 1)}%ずつ${repeat}減衰します。${remaining}`);
+        } else if (finalPercent > 0) {
+          const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 1)}秒かけて` : "時間経過で";
+          details.push(`${transition}${formatNumber(finalPercent, 1)}%まで減衰します。`);
+        }
       }
       const condition = /(?:near the center|center of)/i.test(row.slowContext || "")
         ? "効果範囲の中心付近に命中した相手へ適用されます。"
@@ -8915,7 +9073,11 @@
               slowPercentCandidates(rsb[field.key], pokemon.name, field.enhanced)
             ));
             if (!candidates.length) return;
-            candidates.sort((a, b) => b.percent - a.percent || Number(a.enhanced) - Number(b.enhanced));
+            candidates.sort((a, b) => (
+              b.percent - a.percent
+              || a.basePercent - b.basePercent
+              || Number(a.enhanced) - Number(b.enhanced)
+            ));
             const detailParts = slowDetailParts(node, rsb);
             const moveName = slowMoveDisplayName(skill, node, rsbKey, detailParts);
             const isSweetScent = pokemon.name === "Alcremie" && node.name === "Sweet Scent" && rsbKey === "rsb";
@@ -8942,6 +9104,7 @@
                 variable: bestNormal.decays || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1,
                 slowDuration: slowEffectDuration({ slowContext: bestNormal.context }),
                 slowContext: bestNormal.context,
+                slowDecayContext: bestNormal.context,
                 isPlus: false
               });
             }
@@ -8970,6 +9133,7 @@
                 variable: plusCandidate.decays || new Set(plusSourceCandidates.map((candidate) => candidate.percent)).size > 1,
                 slowDuration: enhancedDuration || inheritedDuration,
                 slowContext: [bestNormal && bestNormal.context, enhancedSlowText, bestEnhanced && bestEnhanced.context].filter(Boolean).join(" "),
+                slowDecayContext: enhancedSlowText || (bestEnhanced && bestEnhanced.context) || (bestNormal && bestNormal.context) || "",
                 isPlus: true
               });
             }
@@ -9036,6 +9200,7 @@
                 slowDuration: variant.slowDuration,
                 enhancedSlowDuration: variant.enhancedSlowDuration,
                 slowContext: variant.slowContext || bestCandidate.context,
+                slowDecayContext: variant.slowDecayContext,
                 slowDetailPartsJa: variant.slowDetailPartsJa,
                 useGeneratedSlowDetail: variant.useGeneratedSlowDetail,
                 descriptionKey: slowDescriptionKey(pokemon, skill, node, rsbKey),
@@ -9146,10 +9311,13 @@
       const context = String(row.slowContext || "");
       const duration = slowEffectDuration(row);
       const enhancedDuration = number(row.enhancedSlowDuration, 0);
-      const decayMatch = context.match(/decay(?:s|ing)?\s+by\s+(\d+(?:\.\d+)?)%\s+every\s+(\d+(?:\.\d+)?)s/i);
-      const decays = Boolean(row.decays || decayMatch || /\bdecay/i.test(context));
-      const minimum = number(row.minSlowPercent, row.slowPercent);
+      const decay = slowDecaySpec(row);
+      const decays = Boolean(row.decays || decay || /\bdecay/i.test(context));
       const maximum = number(row.slowPercent, 0);
+      const explicitMinimum = decay && number(decay.minimum, 0);
+      let minimum = explicitMinimum > 0
+        ? Math.min(maximum, explicitMinimum)
+        : number(row.minSlowPercent, row.slowPercent);
       const chips = [];
       const steps = [];
       let kind = "fixed";
@@ -9165,14 +9333,32 @@
       } else if (decays) {
         kind = "decay";
         chips.push({ label: "減衰", className: "decay" });
-        if (decayMatch) {
-          const decrement = number(decayMatch[1], 0);
-          for (let value = maximum; value > 0 && steps.length < 7; value -= decrement) {
-            steps.push(Math.max(0, value));
+        if (decay && decay.total && decay.amount > 0) {
+          minimum = explicitMinimum > 0 ? minimum : Math.max(0, maximum - decay.amount);
+          steps.push(maximum, minimum);
+        } else if (decay && decay.amount > 0) {
+          let repeatCount = number(decay.times, 0);
+          if (repeatCount <= 0 && explicitMinimum > 0) {
+            repeatCount = Math.ceil((maximum - minimum) / decay.amount);
           }
-          if (steps[steps.length - 1] !== 0) steps.push(0);
+          const decayDuration = number(decay.duration, 0) || duration;
+          if (repeatCount <= 0 && decay.interval > 0 && decayDuration > 0) {
+            repeatCount = Math.floor(decayDuration / decay.interval);
+          }
+          repeatCount = Math.max(1, Math.min(repeatCount || 1, 16));
+          if (!explicitMinimum && minimum >= maximum) {
+            minimum = Math.max(0, maximum - decay.amount * repeatCount);
+          }
+          for (let index = 0; index <= repeatCount; index += 1) {
+            const value = Math.max(minimum, maximum - decay.amount * index);
+            if (steps[steps.length - 1] !== value) steps.push(value);
+            if (value === minimum) break;
+          }
+          if (steps[steps.length - 1] !== minimum) steps.push(minimum);
+        } else if (minimum > 0 && minimum < maximum) {
+          steps.push(maximum, minimum);
         } else {
-          steps.push(maximum, 0);
+          steps.push(maximum);
         }
       } else if (row.variable && minimum > 0 && minimum < maximum) {
         kind = "growth";
@@ -9401,6 +9587,9 @@
     }
 
     const ACCELERATION_PERCENT_PATTERNS = [
+      /\b(?:increas(?:e|es|ed|ing)|boost(?:s|ed|ing)?|rais(?:e|es|ed|ing)|grant(?:s|ed|ing)?)\s+(?:the\s+)?movement speed\s+and\s+[^.;%]{0,120}?(?:by|to)\s+(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
+      /\b(?:increas(?:e|es|ed|ing)|boost(?:s|ed|ing)?|rais(?:e|es|ed|ing)|gain(?:s|ed|ing)?|receiv(?:e|es|ed|ing)|grant(?:s|ed|ing)?)\s+(?:both\s+of\s+)?(?:the\s+)?(?:user['’]s|their|its|his|her|this pok(?:é|e)mon['’]s)?\s*(?:bonus\s+)?movement speeds?(?:\s+of)?[^.;%]{0,35}?(?:by|to|of)\s+(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
+      /\b(?:increas(?:e|es|ed|ing)|boost(?:s|ed|ing)?|rais(?:e|es|ed|ing)|grant(?:s|ed|ing)?)[^.;]{0,170}?\band\s+(?:bonus\s+)?movement speeds?(?:\s+of)?\s+(?:by|to|of)?\s*(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
       /\b(?:increas(?:e|es|ed|ing)|boost(?:s|ed|ing)?|rais(?:e|es|ed|ing)|grant(?:s|ed|ing)?)\s+(?:the\s+)?(?:user['’]s|their|its|his|her|this pok(?:é|e)mon['’]s|[a-z][a-z.-]+['’]s)?\s*movement speed[^.;%]{0,55}?(?:by|to)\s+(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
       /\bmovement speed(?:\s+of\s+[^.;,%]{0,55}?)?\s+(?:is\s+|are\s+|was\s+)?(?:instead\s+)?(?:increas(?:e|es|ed|ing)|boost(?:s|ed|ing)?|raised)[^.;%]{0,35}?(?:by|to)?\s*(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
       /\b(?:strengthen(?:s|ed|ing)?|increas(?:e|es|ed|ing))\s+(?:the\s+)?movement speed (?:increase|gain|bonus)[^.;%]{0,30}?\s+to\s+(\d+(?:\.\d+)?(?:\/\d+(?:\.\d+)?)*?)%/gi,
@@ -9429,7 +9618,8 @@
       const near = text.slice(Math.max(0, match.index - 80), Math.min(text.length, match.index + match[0].length + 190));
       const patterns = [
         /(?:maximum|max(?:imum)?(?:\s+of)?|up to)\s+(\d+(?:\.\d+)?)%\s+(?:increased\s+)?movement speed/i,
-        /movement speed[^.;%]{0,75}?(?:up to|maximum(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
+        /movement speed[^;]{0,180}?(?:up to|maximum(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
+        /(?:ramp\w*\s+up|increas(?:e|es|ed|ing)\s+by\s+an\s+additional)[^;]{0,90}?(?:up to|maximum(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
         /(?:up to\s+\d+\s+times|up to\s+\d+\s+stacks)[^.;]{0,45}?maximum\s+(\d+(?:\.\d+)?)%/i,
         /(?:strengthened|increased)\s+to\s+(\d+(?:\.\d+)?)%/i
       ];
@@ -9442,24 +9632,34 @@
 
     function accelerationMinimum(text, match, basePercent) {
       const near = text.slice(Math.max(0, match.index - 80), Math.min(text.length, match.index + match[0].length + 320));
-      const minimum = near.match(/(?:(?:down\s+)?to\s+a\s+)?minimum(?:\s+of)?\s+(\d+(?:\.\d+)?)%/i);
-      return minimum ? number(minimum[1], basePercent) : basePercent;
+      return speedDecayMinimum(near) || basePercent;
     }
 
     function accelerationStackMultiplier(text, match) {
       const after = text.slice(match.index, Math.min(text.length, match.index + match[0].length + 300));
       const sameSentence = after.split(/\.(?=\s+[A-Z])|;/, 1)[0];
-      const stack = sameSentence.match(/(?:stack(?:s|ed|ing)?\s+up to|up to)\s+(\d+)\s+(?:times|stacks)/i);
+      const stack = sameSentence.match(/(?:stack(?:s|ed|ing)?\s+up to|up to)\s+(\d+)\s+(?:times|stacks)/i)
+        || after.match(/\.\s+This buff stacks up to\s+(\d+)\s+times/i);
       return stack ? Math.max(1, number(stack[1], 1)) : 1;
     }
 
     function accelerationDurationForMatch(text, match, matchEnd) {
-      const after = text.slice(matchEnd, Math.min(text.length, matchEnd + 110));
-      const afterDuration = after.match(/^[^.;]{0,40}?\b(?:for|lasting)\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+      const exact = String(match[0] || "");
+      const speedIndex = exact.toLowerCase().lastIndexOf("movement speed");
+      const withinDuration = exact.slice(Math.max(0, speedIndex)).match(/\b(?:for|lasting)\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+      if (withinDuration) return number(withinDuration[1], 0);
+      const after = text.slice(matchEnd, Math.min(text.length, matchEnd + 180));
+      const afterDuration = after.match(/^[^;]{0,150}?\b(?:for|lasting)\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
       if (afterDuration) return number(afterDuration[1], 0);
       const before = text.slice(Math.max(0, match.index - 110), match.index);
+      const nearby = text.slice(Math.max(0, match.index - 120), Math.min(text.length, matchEnd + 180));
+      const nearbyDecay = speedDecaySpec(nearby);
+      if (nearbyDecay && nearbyDecay.duration > 0) return number(nearbyDecay.duration, 0);
       const beforeDurations = [...before.matchAll(/\b(?:for\s+(?:up to\s+)?|up to\s+)(\d+(?:\.\d+)?)s\b[^:.;]{0,70}$/gi)];
       if (beforeDurations.length) return number(beforeDurations[beforeDurations.length - 1][1], 0);
+      const nearbyDuration = nearby.match(/\b(?:movement speeds?|movement speed increase)[^;]{0,150}?\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i)
+        || nearby.match(/\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b[^;]{0,150}?\bmovement speeds?\b/i);
+      if (nearbyDuration) return number(nearbyDuration[1], 0);
       return 0;
     }
 
@@ -9486,7 +9686,7 @@
           if (candidates.some((candidate) => candidate.key === key)) continue;
           const decays = /(?:decay|diminish|decreasing by)/i.test(context);
           const conditionalMaximum = /(?:strengthened|increased)\s+to\s+\d+(?:\.\d+)?%\s+for/i.test(context);
-          const grows = /(?:ramp(?:s|ed|ing)?\s+up|increasing by an additional|increase(?:s|d)? by \d+(?:\.\d+)?% every)/i.test(context)
+          const grows = /(?:ramp\w*\s+up|increasing by an additional|increase(?:s|d)? by \d+(?:\.\d+)?% every)/i.test(context)
             || (explicitMaximum > basePercent && multiplier === 1 && !decays && !conditionalMaximum);
           candidates.push({
             key,
@@ -9547,27 +9747,37 @@
       );
       if (conditionalMaximumDuration) return number(conditionalMaximumDuration[1], explicit);
       if (explicit > 0) return explicit;
-      const afterPercent = context.match(/movement speed[^.;%]{0,90}?\d+(?:\.\d+)?%[^.;]{0,45}?\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+      const afterPercent = context.match(/movement speed[^.;%]{0,90}?\d+(?:\.\d+)?%[^;]{0,150}?\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
       if (afterPercent) return number(afterPercent[1], 0);
+      const totalDuration = context.match(/\btotal\s+(?:[a-z-]+\s+){0,3}?duration\s+of\s+(\d+(?:\.\d+)?)s\b/i);
+      if (totalDuration) return number(totalDuration[1], 0);
+      if (/for the duration of (?:the )?buff|while (?:the )?(?:shield|vortex|field|zone|veil)(?: effect)? is active/i.test(context)) {
+        const speedIndex = context.toLowerCase().indexOf("movement speed");
+        const beforeSpeed = context.slice(0, speedIndex >= 0 ? speedIndex : context.length);
+        const inheritedDurations = [...beforeSpeed.matchAll(/\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/gi)];
+        if (inheritedDurations.length) return number(inheritedDurations[inheritedDurations.length - 1][1], 0);
+      }
       const growthDuration = context.match(/\bevery\s+\d+(?:\.\d+)?s\s+over\s+(\d+(?:\.\d+)?)s\b/i);
       if (growthDuration) return number(growthDuration[1], 0);
       return 0;
     }
 
     function accelerationDecayDetails(context) {
-      const match = String(context || "").match(
-        /(?:decay(?:s|ed|ing)?|diminish(?:es|ed|ing)?|decreasing)[^.;%]{0,90}?(?:by\s+(\d+(?:\.\d+)?)%\s+(?:every|per)\s+(\d+(?:\.\d+)?)s|(?:every|per)\s+(\d+(?:\.\d+)?)s\s+by\s+(\d+(?:\.\d+)?)%)/i
-      );
-      if (!match) return null;
+      const decay = speedDecaySpec(context);
+      if (!decay) return null;
       return {
-        decrement: number(match[1] || match[4], 0),
-        interval: number(match[2] || match[3], 0)
+        decrement: number(decay.amount, 0),
+        interval: number(decay.interval, 0),
+        times: number(decay.times, 0),
+        minimum: number(decay.minimum, 0),
+        duration: number(decay.duration, 0),
+        total: Boolean(decay.total)
       };
     }
 
     function accelerationGrowthDetails(context) {
       const match = String(context || "").match(
-        /increas(?:e|es|ed|ing)[^.;%]{0,90}?(?:by\s+(?:an\s+additional\s+)?(\d+(?:\.\d+)?)%\s+(?:every|per)\s+(\d+(?:\.\d+)?)s|(?:every|per)\s+(\d+(?:\.\d+)?)s\s+by\s+(\d+(?:\.\d+)?)%)/i
+        /(?:increas(?:e|es|ed|ing)|ramp\w*\s+up)[^.;%]{0,90}?(?:by\s+(?:an\s+additional\s+)?(\d+(?:\.\d+)?)%\s+(?:every|per)\s+(\d+(?:\.\d+)?)s|(?:every|per)\s+(\d+(?:\.\d+)?)s\s+by\s+(\d+(?:\.\d+)?)%)/i
       );
       if (!match) return null;
       return {
@@ -9669,11 +9879,23 @@
         effects.push(`${target}の移動速度を${formatNumber(row.accelerationPercent, 1)}%上げます。`);
       }
       if (row.enhanced) effects.push("この数値は強化後の効果です。");
-      const duration = accelerationEffectDuration(row);
+      const decay = accelerationDecayDetails(row.accelerationDecayContext || row.accelerationContext);
+      const duration = decay && decay.total && decay.duration > 0
+        ? decay.duration
+        : accelerationEffectDuration(row) || number(decay && decay.duration, 0);
       if (duration > 0) effects.push(`加速の持続時間は${formatNumber(duration, 1)}秒です。`);
-      const decay = accelerationDecayDetails(row.accelerationContext);
       if (decay && decay.decrement > 0 && decay.interval > 0) {
-        effects.push(`${formatNumber(decay.interval, 1)}秒ごとに${formatNumber(decay.decrement, 1)}%ずつ減衰します。`);
+        const floor = decay.minimum > 0 ? `、最低${formatNumber(decay.minimum, 1)}%まで` : "";
+        const repeat = decay.times > 0 ? `、最大${formatNumber(decay.times, 0)}回` : "";
+        effects.push(`${formatNumber(decay.interval, 1)}秒ごとに${formatNumber(decay.decrement, 1)}%ずつ${floor}${repeat}減衰します。`);
+      } else if (decay && decay.decrement > 0 && decay.total) {
+        const floor = decay.minimum > 0
+          ? decay.minimum
+          : Math.max(0, row.accelerationPercent - decay.decrement);
+        effects.push(`${formatNumber(decay.duration, 1)}秒かけて${formatNumber(floor, 1)}%まで減衰します。`);
+      } else if (decay && decay.minimum > 0 && decay.minimum < row.accelerationPercent) {
+        const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 1)}秒かけて` : "時間経過で";
+        effects.push(`${transition}${formatNumber(decay.minimum, 1)}%まで減衰します。`);
       }
       const growth = row.grows ? accelerationGrowthDetails(row.accelerationContext) : null;
       if (growth && growth.increment > 0 && growth.interval > 0) {
@@ -9781,7 +10003,11 @@
               accelerationPercentCandidates(rsb[field.key], field.enhanced)
             ));
             if (!candidates.length) return;
-            candidates.sort((a, b) => b.percent - a.percent || Number(a.enhanced) - Number(b.enhanced));
+            candidates.sort((a, b) => (
+              b.percent - a.percent
+              || a.basePercent - b.basePercent
+              || Number(a.enhanced) - Number(b.enhanced)
+            ));
             const detailParts = accelerationDetailParts(node, rsb);
             const moveName = slowMoveDisplayName(skill, node, rsbKey, detailParts);
             const normalCandidates = candidates.filter((candidate) => !candidate.enhanced);
@@ -9795,12 +10021,25 @@
               .join(" ");
             const variants = [];
             if (bestNormal) {
+              const normalCandidate = { ...bestNormal };
+              const normalContext = normalCandidates.map((candidate) => candidate.context).join(" ");
+              const conditionalAdditive = normalContext.match(
+                /\b(?:additionally|further)\s+increas(?:e|es|ed|ing)\s+[^.;%]{0,70}?movement speed\s+by\s+(\d+(?:\.\d+)?)%/i
+              );
+              if (conditionalAdditive && bestNormal.percent > number(conditionalAdditive[1], 0)) {
+                normalCandidate.percent = bestNormal.percent + number(conditionalAdditive[1], 0);
+                normalCandidate.variable = true;
+              }
               variants.push({
-                candidate: bestNormal,
-                minPercent: Math.min(...normalCandidates.map((candidate) => candidate.minPercent)),
+                candidate: normalCandidate,
+                minPercent: conditionalAdditive
+                  ? bestNormal.percent
+                  : Math.min(...normalCandidates.map((candidate) => candidate.minPercent)),
                 variable: normalCandidates.some((candidate) => candidate.variable)
-                  || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1,
-                context: normalCandidates.map((candidate) => candidate.context).join(" "),
+                  || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1
+                  || Boolean(conditionalAdditive),
+                context: normalContext,
+                decayContext: bestNormal.context,
                 isPlus: false
               });
             }
@@ -9820,6 +10059,7 @@
                 minPercent: plusCandidate.minPercent,
                 variable: plusCandidate.variable,
                 context: [bestNormal && bestNormal.context, enhancedAccelerationText, bestEnhanced.context].filter(Boolean).join(" "),
+                decayContext: enhancedAccelerationText || bestEnhanced.context || (bestNormal && bestNormal.context) || "",
                 isPlus: true
               });
             }
@@ -9853,6 +10093,7 @@
                 variable: typeof variant.variable === "boolean" ? variant.variable : candidate.variable,
                 accelerationDuration: candidate.duration,
                 accelerationContext: context,
+                accelerationDecayContext: variant.decayContext,
                 targetLabel,
                 descriptionKey: slowDescriptionKey(pokemon, skill, node, rsbKey),
                 detailParts
@@ -9869,7 +10110,7 @@
       state.heldItems.forEach((item) => {
         const descriptions = [item.description1, item.description2, item.description3].filter(Boolean);
         const candidates = descriptions.flatMap((description) => accelerationPercentCandidates(description));
-        candidates.sort((a, b) => b.percent - a.percent);
+        candidates.sort((a, b) => b.percent - a.percent || a.basePercent - b.basePercent);
         const best = candidates[0];
         if (!best) return;
         rows.push({
@@ -9954,16 +10195,29 @@
 
     function accelerationEffectProfile(row) {
       const context = String(row.accelerationContext || "");
-      const duration = accelerationEffectDuration(row);
       const maximum = number(row.accelerationPercent, 0);
-      const decay = accelerationDecayDetails(context);
+      const decay = accelerationDecayDetails(row.accelerationDecayContext || context);
+      const decayDuration = number(decay && decay.duration, 0);
+      const duration = decay && decay.total && decayDuration > 0
+        ? decayDuration
+        : accelerationEffectDuration(row) || decayDuration;
       const growth = accelerationGrowthDetails(context);
       const decays = Boolean(row.decays || decay);
       let minimum = number(row.minAccelerationPercent, row.accelerationPercent);
-      if (decays && minimum >= maximum && decay && duration > 0) {
-        const { decrement, interval } = decay;
-        if (decrement > 0 && interval > 0) {
-          minimum = Math.max(0, maximum - decrement * Math.floor(duration / interval));
+      const explicitMinimum = decay && number(decay.minimum, 0);
+      if (explicitMinimum > 0) {
+        minimum = Math.min(maximum, explicitMinimum);
+      } else if (decays && minimum >= maximum && decay) {
+        if (decay.total && decay.decrement > 0) {
+          minimum = Math.max(0, maximum - decay.decrement);
+        } else if (decay.decrement > 0 && decay.interval > 0) {
+          const decayDuration = number(decay.duration, 0) || duration;
+          const repeatCount = decay.times > 0
+            ? decay.times
+            : decayDuration > 0
+              ? Math.floor(decayDuration / decay.interval)
+              : 0;
+          if (repeatCount > 0) minimum = Math.max(0, maximum - decay.decrement * repeatCount);
         }
       }
       const chips = [];
@@ -9981,14 +10235,28 @@
         kind = "decay";
         chips.push({ label: "減衰", className: "decay" });
         const decrement = decay ? decay.decrement : 0;
-        if (decrement > 0) {
-          for (let value = maximum; value >= minimum && steps.length < 8; value -= decrement) {
-            steps.push(Math.max(minimum, value));
+        if (decay && decay.total && decrement > 0) {
+          steps.push(maximum, minimum);
+        } else if (decrement > 0) {
+          let repeatCount = decay.times > 0 ? decay.times : 0;
+          if (repeatCount <= 0 && explicitMinimum > 0) {
+            repeatCount = Math.ceil((maximum - minimum) / decrement);
+          }
+          const decayDuration = number(decay.duration, 0) || duration;
+          if (repeatCount <= 0 && decay.interval > 0 && decayDuration > 0) {
+            repeatCount = Math.floor(decayDuration / decay.interval);
+          }
+          repeatCount = Math.max(1, Math.min(repeatCount || 1, 16));
+          for (let index = 0; index <= repeatCount; index += 1) {
+            const value = Math.max(minimum, maximum - decrement * index);
+            if (steps[steps.length - 1] !== value) steps.push(value);
             if (value === minimum) break;
           }
           if (steps[steps.length - 1] !== minimum) steps.push(minimum);
-        } else {
+        } else if (minimum < maximum) {
           steps.push(maximum, minimum);
+        } else {
+          steps.push(maximum);
         }
       } else if (row.grows && minimum > 0 && minimum < maximum) {
         kind = "growth";
