@@ -8499,6 +8499,10 @@
       if (/(?:the user|user's|itself|themselves|their own)/i.test(exact)) return false;
       if (/\b(?:slows?|slowed|slowing)\s+pok(?:é|e)mon\b/i.test(exact)) return true;
 
+      const after = text.slice(match.index + match[0].length, Math.min(text.length, match.index + match[0].length + 100)).toLowerCase();
+      if (/^\s*[,;]?\s*(?:while|during)\s+(?:charging|casting|using|breathing|snarling|moving backward|this move is being used|the move is being used)\b/i.test(after)) {
+        return false;
+      }
       const before = text.slice(Math.max(0, match.index - 180), match.index).toLowerCase();
       const targetIndex = lastSlowContextIndex(before, [
         /opposing(?![\s\S]*opposing)/i,
@@ -8518,7 +8522,7 @@
       const selfIndex = lastSlowContextIndex(before, selfPatterns);
       if (selfIndex > targetIndex) return false;
       if (targetIndex >= 0) return true;
-      if (/(?:while|as)\s+(?:casting|charging|using|breathing|snarling|moving backward)/i.test(`${before} ${exact}`)) return false;
+      if (/(?:while|as|during)\s+(?:casting|charging|using|breathing|snarling|moving backward|this move is being used|the move is being used)/i.test(`${before} ${exact} ${after}`)) return false;
       return !/(?:\buser\b|itself|themselves)/i.test(exact);
     }
 
