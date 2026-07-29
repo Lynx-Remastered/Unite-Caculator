@@ -1921,6 +1921,363 @@
       font-weight: 800;
     }
 
+    .slow-ranking-table {
+      min-width: 760px;
+    }
+
+    .slow-ranking-table col:nth-child(1) {
+      width: 64px;
+    }
+
+    .slow-ranking-table col:nth-child(2) {
+      width: 86px;
+    }
+
+    .slow-ranking-table col:nth-child(3) {
+      width: 240px;
+    }
+
+    .slow-ranking-table col:nth-child(4) {
+      width: 370px;
+    }
+
+    .slow-ranking-table td {
+      vertical-align: top;
+    }
+
+    .slow-display-filter {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(160px, 190px);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .slow-filter-group {
+      min-width: 0;
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+
+    .slow-filter-group legend,
+    .slow-filter-sort {
+      color: var(--label);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .slow-filter-legend-note {
+      margin-left: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .slow-filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .slow-filter-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: var(--surface-3);
+      color: var(--label);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .slow-filter-option:has(input:checked) {
+      border-color: var(--accent-2);
+      background: rgba(var(--accent-2-rgb), 0.12);
+      color: var(--accent-2);
+    }
+
+    .slow-filter-option input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: var(--accent-2);
+    }
+
+    .slow-filter-sort {
+      display: grid;
+      gap: 7px;
+    }
+
+    .slow-filter-sort select,
+    .slow-filter-sort option {
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .slow-filter-status {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .slow-ranking-source {
+      display: grid;
+      place-items: center;
+      min-height: 50px;
+    }
+
+    .slow-ranking-source-icon {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-2);
+    }
+
+    .slow-ranking-source-icon img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
+    .slow-ranking-source-badge {
+      position: absolute;
+      right: -7px;
+      bottom: -6px;
+      min-width: 29px;
+      border: 2px solid var(--surface);
+      border-radius: 999px;
+      padding: 2px 5px;
+      background: var(--accent-2);
+      color: var(--surface);
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      text-align: center;
+    }
+
+    .slow-ranking-source-badge.item {
+      background: var(--accent);
+    }
+
+    .slow-ranking-source-badge.battle {
+      background: var(--status-negative);
+      color: #fff;
+    }
+
+    .slow-ranking-percent {
+      box-sizing: border-box;
+      max-width: 100%;
+      color: var(--status-negative);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.35;
+      text-align: left;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .slow-effect-visual {
+      display: grid;
+      justify-items: start;
+      align-content: start;
+      gap: 5px;
+      max-width: 100%;
+      min-height: 64px;
+      overflow: hidden;
+    }
+
+    .slow-effect-main {
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .slow-effect-chips {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      gap: 3px;
+      max-width: 100%;
+    }
+
+    .slow-effect-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 18px;
+      border: 1px solid rgba(var(--accent-2-rgb), 0.35);
+      border-radius: 999px;
+      padding: 2px 6px;
+      background: rgba(var(--accent-2-rgb), 0.1);
+      color: var(--accent-2);
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .slow-effect-chip.stack,
+    .slow-effect-chip.growth {
+      border-color: rgba(var(--accent-rgb), 0.4);
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+    }
+
+    .slow-effect-chip.decay {
+      border-color: rgba(177, 140, 255, 0.48);
+      background: rgba(177, 140, 255, 0.13);
+      color: #c7aaff;
+    }
+
+    .slow-effect-chip.enhanced {
+      border-color: rgba(255, 169, 77, 0.48);
+      background: rgba(255, 169, 77, 0.13);
+      color: #ffb45e;
+    }
+
+    .slow-effect-meter {
+      display: flex;
+      justify-content: flex-start;
+      gap: 3px;
+      width: 100%;
+      min-height: 5px;
+    }
+
+    .slow-effect-meter span {
+      flex: 1 1 0;
+      max-width: 22px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--status-negative);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    }
+
+    .slow-effect-flow {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 2px;
+      max-width: 100%;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .slow-effect-flow-value {
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .slow-effect-flow-arrow {
+      color: var(--accent-2);
+    }
+
+    .slow-ranking-table .ranking-move > span {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .slow-ranking-table .ranking-note {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .slow-move-icon-trigger {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      min-height: 34px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 1px;
+      background: transparent;
+      cursor: help;
+    }
+
+    .slow-move-icon-trigger:hover,
+    .slow-move-icon-trigger:focus-visible,
+    .slow-move-icon-trigger[aria-expanded="true"] {
+      border-color: var(--accent-2);
+      background: rgba(var(--accent-2-rgb), 0.1);
+      outline: none;
+    }
+
+    .slow-ranking-table .slow-move-icon-trigger img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+    }
+
+    .slow-move-tooltip {
+      position: fixed;
+      z-index: 250;
+      box-sizing: border-box;
+      width: min(430px, calc(100vw - 24px));
+      max-height: min(320px, calc(100vh - 24px));
+      overflow: auto;
+      border: 1px solid var(--accent-2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      line-height: 1.65;
+      pointer-events: none;
+    }
+
+    .slow-move-tooltip.is-pinned {
+      pointer-events: auto;
+    }
+
+    .slow-move-tooltip[hidden] {
+      display: none;
+    }
+
+    .slow-move-tooltip-title {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .slow-move-tooltip-part + .slow-move-tooltip-part {
+      margin-top: 8px;
+    }
+
+    .slow-move-tooltip-part strong {
+      color: var(--accent-2);
+      font-weight: 900;
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
     .item-effects {
       display: grid;
       gap: 6px;
@@ -2761,6 +3118,11 @@
     }
 
     @media (max-width: 620px) {
+      .slow-display-filter {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
       main {
         width: min(100% - 16px, 1360px);
         padding: 10px 0 20px;
@@ -2849,6 +3211,134 @@
       .total-value {
         font-size: 42px;
       }
+
+      .slow-ranking-table-wrap {
+        overflow: visible;
+        padding: 0 10px 12px;
+      }
+
+      .slow-ranking-table {
+        display: block;
+        width: 100% !important;
+        min-width: 0;
+        table-layout: auto;
+      }
+
+      .slow-ranking-table colgroup,
+      .slow-ranking-table thead {
+        display: none;
+      }
+
+      .slow-ranking-table tbody {
+        display: grid;
+        gap: 10px;
+      }
+
+      .slow-ranking-table tr {
+        display: grid;
+        grid-template-columns: 42px 54px minmax(0, 1fr);
+        grid-template-areas:
+          "rank source move"
+          "slow slow slow";
+        gap: 8px;
+        align-items: center;
+        padding: 11px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface-2);
+      }
+
+      .slow-ranking-table td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .slow-ranking-table tr.slow-ranking-empty {
+        display: block;
+      }
+
+      .slow-ranking-table tr.slow-ranking-empty td {
+        width: 100%;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .slow-ranking-table td:nth-child(1) {
+        grid-area: rank;
+        align-self: start;
+        width: auto;
+        padding-top: 12px;
+        text-align: center;
+      }
+
+      .slow-ranking-table td:nth-child(2) {
+        grid-area: source;
+      }
+
+      .slow-ranking-table td:nth-child(3) {
+        grid-area: move;
+      }
+
+      .slow-ranking-table td:nth-child(4) {
+        grid-area: slow;
+        margin-top: 3px;
+        padding-top: 9px;
+        border-top: 1px solid var(--line);
+      }
+
+      .slow-ranking-source {
+        min-height: 44px;
+      }
+
+      .slow-ranking-source-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      .slow-ranking-source-icon img {
+        width: 38px;
+        height: 38px;
+      }
+
+      .slow-ranking-table .ranking-move {
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 7px;
+      }
+
+      .slow-ranking-table .ranking-move img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .slow-ranking-table .ranking-name {
+        white-space: nowrap;
+      }
+
+      .slow-ranking-percent {
+        justify-self: stretch;
+        width: 100%;
+        max-width: none;
+        font-size: 13px;
+      }
+
+      .slow-effect-flow {
+        font-size: 8px;
+      }
+
+      .slow-move-icon-trigger {
+        width: 32px;
+        height: 32px;
+        min-height: 32px;
+      }
+
+      .slow-ranking-table .slow-move-icon-trigger img {
+        width: 28px;
+        height: 28px;
+      }
+
     }
 
     @media (max-width: 360px) {
@@ -2882,6 +3372,7 @@
           <div id="navigationMenu" class="navigation-menu" role="menu" aria-label="画面を選択" hidden>
             <button id="damageTabButton" class="navigation-menu-item active" type="button" role="menuitem" aria-current="page" aria-controls="damagePanel">ダメージ計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
             <button id="rankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="rankingPanel">ダメージランキング<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+            <button id="slowRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="slowRankingPanel">減速ランキング<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
             <button id="shieldTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="shieldPanel">シールド量計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
             <button id="healingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="healingPanel">回復量計算<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
             <button id="balanceTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="balancePanel">バランス調整<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
@@ -3508,6 +3999,77 @@
         </div>
       </section>
 
+      <section id="slowRankingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>表示条件</h2>
+            </div>
+            <div class="panel-body stack">
+              <div class="slow-display-filter">
+                <fieldset class="slow-filter-group">
+                  <legend>
+                    効果タイプ
+                    <span class="slow-filter-legend-note">複数選択はOR</span>
+                  </legend>
+                  <div id="slowFilterOptions" class="slow-filter-options">
+                    <label class="slow-filter-option">
+                      <input type="checkbox" value="stack">
+                      <span>累積</span>
+                    </label>
+                    <label class="slow-filter-option">
+                      <input type="checkbox" value="decay">
+                      <span>減衰</span>
+                    </label>
+                    <label class="slow-filter-option">
+                      <input type="checkbox" value="duration">
+                      <span>持続時間あり</span>
+                    </label>
+                    <label class="slow-filter-option">
+                      <input type="checkbox" value="enhanced">
+                      <span>強化後</span>
+                    </label>
+                  </div>
+                </fieldset>
+                <label class="slow-filter-sort" for="slowRankingSortOrder">
+                  並び順
+                  <select id="slowRankingSortOrder">
+                    <option value="desc">減速率が高い順（降順）</option>
+                    <option value="asc">減速率が低い順（昇順）</option>
+                  </select>
+                </label>
+                <div id="slowFilterStatus" class="slow-filter-status" aria-live="polite">条件未選択時はすべて表示します。</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel result-panel">
+            <div class="result-head">
+              <h2>相手への移動速度減少率</h2>
+            </div>
+            <div class="ranking-table-wrap slow-ranking-table-wrap">
+              <table class="ranking-table slow-ranking-table">
+                <colgroup>
+                  <col>
+                  <col>
+                  <col>
+                  <col>
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>順位</th>
+                    <th>ポケモン</th>
+                    <th>技</th>
+                    <th>減速</th>
+                  </tr>
+                </thead>
+                <tbody id="slowRankingBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
       <section id="shieldPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
         <div class="app-shell">
           <div class="stack">
@@ -3958,7 +4520,7 @@
       <details class="source-disclosure">
         <summary class="source-summary">
           <span>取得元情報</span>
-          <span class="source-count">13件</span>
+          <span class="source-count">15件</span>
         </summary>
         <div class="source-table-wrap">
           <table class="source-table">
@@ -3970,6 +4532,7 @@
             </thead>
             <tbody>
               <tr><td><a href="https://unite-db.com/" target="_blank" rel="noreferrer">UniteDB</a></td><td>2026年7月21日</td></tr>
+              <tr><td><a href="https://wikiwiki.jp/poke-unite/%E4%B8%80%E8%A6%A7" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - ポケモン別ページ</a></td><td>2026年7月29日</td></tr>
               <tr><td><a href="https://wikiwiki.jp/poke-unite/%E3%83%86%E3%82%A4%E3%82%A2%E8%92%BC%E7%A9%BA%E9%81%BA%E8%B7%A1%28%E3%82%B0%E3%83%A9%E3%83%BC%E3%83%89%E3%83%B3%29" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - テイア蒼空遺跡</a></td><td>2026年6月24日</td></tr>
               <tr><td><a href="https://wikiwiki.jp/poke-unite/%E3%82%82%E3%81%A1%E3%82%82%E3%81%AE" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - もちもの</a></td><td>2026年7月7日</td></tr>
               <tr><td><a href="https://wikiwiki.jp/poke-unite/%E3%83%93%E3%83%AB%E3%83%89" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - ビルド</a></td><td>2026年6月24日</td></tr>
@@ -3982,6 +4545,7 @@
               <tr><td><a href="https://gamewith.jp/pokemon-unite/article/show/284186" target="_blank" rel="noreferrer">GameWith - ポケモン一覧</a></td><td>2026年7月6日</td></tr>
               <tr><td><a href="https://wikiwiki.jp/poke-unite/%E3%83%90%E3%83%88%E3%83%AB%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E4%BB%95%E6%A7%98" target="_blank" rel="noreferrer">ポケモンユナイトWiki* - バトルに関する仕様</a></td><td>2026年7月7日</td></tr>
               <tr><td><a href="https://unite-db.com/patch-notes" target="_blank" rel="noreferrer">UniteDB - パッチノート</a></td><td>2026年7月16日</td></tr>
+              <tr><td><a href="https://www.dittobase.com/unite/items/slow-smoke" target="_blank" rel="noreferrer">Dittobase - Slow Smoke</a></td><td>2026年7月29日</td></tr>
             </tbody>
           </table>
         </div>
@@ -4075,6 +4639,7 @@
       emblemSets: ["./data/emblem_sets.json"],
       emblemNamesJa: ["./data/emblem_names_ja.json"],
       moveNamesJa: ["./data/move_names_ja.json"],
+      slowDescriptionsJa: ["./data/slow_descriptions_ja.json"],
       patchNotes: ["./data/patch_notes.json"]
     };
 
@@ -4589,6 +5154,7 @@
       emblemSets: [],
       emblemNamesJa: {},
       moveNamesJa: {},
+      slowDescriptionsJa: { entries: {} },
       patchNotes: { patches: [] },
       emblemFallback: null,
       emblemSelections: Array.from({ length: 10 }, () => ({ pokedex: "", grade: "" })),
@@ -4601,6 +5167,7 @@
       healingMoveEntries: [],
       healingMoveChoices: [],
       rankingRows: [],
+      slowRankingRows: [],
       selectedMoveSlot: "basic",
       selectedDamageVariantKey: "",
       selectedShieldMoveSlot: "",
@@ -4648,6 +5215,7 @@
     const CALCULATOR_VIEWS = {
       damage: { title: "ダメージ計算", buttonId: "damageTabButton", panelId: "damagePanel" },
       ranking: { title: "ダメージランキング", buttonId: "rankingTabButton", panelId: "rankingPanel" },
+      slowRanking: { title: "減速ランキング", buttonId: "slowRankingTabButton", panelId: "slowRankingPanel" },
       shield: { title: "シールド量計算", buttonId: "shieldTabButton", panelId: "shieldPanel" },
       healing: { title: "回復量計算", buttonId: "healingTabButton", panelId: "healingPanel" },
       balance: { title: "バランス調整", buttonId: "balanceTabButton", panelId: "balancePanel" }
@@ -5205,9 +5773,9 @@
     function bindElements() {
       [
         "loading", "loadingStatus", "loadingDetail", "retryLoadButton",
-        "errorBox", "calculator", "damageTabButton", "rankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
+        "errorBox", "calculator", "damageTabButton", "rankingTabButton", "slowRankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
         "calculatorNavigation", "navigationMenuButton", "navigationMenu", "calculatorViewTitle",
-        "damagePanel", "rankingPanel", "shieldPanel", "healingPanel", "balancePanel",
+        "damagePanel", "rankingPanel", "slowRankingPanel", "shieldPanel", "healingPanel", "balancePanel",
         "modeToggleButton", "themeSelect",
         "pokemonSelect", "levelRange", "levelValue",
         "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
@@ -5261,6 +5829,7 @@
         "healingStatusBody", "healingStatusValueBody", "healingAdjustmentCard", "healingAdjustmentBody", "healingLearnChipRow",
         "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
         "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
+        "slowFilterOptions", "slowRankingSortOrder", "slowFilterStatus", "slowRankingBody",
         "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
         "balancePokemonHeading", "balanceTimeline",
         "openFeedbackButton", "closeFeedbackButton", "feedbackDialog",
@@ -5346,6 +5915,7 @@
       el.calculatorViewTitle.textContent = CALCULATOR_VIEWS[selectedTab].title;
       closeCalculatorNavigation();
       if (selectedTab === "ranking") updateDamageRanking();
+      if (selectedTab === "slowRanking") updateSlowRanking();
       if (selectedTab === "shield") updateShieldAll();
       if (selectedTab === "healing") updateHealingAll();
       if (selectedTab === "balance") updateBalanceTimeline();
@@ -6691,6 +7261,7 @@
       updateShieldAll();
       updateHealingAll();
       updateDamageRanking();
+      updateSlowRanking();
       updateBalanceTimeline();
     }
 
@@ -7851,6 +8422,754 @@
         ? `Lv${targetLevel}（防御${formatNumber(targetDefense, 0)} / 特防${formatNumber(targetSpDefense, 0)}）`
         : "相手なし（防御0 / 特防0）";
       el.rankingSummary.textContent = `攻撃側Lv${level} / 相手: ${targetText} / ${singleHit ? "単発（最大1ヒット）" : "技1回分"} / 推奨持ち物Lv40を使用 / 条件付き追加ダメージ・急所は未反映 / ${formatNumber(visibleRows.length, 0)}件表示（全${formatNumber(rows.length, 0)}件）`;
+    }
+
+    const SLOW_EFFECT_TEXT_FIELDS = [
+      { key: "true_desc", label: "", enhanced: false },
+      { key: "notes", label: "備考", enhanced: false },
+      { key: "rsb_info", label: "追加仕様", enhanced: false },
+      { key: "add1_true_desc", label: "追加効果", enhanced: false },
+      { key: "add1_notes", label: "追加効果の備考", enhanced: false },
+      { key: "add1_rsb_info", label: "追加効果の仕様", enhanced: false },
+      { key: "add2_true_desc", label: "追加効果", enhanced: false },
+      { key: "add2_notes", label: "追加効果の備考", enhanced: false },
+      { key: "add2_rsb_info", label: "追加効果の仕様", enhanced: false },
+      { key: "add3_true_desc", label: "追加効果", enhanced: false },
+      { key: "add3_notes", label: "追加効果の備考", enhanced: false },
+      { key: "add3_rsb_info", label: "追加効果の仕様", enhanced: false },
+      { key: "add4_true_desc", label: "追加効果", enhanced: false },
+      { key: "add4_notes", label: "追加効果の備考", enhanced: false },
+      { key: "add4_rsb_info", label: "追加効果の仕様", enhanced: false },
+      { key: "add5_true_desc", label: "追加効果", enhanced: false },
+      { key: "add5_notes", label: "追加効果の備考", enhanced: false },
+      { key: "add5_rsb_info", label: "追加効果の仕様", enhanced: false },
+      { key: "enhanced_true_desc", label: "強化後", enhanced: true },
+      { key: "enhanced_notes", label: "強化後の備考", enhanced: true },
+      { key: "enhanced_rsb_info", label: "強化後の仕様", enhanced: true },
+      { key: "enhanced_add1_true_desc", label: "強化後の追加効果", enhanced: true },
+      { key: "enhanced_add1_notes", label: "強化後の追加効果の備考", enhanced: true },
+      { key: "enhanced_add1_rsb_info", label: "強化後の追加効果の仕様", enhanced: true },
+      { key: "enhanced_add2_true_desc", label: "強化後の追加効果", enhanced: true },
+      { key: "enhanced_add2_notes", label: "強化後の追加効果の備考", enhanced: true },
+      { key: "enhanced_add2_rsb_info", label: "強化後の追加効果の仕様", enhanced: true },
+      { key: "enhanced_add3_true_desc", label: "強化後の追加効果", enhanced: true },
+      { key: "enhanced_add3_notes", label: "強化後の追加効果の備考", enhanced: true },
+      { key: "enhanced_add3_rsb_info", label: "強化後の追加効果の仕様", enhanced: true },
+      { key: "enhanced_add4_true_desc", label: "強化後の追加効果", enhanced: true },
+      { key: "enhanced_add4_notes", label: "強化後の追加効果の備考", enhanced: true },
+      { key: "enhanced_add4_rsb_info", label: "強化後の追加効果の仕様", enhanced: true },
+      { key: "enhanced_add5_true_desc", label: "強化後の追加効果", enhanced: true },
+      { key: "enhanced_add5_notes", label: "強化後の追加効果の備考", enhanced: true },
+      { key: "enhanced_add5_rsb_info", label: "強化後の追加効果の仕様", enhanced: true }
+    ];
+
+    const SLOW_PERCENT_PATTERNS = [
+      /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+(?:the\s+)?movement speed of\s+(?:those|opposing|enem(?:y|ies)|targets?|pok(?:é|e)mon)[^;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
+      /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+(?:the\s+)?movement speed of\s+[^.;,%]{0,75}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+[^.;,%]{0,55}?movement speed[^.;,%]{0,40}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /movement speed(?:\s+of\s+[^.;,%]{0,65}?)?\s+(?:is\s+)?(?:decreas(?:e|es|ed)|reduc(?:e|es|ed)|lowered)[^.;,%]{0,35}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
+      /slow(?:s|ed|ing)?(?:\s+movement speed)?\s+[^.;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
+      /(?:appl(?:y|ies|ying)|inflict(?:s|ed|ing)?)\s+(?:a\s+)?(\d+(?:\.\d+)?)%\s+slow/gi,
+      /(\d+(?:\.\d+)?)%\s+(?:movement speed\s+)?slow/gi,
+      /movement speed (?:decrease|reduction)[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
+      /\bslow[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
+      /\b(?:increases?|strengthens?)\s+the\s+slow\s+to\s+(\d+(?:\.\d+)?)%/gi
+    ];
+
+    function cleanSlowDescription(value) {
+      return String(value || "")
+        .replace(/Pok(?:ﾃｩ|Ã©)mon/g, "Pokémon")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function slowTextHasEffect(value) {
+      return /(?:\bslow(?:s|ed|ing)?\b|movement speed)/i.test(String(value || ""));
+    }
+
+    const SLOW_HARD_STOP_PATTERN = /\b(?:stun(?:s|ned|ning)?|bind(?:s|ing)?|bound|root(?:s|ed|ing)?|immobili[sz](?:e|es|ed|ing|ation)|unable to (?:move|act)|cannot move|frozen|freeze(?:s|ing)?)\b/i;
+
+    function lastSlowContextIndex(text, patterns) {
+      return Math.max(-1, ...patterns.map((pattern) => text.search(pattern)));
+    }
+
+    function slowMatchTargetsOpponent(text, match, pokemonName = "") {
+      const exact = match[0].toLowerCase();
+      if (/(?:opposing|enem(?:y|ies)|targets?|those(?:\s+that)?(?:\s+are)?\s+hit|them\b|linked target)/i.test(exact)) return true;
+      if (/(?:the user|user's|itself|themselves|their own)/i.test(exact)) return false;
+      if (/\b(?:slows?|slowed|slowing)\s+pok(?:é|e)mon\b/i.test(exact)) return true;
+
+      const before = text.slice(Math.max(0, match.index - 180), match.index).toLowerCase();
+      const targetIndex = lastSlowContextIndex(before, [
+        /opposing(?![\s\S]*opposing)/i,
+        /enem(?:y|ies)(?![\s\S]*enem(?:y|ies))/i,
+        /targets?(?![\s\S]*targets?)/i,
+        /those hit(?![\s\S]*those hit)/i,
+        /pok(?:é|e)mon hit(?![\s\S]*pok(?:é|e)mon hit)/i
+      ]);
+      const escapedName = String(pokemonName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const selfPatterns = [
+        /the user(?![\s\S]*the user)/i,
+        /user's(?![\s\S]*user's)/i,
+        /itself(?![\s\S]*itself)/i,
+        /themselves(?![\s\S]*themselves)/i
+      ];
+      if (escapedName) selfPatterns.push(new RegExp(`${escapedName.toLowerCase()}(?![\\s\\S]*${escapedName.toLowerCase()})`, "i"));
+      const selfIndex = lastSlowContextIndex(before, selfPatterns);
+      if (selfIndex > targetIndex) return false;
+      if (targetIndex >= 0) return true;
+      if (/(?:while|as)\s+(?:casting|charging|using|breathing|snarling|moving backward)/i.test(`${before} ${exact}`)) return false;
+      return !/(?:\buser\b|itself|themselves)/i.test(exact);
+    }
+
+    function slowStackMultiplier(text, match) {
+      const before = text.slice(Math.max(0, match.index - 180), match.index);
+      const after = text.slice(match.index, Math.min(text.length, match.index + 220));
+      const near = `${before} ${match[0]} ${after}`;
+      const stackMatches = [
+        ...near.matchAll(/stack(?:ing)?\s+up to\s+(\d+)\s+times/gi),
+        ...near.matchAll(/(?:can|may)\s+stack\s+up to\s+(\d+)\s+times/gi),
+        ...near.matchAll(/up to\s+(\d+)\s+stacks/gi)
+      ];
+      let multiplier = stackMatches.reduce((max, row) => Math.max(max, number(row[1], 1)), 1);
+      if (/per\s+['"]?note['"]?/i.test(near)) {
+        const noteCount = near.match(/(?:reaching|up to)\s+(\d+)\s+notes?/i);
+        if (noteCount) multiplier = Math.max(multiplier, number(noteCount[1], 1));
+      }
+      return Math.max(1, multiplier);
+    }
+
+    function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
+      const text = cleanSlowDescription(value);
+      const candidates = [];
+      SLOW_PERCENT_PATTERNS.forEach((pattern) => {
+        pattern.lastIndex = 0;
+        let match;
+        while ((match = pattern.exec(text))) {
+          const basePercent = number(match[1], 0);
+          const context = text.slice(Math.max(0, match.index - 120), Math.min(text.length, pattern.lastIndex + 180));
+          const hardStopOnly = SLOW_HARD_STOP_PATTERN.test(match[0]) && !slowTextHasEffect(match[0]);
+          if (hardStopOnly) continue;
+          if (basePercent <= 0 || !slowMatchTargetsOpponent(text, match, pokemonName)) continue;
+          const multiplier = slowStackMultiplier(text, match);
+          const key = `${match.index}:${basePercent}:${multiplier}`;
+          if (candidates.some((candidate) => candidate.key === key)) continue;
+          candidates.push({
+            key,
+            basePercent,
+            multiplier,
+            percent: basePercent * multiplier,
+            enhanced,
+            decays: /decay/i.test(text.slice(match.index, match.index + 140)),
+            context
+          });
+        }
+      });
+      return candidates;
+    }
+
+    function slowDetailParts(node, rsb) {
+      const parts = [];
+      const add = (label, value) => {
+        const text = cleanSlowDescription(value);
+        if (!text || parts.some((part) => part.text === text)) return;
+        parts.push({ label, text });
+      };
+      add("", rsb && rsb.true_desc);
+      if (!parts.length) {
+        add("", node && (node.description1 || node.description || ""));
+        add("", node && node.description2);
+      }
+      SLOW_EFFECT_TEXT_FIELDS.filter((field) => field.key !== "true_desc").forEach((field) => {
+        const value = rsb && rsb[field.key];
+        if (slowTextHasEffect(value)) add(field.label, value);
+      });
+      return parts;
+    }
+
+    function slowMoveDisplayName(skill, node, rsbKey, detailParts) {
+      if (skill && skill.ability === "Basic") {
+        const detail = detailParts.map((part) => part.text).join(" ");
+        return rsbKey === "boosted_rsb" || /(?:becomes a boosted attack|boosted attack with every)/i.test(detail)
+          ? "強化攻撃"
+          : "通常攻撃";
+      }
+      return jpMoveName(node && node.name || "");
+    }
+
+    function slowMoveNote(skill, bestCandidate) {
+      const ability = skill && skill.ability || "";
+      const note = ability === "Passive" ? "特性" : ability === "Basic" ? "通常攻撃" : jpAbility(ability);
+      return `${note}${bestCandidate && bestCandidate.enhanced ? "・強化後最大" : ""}`;
+    }
+
+    function slowDescriptionKey(pokemon, skill, node, rsbKey) {
+      return [pokemon.name, skill.ability || "", node.name || "", rsbKey].join("::");
+    }
+
+    function slowEffectDuration(row) {
+      const explicit = number(row && row.slowDuration, 0);
+      if (explicit > 0) return explicit;
+      const context = String(row && row.slowContext || "");
+      const patterns = [
+        /(?:movement speed|slow(?:s|ed|ing)?)[^.]{0,100}?(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?)s\b/i,
+        /(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?)s\b[^.]{0,80}(?:movement speed|slow)/i
+      ];
+      for (const pattern of patterns) {
+        const match = context.match(pattern);
+        if (match) return number(match[1], 0);
+      }
+      return 0;
+    }
+
+    function japaneseSlowFallbackParts(row) {
+      const details = [];
+      const effect = row.stackMultiplier > 1
+        ? `相手ポケモンの移動速度を1段階につき${formatNumber(row.basePercent, 1)}%下げ、最大${formatNumber(row.stackMultiplier, 0)}段階で${formatNumber(row.slowPercent, 1)}%まで累積します。`
+        : `相手ポケモンの移動速度を${formatNumber(row.slowPercent, 1)}%下げます。`;
+      details.push(effect);
+      if (row.enhanced) details.push("この数値は強化後の最大効果です。");
+      if (row.variable) details.push("複数段階または時間経過で変化するため、ランキングには到達可能な最大値を使用しています。");
+      const duration = slowEffectDuration(row);
+      if (duration > 0) details.push(`減速の持続時間は${formatNumber(duration, 1)}秒です。`);
+      const decay = String(row.slowContext || "").match(/decay(?:s|ing)?\s+by\s+(\d+(?:\.\d+)?)%\s+every\s+(\d+(?:\.\d+)?)s/i);
+      if (decay) {
+        details.push(`${formatNumber(number(decay[2], 0), 1)}秒ごとに${formatNumber(number(decay[1], 0), 1)}%ずつ減衰します。`);
+      }
+      const condition = /(?:near the center|center of)/i.test(row.slowContext || "")
+        ? "効果範囲の中心付近に命中した相手へ適用されます。"
+        : /outer ring/i.test(row.slowContext || "")
+        ? "効果範囲の外周に触れた相手へ適用されます。"
+        : /area|zone|radius|field/i.test(row.slowContext || "")
+          ? "効果範囲内の相手へ適用されます。"
+          : /boosted attack/i.test(row.slowContext || "")
+            ? "強化攻撃が命中した相手へ適用されます。"
+            : "攻撃または技が命中した相手へ適用されます。";
+      details.push(condition);
+      return [{ label: "減速仕様", text: details.join("") }];
+    }
+
+    function localizedSlowDetailParts(row) {
+      if (Array.isArray(row.slowDetailPartsJa) && row.slowDetailPartsJa.length) {
+        return row.slowDetailPartsJa
+          .map((part) => ({ label: String(part.label || ""), text: cleanSlowDescription(part.text) }))
+          .filter((part) => part.text);
+      }
+      if (row.useGeneratedSlowDetail) return japaneseSlowFallbackParts(row);
+      const entries = state.slowDescriptionsJa && state.slowDescriptionsJa.entries || {};
+      const translated = row.descriptionKey && entries[row.descriptionKey];
+      if (Array.isArray(translated) && translated.length) {
+        const specifications = translated
+          .map((part) => ({ label: String(part.label || ""), text: cleanSlowDescription(part.text) }))
+          .filter((part) => part.text && part.label !== "技の概要");
+        if (specifications.length) return specifications;
+      }
+      return japaneseSlowFallbackParts(row);
+    }
+
+    function localizedSlowOverviewParts(row) {
+      const entries = state.slowDescriptionsJa && state.slowDescriptionsJa.entries || {};
+      const translated = row.descriptionKey && entries[row.descriptionKey];
+      if (Array.isArray(translated) && translated.length) {
+        const overview = translated
+          .map((part) => ({ label: String(part.label || ""), text: cleanSlowDescription(part.text) }))
+          .filter((part) => part.text && part.label === "技の概要");
+        if (overview.length) return overview;
+      }
+      return (row.detailParts || [])
+        .map((part) => ({ label: String(part.label || ""), text: cleanSlowDescription(part.text) }))
+        .filter((part) => part.text);
+    }
+
+    function pokemonSlowRankingRows(pokemon) {
+      const rows = [];
+      (pokemon.skills || []).forEach((skill) => {
+        [skill, ...((skill && skill.upgrades) || [])].filter(Boolean).forEach((node) => {
+          [["rsb", node.rsb], ["boosted_rsb", node.boosted_rsb]].forEach(([rsbKey, rsb]) => {
+            if (!rsb) return;
+            const candidates = SLOW_EFFECT_TEXT_FIELDS.flatMap((field) => (
+              slowPercentCandidates(rsb[field.key], pokemon.name, field.enhanced)
+            ));
+            if (!candidates.length) return;
+            candidates.sort((a, b) => b.percent - a.percent || Number(a.enhanced) - Number(b.enhanced));
+            const detailParts = slowDetailParts(node, rsb);
+            const moveName = slowMoveDisplayName(skill, node, rsbKey, detailParts);
+            const isSweetScent = pokemon.name === "Alcremie" && node.name === "Sweet Scent" && rsbKey === "rsb";
+            const normalCandidates = candidates.filter((candidate) => !candidate.enhanced);
+            const enhancedCandidates = candidates.filter((candidate) => candidate.enhanced);
+            const bestNormal = normalCandidates[0] || null;
+            const bestEnhanced = enhancedCandidates[0] || null;
+            const enhancedSlowText = SLOW_EFFECT_TEXT_FIELDS
+              .filter((field) => field.enhanced)
+              .map((field) => cleanSlowDescription(rsb[field.key]))
+              .filter((text) => text && slowTextHasEffect(text))
+              .join(" ");
+            const durationOnlyEnhanced = Boolean(
+              bestNormal
+              && !bestEnhanced
+              && /(?:movement speed (?:decrease|reduction)|\bslow(?:ing)?\b)/i.test(enhancedSlowText)
+              && !/(?:the user|user['’]s|its own|their own)\s+movement speed/i.test(enhancedSlowText)
+            );
+            const generalVariants = [];
+            if (bestNormal) {
+              generalVariants.push({
+                candidate: bestNormal,
+                minSlowPercent: Math.min(...normalCandidates.map((candidate) => candidate.percent)),
+                variable: bestNormal.decays || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1,
+                slowDuration: slowEffectDuration({ slowContext: bestNormal.context }),
+                slowContext: bestNormal.context,
+                isPlus: false
+              });
+            }
+            if (bestEnhanced || durationOnlyEnhanced) {
+              const plusCandidate = {
+                ...(bestEnhanced || bestNormal),
+                enhanced: true,
+                decays: Boolean((bestEnhanced && bestEnhanced.decays) || (bestNormal && bestNormal.decays))
+              };
+              const additiveSlow = enhancedSlowText.match(/\bslow(?:ing effect)?\s+by\s+(\d+(?:\.\d+)?)%/i);
+              if (additiveSlow && bestNormal && plusCandidate.percent <= bestNormal.percent) {
+                const addedPercent = number(additiveSlow[1], 0);
+                plusCandidate.basePercent = bestNormal.basePercent + addedPercent;
+                plusCandidate.percent = plusCandidate.basePercent * plusCandidate.multiplier;
+              }
+              const enhancedDuration = slowEffectDuration({ slowContext: enhancedSlowText });
+              const inheritedDuration = bestNormal ? slowEffectDuration({ slowContext: bestNormal.context }) : 0;
+              const plusSourceCandidates = enhancedCandidates.length ? enhancedCandidates : normalCandidates;
+              generalVariants.push({
+                candidate: plusCandidate,
+                moveName: `${moveName}+`,
+                moveNote: node.level2 ? `${jpAbility(skill.ability)}・レベル${node.level2}以降` : `${jpAbility(skill.ability)}・強化後`,
+                minSlowPercent: additiveSlow
+                  ? plusCandidate.percent
+                  : Math.min(...plusSourceCandidates.map((candidate) => candidate.percent)),
+                variable: plusCandidate.decays || new Set(plusSourceCandidates.map((candidate) => candidate.percent)).size > 1,
+                slowDuration: enhancedDuration || inheritedDuration,
+                slowContext: [bestNormal && bestNormal.context, enhancedSlowText, bestEnhanced && bestEnhanced.context].filter(Boolean).join(" "),
+                isPlus: true
+              });
+            }
+            const splitByUpgrade = generalVariants.length > 1 || Boolean(generalVariants[0] && generalVariants[0].isPlus);
+            generalVariants.forEach((variant) => {
+              variant.useGeneratedSlowDetail = splitByUpgrade;
+            });
+            const variants = isSweetScent
+              ? [
+                {
+                  candidate: { basePercent: 100, multiplier: 1, percent: 100, enhanced: false, decays: false },
+                  moveNote: "外周に触れた時",
+                  slowDuration: 0.5,
+                  slowContext: "The outer ring applies a 100% slow lasting 0.5s.",
+                  slowDetailPartsJa: [{
+                    label: "減速仕様",
+                    text: "残った香りの外周に触れた相手の移動速度を100%低下させます。0.5秒間持続し、香りの外周自体は3秒間残ります。"
+                  }]
+                },
+                {
+                  candidate: { basePercent: 100, multiplier: 1, percent: 100, enhanced: true, decays: false },
+                  moveName: `${moveName}+`,
+                  moveNote: "外周に触れた時・レベル12以降",
+                  slowDuration: 1.5,
+                  slowContext: "The outer ring applies a 100% slow lasting 1.5s.",
+                  slowDetailPartsJa: [{
+                    label: "減速仕様",
+                    text: "レベル12以降、残った香りの外周に触れた相手の移動速度を100%低下させます。持続時間は1.5秒に強化され、香りの外周自体は3秒間残ります。"
+                  }]
+                },
+                {
+                  candidate: { basePercent: 30, multiplier: 1, percent: 30, enhanced: false, decays: true },
+                  moveNote: "着弾範囲に当たった時",
+                  slowDuration: 1.5,
+                  slowContext: "The initial area lowers movement speed by 30%, decaying by 10% every 0.5s.",
+                  slowDetailPartsJa: [{
+                    label: "減速仕様",
+                    text: "最初の着弾範囲に当たった相手の移動速度を30%低下させます。減速率は0.5秒ごとに10%ずつ、30%→20%→10%と減衰します。"
+                  }]
+                }
+              ]
+              : generalVariants;
+            variants.forEach((variant) => {
+              const bestCandidate = variant.candidate;
+              rows.push({
+                sourceType: "pokemon",
+                sourceName: pokemon.name,
+                sourceLabel: jpPokemonName(pokemon),
+                sourceIcon: pokemonThumbUrl(pokemon.name),
+                sourceBadge: "",
+                sourceBadgeClass: "",
+                moveName: variant.moveName || moveName,
+                moveNote: variant.moveNote || slowMoveNote(skill, bestCandidate),
+                moveIcon: skillIconUrl(pokemon.name, skill.ability === "Basic" ? "Attack" : node.name),
+                slowPercent: bestCandidate.percent,
+                basePercent: bestCandidate.basePercent,
+                stackMultiplier: bestCandidate.multiplier,
+                minSlowPercent: Number.isFinite(variant.minSlowPercent)
+                  ? variant.minSlowPercent
+                  : bestCandidate.percent,
+                enhanced: bestCandidate.enhanced,
+                decays: bestCandidate.decays,
+                variable: typeof variant.variable === "boolean" ? variant.variable : bestCandidate.decays,
+                slowDuration: variant.slowDuration,
+                enhancedSlowDuration: variant.enhancedSlowDuration,
+                slowContext: variant.slowContext || bestCandidate.context,
+                slowDetailPartsJa: variant.slowDetailPartsJa,
+                useGeneratedSlowDetail: variant.useGeneratedSlowDetail,
+                descriptionKey: slowDescriptionKey(pokemon, skill, node, rsbKey),
+                detailParts
+              });
+            });
+          });
+        });
+      });
+      return rows;
+    }
+
+    function supplementalSlowRankingRows() {
+      const rows = [];
+      const razorClaw = state.heldItems.find((item) => item.name === "Razor Claw");
+      if (razorClaw) {
+        const candidates = slowPercentCandidates(razorClaw.description1);
+        const bestCandidate = candidates.sort((a, b) => b.percent - a.percent)[0];
+        if (bestCandidate) {
+          rows.push({
+            sourceType: "item",
+            sourceName: razorClaw.name,
+            sourceLabel: jpItemName(razorClaw),
+            sourceIcon: heldItemIconUrl(razorClaw.name),
+            sourceBadge: "ITEM",
+            sourceBadgeClass: "item",
+            moveName: jpItemName(razorClaw),
+            moveNote: "もちもの・近接ポケモンのみ",
+            moveIcon: heldItemIconUrl(razorClaw.name),
+            slowPercent: bestCandidate.percent,
+            basePercent: bestCandidate.basePercent,
+            stackMultiplier: 1,
+            minSlowPercent: bestCandidate.percent,
+            enhanced: false,
+            decays: false,
+            variable: false,
+            slowDuration: 1,
+            descriptionKey: "item::Razor Claw",
+            detailParts: [{
+              label: "",
+              text: "技を使ってから3秒以内に、次の通常攻撃を相手ポケモンへ命中させると追加ダメージを与えます。近接ポケモンが持っている場合は、さらに相手の移動速度を30%下げます。減速は1秒間持続し、効果の待ち時間は1.5秒です。"
+            }]
+          });
+        }
+      }
+
+      rows.push({
+        sourceType: "battle",
+        sourceName: "Slow Smoke",
+        sourceLabel: "どんそくスモーク",
+        sourceIcon: "https://assets.dittobase.com/unite/battle-items/slow-smoke.png",
+        sourceBadge: "BATTLE",
+        sourceBadgeClass: "battle",
+        moveName: "どんそくスモーク",
+        moveNote: "バトルアイテム",
+        moveIcon: "https://assets.dittobase.com/unite/battle-items/slow-smoke.png",
+        slowPercent: 80,
+        basePercent: 80,
+        stackMultiplier: 1,
+        minSlowPercent: 80,
+        enhanced: false,
+        decays: false,
+        variable: false,
+        slowDuration: 3.5,
+        detailParts: [{
+          label: "",
+          text: "使用者の周囲に3.5秒間えんまくを張り、範囲内の相手ポケモンの移動速度を80%、通常攻撃速度を50%下げます。待ち時間は35秒です。"
+        }]
+      });
+      rows.push({
+        sourceType: "buff",
+        sourceName: "Red Buff",
+        sourceLabel: "赤バフ（シュバルゴ／バッフロン）",
+        sourceIcon: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/589.png",
+        sourceBadge: "BUFF",
+        sourceBadgeClass: "",
+        moveName: "赤バフ",
+        moveNote: "野生ポケモンのバフ",
+        moveIcon: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/589.png",
+        slowPercent: 30,
+        basePercent: 30,
+        stackMultiplier: 1,
+        minSlowPercent: 30,
+        enhanced: false,
+        decays: false,
+        variable: false,
+        slowDuration: 2,
+        detailParts: [{
+          label: "",
+          text: "シュバルゴまたはバッフロンをKOして得る赤（オレンジ）バフです。所持中の通常攻撃が命中した相手ポケモンの移動速度を30%下げ、2秒間持続します。"
+        }]
+      });
+      return rows;
+    }
+
+    function slowPercentageLabel(row) {
+      const notes = [];
+      if (row.enhanced) notes.push("強化後");
+      if (row.stackMultiplier > 1) {
+        notes.push(`${formatNumber(row.basePercent, 1)}%×${formatNumber(row.stackMultiplier, 0)}`);
+      } else if (row.variable) {
+        notes.push("最大");
+      }
+      return `${formatNumber(row.slowPercent, 1)}%${notes.length ? `（${notes.join("・")}）` : ""}`;
+    }
+
+    function slowEffectProfile(row) {
+      const context = String(row.slowContext || "");
+      const duration = slowEffectDuration(row);
+      const enhancedDuration = number(row.enhancedSlowDuration, 0);
+      const decayMatch = context.match(/decay(?:s|ing)?\s+by\s+(\d+(?:\.\d+)?)%\s+every\s+(\d+(?:\.\d+)?)s/i);
+      const decays = Boolean(row.decays || decayMatch || /\bdecay/i.test(context));
+      const minimum = number(row.minSlowPercent, row.slowPercent);
+      const maximum = number(row.slowPercent, 0);
+      const chips = [];
+      const steps = [];
+      let kind = "fixed";
+
+      if (row.stackMultiplier > 1) {
+        kind = "stack";
+        chips.push({ label: "累積", className: "stack" });
+        chips.push({ label: `${formatNumber(row.stackMultiplier, 0)}段階`, className: "stack" });
+        if (decays) chips.push({ label: "減衰", className: "decay" });
+        for (let index = 1; index <= row.stackMultiplier; index += 1) {
+          steps.push(Math.min(maximum, row.basePercent * index));
+        }
+      } else if (decays) {
+        kind = "decay";
+        chips.push({ label: "減衰", className: "decay" });
+        if (decayMatch) {
+          const decrement = number(decayMatch[1], 0);
+          for (let value = maximum; value > 0 && steps.length < 7; value -= decrement) {
+            steps.push(Math.max(0, value));
+          }
+          if (steps[steps.length - 1] !== 0) steps.push(0);
+        } else {
+          steps.push(maximum, 0);
+        }
+      } else if (row.variable && minimum > 0 && minimum < maximum) {
+        kind = "growth";
+        chips.push({ label: "増強", className: "growth" });
+        steps.push(minimum, maximum);
+      } else if (row.variable) {
+        chips.push({ label: "最大値", className: "growth" });
+      }
+
+      if (row.enhanced) chips.unshift({ label: "強化後", className: "enhanced" });
+      if (duration > 0) chips.push({ label: `⏱ ${formatNumber(duration, 1)}秒`, className: "duration" });
+      if (enhancedDuration > duration) {
+        chips.push({ label: `強化後 ${formatNumber(enhancedDuration, 1)}秒`, className: "enhanced" });
+      }
+      return { kind, chips, steps };
+    }
+
+    function slowEffectVisualMarkup(row) {
+      const profile = slowEffectProfile(row);
+      const chips = profile.chips.map((chip) => (
+        `<span class="slow-effect-chip ${escapeHtml(chip.className)}">${escapeHtml(chip.label)}</span>`
+      )).join("");
+      const meter = profile.steps.length > 1
+        ? `<span class="slow-effect-meter ${escapeHtml(profile.kind)}" aria-hidden="true">${profile.steps.map((value, index) => {
+          const progress = profile.steps.length > 1 ? index / (profile.steps.length - 1) : 1;
+          const opacity = profile.kind === "decay" ? 1 - progress * 0.72 : 0.35 + progress * 0.65;
+          return `<span style="opacity:${formatNumber(opacity, 2)}"></span>`;
+        }).join("")}</span>`
+        : "";
+      const flow = profile.steps.length > 1
+        ? `<span class="slow-effect-flow" aria-hidden="true">${profile.steps.map((value, index) => (
+          `${index ? '<span class="slow-effect-flow-arrow">→</span>' : ""}<span class="slow-effect-flow-value">${escapeHtml(formatNumber(value, 1))}%</span>`
+        )).join("")}</span>`
+        : "";
+      return `<div class="slow-effect-visual">
+        <span class="slow-effect-main">${escapeHtml(formatNumber(row.slowPercent, 1))}%</span>
+        ${chips ? `<span class="slow-effect-chips">${chips}</span>` : ""}
+        ${meter}
+        ${flow}
+        <span class="visually-hidden">${escapeHtml(slowPercentageLabel(row))}</span>
+      </div>`;
+    }
+
+    let activeSlowMoveTooltipTrigger = null;
+    let slowMoveTooltipPinned = false;
+
+    function ensureSlowMoveTooltip() {
+      let tooltip = document.getElementById("slowMoveTooltip");
+      if (tooltip) return tooltip;
+      tooltip = document.createElement("div");
+      tooltip.id = "slowMoveTooltip";
+      tooltip.className = "slow-move-tooltip";
+      tooltip.setAttribute("role", "tooltip");
+      tooltip.hidden = true;
+      document.body.appendChild(tooltip);
+      return tooltip;
+    }
+
+    function positionSlowMoveTooltip(trigger, tooltip) {
+      const triggerRect = trigger.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const gutter = 12;
+      const preferredLeft = triggerRect.left;
+      const left = clamp(preferredLeft, gutter, window.innerWidth - tooltipRect.width - gutter);
+      let top = triggerRect.bottom + 8;
+      if (top + tooltipRect.height > window.innerHeight - gutter) {
+        top = Math.max(gutter, triggerRect.top - tooltipRect.height - 8);
+      }
+      tooltip.style.left = `${Math.round(left)}px`;
+      tooltip.style.top = `${Math.round(top)}px`;
+    }
+
+    function showSlowMoveTooltip(trigger, pinned = false) {
+      const rowIndex = number(trigger && trigger.dataset.slowRowIndex, -1);
+      const row = state.slowRankingRows[rowIndex];
+      if (!trigger || !row) return;
+      const parts = [
+        ...localizedSlowOverviewParts(row),
+        ...localizedSlowDetailParts(row)
+      ];
+      if (!parts.length) return;
+      const preservePin = activeSlowMoveTooltipTrigger === trigger && slowMoveTooltipPinned;
+      const tooltip = ensureSlowMoveTooltip();
+      const body = parts.map((part) => (
+        `<div class="slow-move-tooltip-part">${part.label ? `<strong>${escapeHtml(part.label)}：</strong>` : ""}${escapeHtml(part.text)}</div>`
+      )).join("");
+      tooltip.innerHTML = `<strong class="slow-move-tooltip-title">${escapeHtml(row.sourceLabel)} / ${escapeHtml(row.moveName)}</strong>${body}`;
+      tooltip.hidden = false;
+      if (activeSlowMoveTooltipTrigger && activeSlowMoveTooltipTrigger !== trigger) {
+        activeSlowMoveTooltipTrigger.setAttribute("aria-expanded", "false");
+      }
+      activeSlowMoveTooltipTrigger = trigger;
+      slowMoveTooltipPinned = pinned || preservePin;
+      tooltip.classList.toggle("is-pinned", slowMoveTooltipPinned);
+      trigger.setAttribute("aria-expanded", "true");
+      positionSlowMoveTooltip(trigger, tooltip);
+    }
+
+    function hideSlowMoveTooltip(force = false) {
+      if (slowMoveTooltipPinned && !force) return;
+      const tooltip = document.getElementById("slowMoveTooltip");
+      if (tooltip) {
+        tooltip.hidden = true;
+        tooltip.classList.remove("is-pinned");
+      }
+      if (activeSlowMoveTooltipTrigger) activeSlowMoveTooltipTrigger.setAttribute("aria-expanded", "false");
+      activeSlowMoveTooltipTrigger = null;
+      slowMoveTooltipPinned = false;
+    }
+
+    const SLOW_FILTER_LABELS = Object.freeze({
+      stack: "累積",
+      decay: "減衰",
+      duration: "持続時間あり",
+      enhanced: "強化後"
+    });
+
+    function selectedSlowFilterKeys() {
+      return new Set(
+        [...el.slowFilterOptions.querySelectorAll('input[type="checkbox"]:checked')]
+          .map((input) => input.value)
+      );
+    }
+
+    function slowRowMatchesFilter(row, key) {
+      const profile = slowEffectProfile(row);
+      if (key === "stack") return row.stackMultiplier > 1;
+      if (key === "decay") return Boolean(row.decays || profile.kind === "decay");
+      if (key === "duration") return slowEffectDuration(row) > 0 || number(row.enhancedSlowDuration, 0) > 0;
+      if (key === "enhanced") return Boolean(row.enhanced || number(row.enhancedSlowDuration, 0) > 0);
+      return true;
+    }
+
+    function syncSlowFilterStatus(selectedKeys, sortOrder, visibleCount, totalCount) {
+      const selectedLabels = [...selectedKeys]
+        .map((key) => SLOW_FILTER_LABELS[key])
+        .filter(Boolean);
+      const conditionText = selectedLabels.length
+        ? `効果タイプ: ${selectedLabels.join("・")}（OR）`
+        : "効果タイプ: すべて";
+      const orderText = sortOrder === "asc" ? "減速率の昇順" : "減速率の降順";
+      el.slowFilterStatus.textContent = `${conditionText} / ${orderText} / ${formatNumber(visibleCount, 0)}件表示（全${formatNumber(totalCount, 0)}件）`;
+    }
+
+    function updateSlowRanking() {
+      if (!el.slowRankingBody) return;
+      hideSlowMoveTooltip(true);
+      const rows = state.pokemon
+        .filter((pokemon) => !pokemon.exclude_stats)
+        .flatMap(pokemonSlowRankingRows)
+        .concat(supplementalSlowRankingRows());
+      const uniqueRows = [];
+      const seen = new Set();
+      rows.forEach((row) => {
+        const key = [
+          row.sourceType,
+          row.sourceName,
+          row.moveName,
+          row.moveNote,
+          row.slowPercent,
+          (row.slowDetailPartsJa || row.detailParts).map((part) => part.text).join("|")
+        ].join("::");
+        if (seen.has(key)) return;
+        seen.add(key);
+        uniqueRows.push(row);
+      });
+      const selectedFilters = selectedSlowFilterKeys();
+      const sortOrder = el.slowRankingSortOrder.value === "asc" ? "asc" : "desc";
+      const visibleRows = selectedFilters.size
+        ? uniqueRows.filter((row) => [...selectedFilters].some((key) => slowRowMatchesFilter(row, key)))
+        : [...uniqueRows];
+      visibleRows.sort((a, b) => (
+        (sortOrder === "asc" ? a.slowPercent - b.slowPercent : b.slowPercent - a.slowPercent)
+        || a.sourceType.localeCompare(b.sourceType)
+        || a.sourceLabel.localeCompare(b.sourceLabel, "ja")
+        || a.moveName.localeCompare(b.moveName, "ja")
+      ));
+      state.slowRankingRows = visibleRows;
+
+      if (!visibleRows.length) {
+        const message = uniqueRows.length
+          ? "選択した条件に一致する減速効果がありません。"
+          : "表示できる減速効果がありません。";
+        el.slowRankingBody.innerHTML = `<tr class="slow-ranking-empty"><td colspan="4">${message}</td></tr>`;
+      } else {
+        el.slowRankingBody.innerHTML = visibleRows.map((row, index) => {
+          const badge = row.sourceBadge
+            ? `<span class="slow-ranking-source-badge ${escapeHtml(row.sourceBadgeClass)}" aria-hidden="true">${escapeHtml(row.sourceBadge)}</span>`
+            : "";
+          const imageFallback = `this.onerror=null;this.src='${escapeHtml(brokenImageUrl())}';`;
+          return `<tr>
+            <td class="ranking-rank">${index + 1}</td>
+            <td>
+              <div class="slow-ranking-source">
+                <span class="slow-ranking-source-icon" title="${escapeHtml(row.sourceLabel)}">
+                  <img src="${escapeHtml(row.sourceIcon)}" alt="" loading="lazy" onerror="${imageFallback}">
+                  ${badge}
+                  <span class="visually-hidden">${escapeHtml(row.sourceLabel)}</span>
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="ranking-move">
+                <button
+                  class="slow-move-icon-trigger"
+                  type="button"
+                  data-slow-row-index="${index}"
+                  aria-label="${escapeHtml(row.moveName)}の技概要と減速仕様を表示"
+                  aria-expanded="false"
+                  aria-describedby="slowMoveTooltip"
+                >
+                  <img src="${escapeHtml(row.moveIcon || brokenImageUrl())}" alt="" loading="lazy" onerror="${imageFallback}">
+                </button>
+                <span><span class="ranking-name">${escapeHtml(row.moveName)}</span><span class="ranking-note">${escapeHtml(row.moveNote)}</span></span>
+              </div>
+            </td>
+            <td class="slow-ranking-percent">${slowEffectVisualMarkup(row)}</td>
+          </tr>`;
+        }).join("");
+      }
+      syncSlowFilterStatus(selectedFilters, sortOrder, visibleRows.length, uniqueRows.length);
     }
 
     function updateShieldMoveOptions() {
@@ -11273,6 +12592,13 @@
       ];
     }
 
+    function feedbackSlowRankingContext() {
+      return [
+        `- 画面: ${CALCULATOR_VIEWS.slowRanking.title}`,
+        `- 表示状況: ${el.slowRankingSummary.textContent.trim()}`
+      ];
+    }
+
     function feedbackBalanceContext() {
       const filters = [...el.balanceFilterOptions.querySelectorAll('input[type="checkbox"]:checked')]
         .map((input) => input.closest("label")?.querySelector(".balance-filter-name")?.textContent.trim())
@@ -11293,6 +12619,7 @@
       const contextBuilders = {
         damage: feedbackDamageContext,
         ranking: feedbackRankingContext,
+        slowRanking: feedbackSlowRankingContext,
         shield: feedbackShieldContext,
         healing: feedbackHealingContext,
         balance: feedbackBalanceContext
@@ -11391,6 +12718,7 @@
     }
 
     function wireEvents() {
+      ensureSlowMoveTooltip();
       document.addEventListener("click", (event) => {
         if (!(event.target instanceof Element) || (!event.target.closest("#navigationMenuButton") && !event.target.closest("#navigationMenu"))) {
           closeCalculatorNavigation();
@@ -11404,6 +12732,9 @@
         if (!(event.target instanceof Element) || !event.target.closest(".move-combobox")) {
           closeMoveComboboxes();
         }
+        if (!(event.target instanceof Element) || (!event.target.closest(".slow-move-icon-trigger") && !event.target.closest("#slowMoveTooltip"))) {
+          hideSlowMoveTooltip(true);
+        }
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
@@ -11414,6 +12745,7 @@
           closeHeldItemPickers();
           closePokemonSelectPickers();
           closeMoveComboboxes();
+          hideSlowMoveTooltip(true);
         }
       });
       document.querySelectorAll("[data-calculation-tip]").forEach((button) => {
@@ -11453,6 +12785,61 @@
       });
       el.themeSelect.addEventListener("change", () => applyTheme(el.themeSelect.value));
       wireRankingColumnResizers();
+      el.slowFilterOptions.addEventListener("change", (event) => {
+        if (event.target instanceof HTMLInputElement && event.target.type === "checkbox") {
+          updateSlowRanking();
+        }
+      });
+      el.slowRankingSortOrder.addEventListener("change", updateSlowRanking);
+      el.slowRankingBody.addEventListener("mouseover", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".slow-move-icon-trigger")
+          : null;
+        const enteredFromOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && enteredFromOutside) showSlowMoveTooltip(trigger);
+      });
+      el.slowRankingBody.addEventListener("mouseout", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".slow-move-icon-trigger")
+          : null;
+        const exitedToOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && exitedToOutside) hideSlowMoveTooltip();
+      });
+      el.slowRankingBody.addEventListener("focusin", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".slow-move-icon-trigger")
+          : null;
+        if (trigger) showSlowMoveTooltip(trigger);
+      });
+      el.slowRankingBody.addEventListener("focusout", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".slow-move-icon-trigger")
+          : null;
+        const exitedToOutside = !event.relatedTarget
+          || !(event.relatedTarget instanceof Node)
+          || !trigger?.contains(event.relatedTarget);
+        if (trigger && exitedToOutside) hideSlowMoveTooltip();
+      });
+      el.slowRankingBody.addEventListener("click", (event) => {
+        const trigger = event.target instanceof Element
+          ? event.target.closest(".slow-move-icon-trigger")
+          : null;
+        if (!trigger) return;
+        if (activeSlowMoveTooltipTrigger === trigger && slowMoveTooltipPinned) {
+          hideSlowMoveTooltip(true);
+        } else {
+          showSlowMoveTooltip(trigger, true);
+        }
+      });
+      window.addEventListener("resize", () => hideSlowMoveTooltip(true));
+      window.addEventListener("scroll", (event) => {
+        if (event.target instanceof Element && event.target.closest("#slowMoveTooltip")) return;
+        hideSlowMoveTooltip(true);
+      }, true);
 
       el.pokemonSelect.addEventListener("change", () => {
         updateMoveOptions();
@@ -11680,6 +13067,7 @@
       const emblemSets = await fetchJson("emblem_sets.json", DATA_SOURCES.emblemSets, "メダル色効果データ");
       const emblemNamesJa = await fetchJson("emblem_names_ja.json", DATA_SOURCES.emblemNamesJa, "メダル日本語名データ");
       const moveNamesJa = await fetchJson("move_names_ja.json", DATA_SOURCES.moveNamesJa, "技の日本語名データ");
+      const slowDescriptionsJa = await fetchJson("slow_descriptions_ja.json", DATA_SOURCES.slowDescriptionsJa, "減速説明の日本語データ");
       const patchNotes = await fetchJson("patch_notes.json", DATA_SOURCES.patchNotes, "バランス調整履歴");
 
       state.pokemon = pokemon;
@@ -11689,6 +13077,7 @@
       state.emblemSets = emblemSets;
       state.emblemNamesJa = emblemNamesJa;
       state.moveNamesJa = moveNamesJa;
+      state.slowDescriptionsJa = slowDescriptionsJa;
       state.patchNotes = patchNotes;
     }
 
