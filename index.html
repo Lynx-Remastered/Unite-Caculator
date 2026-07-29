@@ -4010,7 +4010,7 @@
                 <fieldset class="slow-filter-group">
                   <legend>
                     効果タイプ
-                    <span class="slow-filter-legend-note">複数選択はOR</span>
+                    <span class="slow-filter-legend-note">複数選択はAND</span>
                   </legend>
                   <div id="slowFilterOptions" class="slow-filter-options">
                     <label class="slow-filter-option">
@@ -4022,8 +4022,8 @@
                       <span>減衰</span>
                     </label>
                     <label class="slow-filter-option">
-                      <input type="checkbox" value="duration">
-                      <span>持続時間あり</span>
+                      <input type="checkbox" value="instant">
+                      <span>即効</span>
                     </label>
                     <label class="slow-filter-option">
                       <input type="checkbox" value="enhanced">
@@ -9062,7 +9062,7 @@
     const SLOW_FILTER_LABELS = Object.freeze({
       stack: "累積",
       decay: "減衰",
-      duration: "持続時間あり",
+      instant: "即効",
       enhanced: "強化後"
     });
 
@@ -9077,7 +9077,11 @@
       const profile = slowEffectProfile(row);
       if (key === "stack") return row.stackMultiplier > 1;
       if (key === "decay") return Boolean(row.decays || profile.kind === "decay");
-      if (key === "duration") return slowEffectDuration(row) > 0 || number(row.enhancedSlowDuration, 0) > 0;
+      if (key === "instant") {
+        const stacks = row.stackMultiplier > 1;
+        const decays = Boolean(row.decays || profile.kind === "decay");
+        return !stacks && !decays;
+      }
       if (key === "enhanced") return Boolean(row.enhanced || number(row.enhancedSlowDuration, 0) > 0);
       return true;
     }
@@ -9087,7 +9091,7 @@
         .map((key) => SLOW_FILTER_LABELS[key])
         .filter(Boolean);
       const conditionText = selectedLabels.length
-        ? `効果タイプ: ${selectedLabels.join("・")}（OR）`
+        ? `効果タイプ: ${selectedLabels.join("・")}（AND）`
         : "効果タイプ: すべて";
       const orderText = sortOrder === "asc" ? "減速率の昇順" : "減速率の降順";
       el.slowFilterStatus.textContent = `${conditionText} / ${orderText} / ${formatNumber(visibleCount, 0)}件表示（全${formatNumber(totalCount, 0)}件）`;
@@ -9118,7 +9122,7 @@
       const selectedFilters = selectedSlowFilterKeys();
       const sortOrder = el.slowRankingSortOrder.value === "asc" ? "asc" : "desc";
       const visibleRows = selectedFilters.size
-        ? uniqueRows.filter((row) => [...selectedFilters].some((key) => slowRowMatchesFilter(row, key)))
+        ? uniqueRows.filter((row) => [...selectedFilters].every((key) => slowRowMatchesFilter(row, key)))
         : [...uniqueRows];
       visibleRows.sort((a, b) => (
         (sortOrder === "asc" ? a.slowPercent - b.slowPercent : b.slowPercent - a.slowPercent)
