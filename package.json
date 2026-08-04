@@ -1,0 +1,9 @@
+{
+  "name": "unite-calculator",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve_static_app.js",
+    "test": "node scripts/validate_static_app.js",
+    "validate": "node scripts/validate_static_app.js"
+  }
+}

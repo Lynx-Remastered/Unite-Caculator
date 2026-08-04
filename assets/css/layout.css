@@ -1,0 +1,450 @@
+/* Application shell, navigation, panels, and form layout. */
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.tab-panel > .manual-adjustment-panel {
+  margin-top: 12px;
+}
+
+.tab-panel.app-shell > .manual-adjustment-panel {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.calculator-navigation {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 42px;
+}
+
+.navigation-menu-button {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  place-items: center;
+  border-color: var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+}
+
+.navigation-menu-button[aria-expanded="true"] {
+  border-color: var(--accent-2);
+  background: rgba(var(--accent-2-rgb), 0.08);
+}
+
+.navigation-menu-icon {
+  display: grid;
+  gap: 4px;
+  width: 16px;
+}
+
+.navigation-menu-icon span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.calculator-view-title {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+
+.navigation-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 120;
+  display: grid;
+  gap: 2px;
+  width: min(300px, calc(100vw - 32px));
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+}
+
+.navigation-menu-group {
+  display: grid;
+  gap: 2px;
+}
+
+.navigation-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.navigation-menu-group-toggle {
+  font-weight: 900;
+}
+
+.navigation-menu-chevron {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.72;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+.navigation-menu-group-toggle[aria-expanded="true"] .navigation-menu-chevron {
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.navigation-submenu {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 2px 18px;
+  padding: 2px 0 2px 8px;
+  border-left: 1px solid var(--line);
+}
+
+.navigation-submenu[hidden] {
+  display: none;
+}
+
+.navigation-submenu .navigation-menu-item {
+  min-height: 36px;
+  padding-left: 12px;
+}
+
+.navigation-menu-check {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 900;
+  opacity: 0;
+}
+
+.navigation-menu-item:hover,
+.navigation-menu-item:focus-visible {
+  background: var(--hover-bg);
+}
+
+.navigation-menu-item.active {
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--ink);
+}
+
+.navigation-menu-item.navigation-menu-group-toggle.active {
+  background: transparent;
+  color: var(--accent);
+}
+
+.navigation-menu-item.navigation-menu-group-toggle.active:hover,
+.navigation-menu-item.navigation-menu-group-toggle.active:focus-visible {
+  background: var(--hover-bg);
+}
+
+.navigation-menu-item.active .navigation-menu-check {
+  opacity: 1;
+}
+
+.appearance-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 3px 2px 5px;
+}
+
+.mode-toggle-button {
+  display: grid;
+  width: 34px;
+  min-height: 30px;
+  padding: 2px;
+  place-items: center;
+  border-color: var(--line);
+  background: var(--surface-3);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.mode-toggle-button:hover {
+  border-color: var(--accent-2);
+  background: var(--hover-bg);
+}
+
+.mode-toggle-icon::before {
+  content: "🌙";
+}
+
+:root[data-mode="light"] .mode-toggle-icon::before {
+  content: "🌞";
+}
+
+.theme-picker {
+  display: grid;
+  grid-template-columns: auto 112px;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.theme-picker-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.theme-picker select {
+  width: 112px;
+  min-height: 30px;
+  padding: 4px 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tab-panel {
+  width: 100%;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.panel > .panel-head,
+.result-head {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.collapsible-panel > summary.panel-head {
+  position: relative;
+  padding-right: 42px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible-panel > summary.panel-head::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-panel > summary.panel-head::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 17px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-65%) rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.collapsible-panel[open] > summary.panel-head::after {
+  transform: translateY(-35%) rotate(225deg);
+}
+
+.collapsible-panel > summary.panel-head:focus-visible {
+  outline: 3px solid rgba(var(--accent-2-rgb), 0.24);
+  outline-offset: -3px;
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.panel-body {
+  padding: 12px 14px 14px;
+}
+
+.stack {
+  display: grid;
+  gap: 10px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--label);
+}
+
+select,
+input[type="number"],
+input[type="text"],
+textarea {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--ink);
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 116px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+select:focus,
+input:focus,
+textarea:focus,
+button:focus {
+  outline: 3px solid rgba(var(--accent-2-rgb), 0.24);
+  outline-offset: 1px;
+  border-color: var(--accent-2);
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent-2);
+}
+
+.range-row {
+  display: grid;
+  grid-template-columns: 1fr 48px;
+  gap: 8px;
+  align-items: center;
+}
+
+.range-value {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  background: var(--surface-2);
+}
+
+.held-items {
+  display: grid;
+  gap: 8px;
+}
+
+.pokemon-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.pokemon-level-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 10px;
+  align-items: end;
+  min-width: 0;
+}
+
+.pokemon-level-row > *,
+.pokemon-level-row .range-row,
+.pokemon-level-row input[type="range"] {
+  min-width: 0;
+}
+
+.pokemon-level-row .range-row,
+.pokemon-level-row .range-value {
+  min-height: 42px;
+}
+
+.target-pokemon-level-row {
+  grid-column: 1 / -1;
+}
+
+.target-defense-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  gap: 10px;
+  min-width: 0;
+}
+
+.condition-row.target-falinks-damage-row {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.7fr);
+}
+
+.target-hp-row {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 6px;
+  min-width: 0;
+}
+
+.target-hp-input-row {
+  display: grid;
+  grid-template-columns: minmax(116px, 0.45fr) minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+#targetFalinksDamageTarget,
+#targetHpMode,
+#targetHpValue {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+#targetFalinksDamageTarget option,
+#targetHpMode option {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.target-hp-label {
+  color: var(--label);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.target-hp-summary {
+  margin-top: 0;
+}
+
+.ranking-pokemon-level-row {
+  grid-column: span 2;
+}

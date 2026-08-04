@@ -1,0 +1,590 @@
+/* Reusable selectors, inputs, buttons, and move controls. */
+.move-combobox {
+  position: relative;
+  min-width: 0;
+}
+
+.move-combobox.open {
+  z-index: 65;
+}
+
+.move-choice {
+  width: 100%;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-3);
+  color: var(--ink);
+  text-align: left;
+}
+
+.move-choice:hover:not(:disabled) {
+  border-color: rgba(var(--accent-2-rgb), 0.72);
+  background: var(--hover-bg);
+}
+
+.move-choice.active {
+  border-color: var(--accent-2);
+  background: rgba(var(--accent-2-rgb), 0.14);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-2-rgb), 0.32);
+}
+
+.move-choice:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.move-choice img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.move-combobox-trigger {
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+  cursor: pointer;
+}
+
+.move-combobox-chevron {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  transition: transform 0.16s ease;
+}
+
+.move-combobox-trigger[aria-expanded="true"] .move-combobox-chevron {
+  transform: rotate(180deg);
+}
+
+.move-combobox-menu {
+  position: absolute;
+  z-index: 66;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 3px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.move-combobox-menu[hidden] {
+  display: none;
+}
+
+.move-combobox-option {
+  border-radius: 6px;
+}
+
+.move-choice-text {
+  display: block;
+  min-width: 0;
+}
+
+.move-choice-name {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(72px, 96px);
+  gap: 8px;
+  align-items: end;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-3);
+}
+
+.item-row.held-item-open {
+  z-index: 60;
+}
+
+.held-item-picker {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.held-item-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.held-item-trigger {
+  width: 100%;
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.held-item-trigger[aria-expanded="true"] {
+  border-color: var(--accent-2);
+}
+
+.item-row.held-item-required {
+  border-color: rgba(var(--accent-2-rgb), 0.48);
+  background: rgba(var(--accent-2-rgb), 0.08);
+}
+
+.item-row.held-item-required .held-item-trigger:disabled,
+.item-row.held-item-required input[type="number"]:disabled {
+  border-color: rgba(var(--accent-2-rgb), 0.48);
+  background: rgba(var(--accent-2-rgb), 0.12);
+  color: var(--ink);
+  cursor: not-allowed;
+  opacity: 1;
+  -webkit-text-fill-color: var(--ink);
+}
+
+.held-item-trigger:disabled .held-item-chevron {
+  color: var(--accent-2);
+  font-size: 12px;
+}
+
+.held-item-level-locked {
+  position: relative;
+}
+
+.held-item-level-locked::after {
+  content: " 🔒";
+  position: absolute;
+  right: 7px;
+  bottom: 0;
+  width: 16px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--accent-2);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.held-item-level-locked input[type="number"] {
+  padding-right: 30px;
+}
+
+.held-item-icon,
+.held-item-icon-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.held-item-icon-placeholder {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.held-item-trigger-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.held-item-chevron {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  transition: transform 0.16s ease;
+}
+
+.held-item-trigger[aria-expanded="true"] .held-item-chevron {
+  transform: rotate(180deg);
+}
+
+.held-item-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 270px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.held-item-option {
+  width: 100%;
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.held-item-option:hover,
+.held-item-option[aria-selected="true"] {
+  border-color: rgba(var(--accent-2-rgb), 0.38);
+  background: rgba(var(--accent-2-rgb), 0.14);
+}
+
+.held-item-option:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pokemon-select-picker {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.pokemon-select-picker.open {
+  z-index: 70;
+}
+
+.pokemon-select-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pokemon-select-trigger {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pokemon-select-trigger[aria-expanded="true"] {
+  border-color: var(--accent-2);
+}
+
+.pokemon-select-icon,
+.pokemon-select-icon-placeholder {
+  width: 34px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.pokemon-select-icon-placeholder {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pokemon-select-trigger-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pokemon-select-chevron {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  transition: transform 0.16s ease;
+}
+
+.pokemon-select-trigger[aria-expanded="true"] .pokemon-select-chevron {
+  transform: rotate(180deg);
+}
+
+.pokemon-select-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 310px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.pokemon-select-option {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pokemon-select-option:hover,
+.pokemon-select-option[aria-selected="true"] {
+  border-color: rgba(var(--accent-2-rgb), 0.38);
+  background: rgba(var(--accent-2-rgb), 0.14);
+}
+
+.mini {
+  display: grid;
+  gap: 6px;
+}
+
+.mini span,
+.condition-row > span:first-child,
+.check-row > span:first-child {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.condition-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.condition-grid .effect-note {
+  font-size: 11px;
+}
+
+.buff-pokemon-row {
+  position: relative;
+  cursor: help;
+}
+
+.buff-pokemon-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.buff-pokemon-icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.buff-pokemon-row::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 80;
+  bottom: calc(100% + 7px);
+  left: 0;
+  width: min(360px, calc(100vw - 48px));
+  padding: 9px 10px;
+  border: 1px solid rgba(var(--accent-2-rgb), 0.52);
+  border-radius: 7px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.55;
+  text-transform: none;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.buff-pokemon-row:hover::after,
+.buff-pokemon-row:focus-within::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.regi-buff-group {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px 10px;
+  border: 1px solid rgba(var(--accent-2-rgb), 0.48);
+  border-radius: 10px;
+  background: rgba(var(--accent-2-rgb), 0.06);
+}
+
+.regi-buff-group legend {
+  padding: 0 6px;
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.regi-buff-group-note {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(var(--accent-2-rgb), 0.16);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.regi-buff-group .check-row:has(input:checked) {
+  border-color: var(--accent-2);
+  background: rgba(var(--accent-2-rgb), 0.12);
+  box-shadow: inset 3px 0 0 var(--accent-2);
+}
+
+.defense-effect-controls {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.defense-effect-heading {
+  color: var(--label);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.condition-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-3);
+}
+
+.condition-row[hidden] {
+  display: none;
+}
+
+.check-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-3);
+}
+
+.check-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent-2);
+}
+
+button {
+  min-height: 26px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 4px 7px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: var(--input-bg);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}

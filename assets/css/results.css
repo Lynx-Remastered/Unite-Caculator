@@ -1,0 +1,464 @@
+/* Calculation summaries, formula rows, and adjustment tables. */
+.result-panel {
+  overflow: hidden;
+}
+
+.result-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.damage-total {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.target-total-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.target-total-grid.single-target {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.target-total-grid .total-value {
+  font-size: 36px;
+}
+
+.total-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-3);
+}
+
+.total-box.primary {
+  border-color: rgba(var(--accent-2-rgb), 0.48);
+  background: rgba(var(--accent-2-rgb), 0.10);
+}
+
+.calculation-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.calculation-tip-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 12px;
+  min-height: 12px;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 8px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+}
+
+.calculation-tip-button:hover,
+.calculation-tip-button:focus-visible {
+  border-color: var(--accent-2);
+  background: transparent;
+  color: var(--accent-2);
+}
+
+.calculation-tip-button.showing-value {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.calculation-tip-button::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 10;
+  right: -5px;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: min(240px, calc(100vw - 32px));
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-1);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.calculation-tip-button:hover::after,
+.calculation-tip-button:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.calculation-card-formula {
+  display: block;
+  min-height: 48px;
+  margin-top: 8px;
+  color: var(--formula-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+#rawDamageFormula,
+#finalDamageFormula {
+  font-size: 11px;
+}
+
+#healingSelfFormula,
+#healingAllyFormula {
+  font-size: 12px;
+}
+
+.calculation-formula-token {
+  font-weight: 900;
+}
+
+.calculation-formula-token.stat {
+  color: var(--formula-stat-highlight);
+  text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.18);
+}
+
+.calculation-formula-token.level {
+  color: var(--accent-2);
+}
+
+.calculation-formula-token.defense {
+  color: var(--formula-stat-highlight);
+  text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.18);
+}
+
+.calculation-formula-token.modifier,
+.calculation-formula-token.extra {
+  color: var(--warn-ink);
+}
+
+.calculation-card-result {
+  min-height: 48px;
+}
+
+.calculation-card-result .total-value {
+  color: var(--accent);
+}
+
+.total-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.total-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 52px;
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.total-sub {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stat-tile {
+  min-height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--surface-3);
+}
+
+.stat-tile strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.details {
+  display: grid;
+  gap: 10px;
+}
+
+.damage-result-content,
+.result-section-body {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chip.warn {
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--warn-ink);
+}
+
+.chip.good {
+  background: rgba(96, 211, 148, 0.16);
+  color: var(--good-ink);
+}
+
+.chip.bad {
+  background: rgba(255, 122, 104, 0.16);
+  color: var(--bad-ink);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-3);
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  background: var(--surface-2);
+  color: var(--label);
+  font-size: 12px;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.status-adjustment-table {
+  table-layout: fixed;
+}
+
+.status-adjustment-table col:nth-child(1) {
+  width: 15%;
+}
+
+.status-adjustment-table col:nth-child(2) {
+  width: 10%;
+}
+
+.status-adjustment-table col:nth-child(3) {
+  width: 28%;
+}
+
+.status-adjustment-table col:nth-child(4) {
+  width: 47%;
+}
+
+.status-value-table col:nth-child(1) {
+  width: 15%;
+}
+
+.status-value-table col:nth-child(2) {
+  width: 10%;
+}
+
+.status-value-table col:nth-child(3),
+.status-value-table col:nth-child(4) {
+  width: 37.5%;
+}
+
+.status-adjustment-target {
+  color: var(--accent-2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.status-adjustment-target.opponent {
+  color: var(--bad-ink);
+}
+
+.status-adjustment-scope {
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.status-adjustment-scope.opponent {
+  color: var(--bad-ink);
+}
+
+.status-adjustment-source {
+  font-weight: 800;
+}
+
+.status-adjustment-details {
+  display: grid;
+  gap: 3px;
+}
+
+.status-adjustment-detail {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.status-adjustment-sign {
+  font-weight: 900;
+}
+
+.status-adjustment-sign.positive {
+  color: var(--status-positive);
+}
+
+.status-adjustment-sign.negative {
+  color: var(--status-negative);
+}
+
+.status-adjustment-suffix {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.status-adjustment-empty {
+  color: var(--muted);
+  text-align: center;
+}
+
+.status-value-after {
+  font-weight: 900;
+}
+
+.status-value-after.increased {
+  color: var(--status-positive);
+}
+
+.status-value-after.decreased {
+  color: var(--status-negative);
+}
+
+.damage-adjustment-table {
+  table-layout: fixed;
+}
+
+.damage-adjustment-table col:first-child {
+  width: 30%;
+}
+
+.damage-adjustment-table col:last-child {
+  width: 70%;
+}
+
+.damage-adjustment-value-table col:nth-child(1) {
+  width: 25%;
+}
+
+.damage-adjustment-value-table col:nth-child(2) {
+  width: 55%;
+}
+
+.damage-adjustment-value-table col:nth-child(3) {
+  width: 20%;
+}
+
+.damage-adjustment-source {
+  font-weight: 800;
+}
+
+.damage-adjustment-formulas {
+  display: grid;
+  gap: 3px;
+}
+
+.damage-adjustment-formula {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.damage-adjustment-value-heading,
+.damage-adjustment-value-cell {
+  text-align: right;
+}
+
+.damage-adjustment-value {
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.damage-adjustment-value.positive {
+  color: var(--status-positive);
+}
+
+.damage-adjustment-value.negative {
+  color: var(--status-negative);
+}
+
+.ranking-controls {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.ranking-single-hit {
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  align-self: end;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 4px 8px;
+}
+
+.ranking-single-hit input {
+  width: 18px;
+  height: 18px;
+}
+
+.ranking-summary {
+  margin-top: 8px;
+}
