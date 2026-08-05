@@ -425,7 +425,7 @@ function rankingDefenseSequenceState(pokemonName, moveName, level) {
   if (pokemonName === "Mr.Mime" && moveName === "Psychic") add("spDefenseReductionPercent", 5, 8, "SpAtk");
   if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") add("spDefenseReductionPercent", 50, 1, "SpAtk");
   if (pokemonName === "Chandelure") add("spDefenseIgnorePercent", 5, 6, "SpAtk");
-  if (pokemonName === "Raichu" && moveName === "Stored Power" && level >= 11) add("spDefenseReductionPercent", 10, 3, "SpAtk");
+  if (pokemonName === "Raichu" && moveName === "Stored Power" && level >= 11) add("spDefenseReductionPercent", 8, 3, "SpAtk");
   return effects;
 }
 
