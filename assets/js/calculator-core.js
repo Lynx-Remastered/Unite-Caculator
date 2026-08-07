@@ -1153,7 +1153,7 @@ function updateBalanceTimeline() {
     header.className = "balance-entry-head";
     const title = document.createElement("h3");
     title.className = "balance-entry-title";
-    title.textContent = patch.title || `バージョン ${patch.version}`;
+    title.textContent = `バージョン ${patch.version}`;
     const date = document.createElement("time");
     date.className = "balance-date";
     date.dateTime = patch.date;
@@ -1190,10 +1190,10 @@ function updateBalanceTimeline() {
 
     const source = document.createElement("a");
     source.className = "balance-source-link";
-    source.href = patch.source || state.patchNotes.source || "https://unite-db.com/patch-notes";
+    source.href = state.patchNotes.source || "https://unite-db.com/patch-notes";
     source.target = "_blank";
     source.rel = "noreferrer";
-    source.textContent = patch.sourceLabel || "UniteDBのリリースノートを確認";
+    source.textContent = "UniteDBのリリースノートを確認";
     article.append(header, changes, source);
     el.balanceTimeline.appendChild(article);
   });

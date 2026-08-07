@@ -818,7 +818,7 @@ function automaticDefenseEffectNotes() {
   if (pokemonName === "Mr.Mime" && moveName === "Psychic") notes.push("サイコキネシス: 命中ごとに特防-5%（最大40%）");
   if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") notes.push("ヘドロばくだん: 初段後の継続ダメージに特防-50%");
   if (pokemonName === "Chandelure") notes.push("すりぬけ: ダメージ命中ごとに特防無視+5%（最大6段階）");
-  if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) notes.push("アシストパワー+: 電撃命中ごとに特防-8%（最大24%）");
+  if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) notes.push("アシストパワー+: 電撃命中ごとに特防-10%（最大30%）");
   if (pokemonName === "Mega-Gyarados") notes.push("かたやぶり: 防御を30%無視");
   return notes;
 }
@@ -1572,7 +1572,7 @@ function createDefenseSequenceState() {
   if (pokemonName === "Mr.Mime" && moveName === "Psychic") add("psychic", "spDefenseReductionPercent", 5, 8, "SpAtk");
   if (pokemonName === "Venusaur" && moveName === "Sludge Bomb") add("sludge-bomb", "spDefenseReductionPercent", 50, 1, "SpAtk");
   if (pokemonName === "Chandelure") add("infiltrator", "spDefenseIgnorePercent", 5, 6, "SpAtk");
-  if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) add("stored-power", "spDefenseReductionPercent", 8, 3, "SpAtk");
+  if (pokemonName === "Raichu" && moveName === "Stored Power" && number(el.levelRange.value, 15) >= 11) add("stored-power", "spDefenseReductionPercent", 10, 3, "SpAtk");
   return effects;
 }
 
