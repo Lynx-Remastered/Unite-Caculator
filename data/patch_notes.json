@@ -1,8 +1,407 @@
 {
   "source": "https://unite-db.com/patch-notes",
-  "fetchedAt": "2026-07-21",
+  "fetchedAt": "2026-08-07",
   "patchCount": 100,
   "patches": [
+    {
+      "version": "1.23.3.12",
+      "date": "2026-08-06",
+      "slug": "patch-1-23-3-12-aeos-summer-rush",
+      "pokemon": [
+        {
+          "name": "Alcremie",
+          "changes": [
+            {
+              "move": "Recover",
+              "status": "nerf",
+              "details": [
+                "Healing:",
+                "Ratio: 260% SpAtk -> 234% SpAtk",
+                "Slider: 16 -> 14",
+                "Base: 330 -> 297",
+                "Healing - Empowered:",
+                "Ratio: 390% SpAtk -> 351% SpAtk",
+                "Slider: 24 -> 22",
+                "Base: 495 -> 446"
+              ]
+            },
+            {
+              "move": "Sweet Scent",
+              "status": "nerf",
+              "details": [
+                "Explosion:",
+                "Ratio: 74% SpAtk -> 62.9% SpAtk",
+                "Slider: 9 -> 8",
+                "Base: 246 -> 209",
+                "Outer Ring:",
+                "Ratio: 105% SpAtk -> 89.25% SpAtk",
+                "Slider: 12 -> 10",
+                "Base: 345 -> 293"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Feraligatr",
+          "changes": [
+            {
+              "move": "Crunch",
+              "status": "nerf",
+              "details": [
+                "Damage:",
+                "Ratio: 240% Atk -> 220.8% Atk",
+                "Slider: 0 -> 0",
+                "Base: 720 -> 662",
+                "Damage - Destructive Fang:",
+                "Ratio: 279% Atk -> 256.7% Atk",
+                "Base: 837 -> 770"
+              ]
+            },
+            {
+              "move": "Crunch+",
+              "status": "nerf",
+              "details": [
+                "Damage:",
+                "Ratio: 276% Atk -> 253.9% Atk",
+                "Slider: 0 -> 0",
+                "Base: 827 -> 762",
+                "Damage - Destructive Fang:",
+                "Ratio: 320% Atk -> 294% Atk",
+                "Base: 963 -> 888"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Mega-Lucario",
+          "changes": [
+            {
+              "move": "Adaptability",
+              "status": "nerf",
+              "details": [
+                "Attack Boost:",
+                "5% per stack (50% max) -> 4% per stack (40%)"
+              ]
+            },
+            {
+              "move": "Aura Cannon",
+              "status": "nerf",
+              "details": [
+                "Mega Evolution Duration:",
+                "25s -> 20s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Meganium",
+          "changes": [
+            {
+              "move": "Synthesis",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "6s -> 5s"
+              ]
+            },
+            {
+              "move": "Grass Knot",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "7s -> 6s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MewtwoX",
+          "changes": [
+            {
+              "move": "Future Sight",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "10s -> 9s"
+              ]
+            },
+            {
+              "move": "Recover",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "10s -> 9s",
+                "Movement Speed boost:",
+                "20% -> 30%"
+              ]
+            },
+            {
+              "move": "Psystrike",
+              "status": "buff",
+              "details": [
+                "Damage - Beam:",
+                "Ratio: 41% Atk -> 45.1% Atk",
+                "Slider: 3 -> 3",
+                "Base: 100 -> 110",
+                "Damage - Orb:",
+                "Ratio: 146% SAtk -> 160.6% Atk",
+                "Slider: 7 -> 8",
+                "Base: 319 -> 351"
+              ]
+            },
+            {
+              "move": "Teleport",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "10s -> 9s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Palkia",
+          "changes": [
+            {
+              "move": "Auto Attack",
+              "status": "buff",
+              "details": [
+                "Hitbox Size:",
+                "2.5m -> 3m",
+                "Increasing the hitbox size without increasing the initiating range makes it a lot less likely for Palkia to miss auto attacks now."
+              ]
+            },
+            {
+              "move": "Dragon Claw",
+              "status": "buff",
+              "details": [
+                "Cast Time - First Cast:",
+                "66 Frames from cast until movement -> 44 Frames from cast until movement",
+                "(60 FPS, 33% Faster)",
+                "Cast time - Second Cast:",
+                "32 Frames from cast until movement -> 23 Frames from cast until movement",
+                "(60 FPS, 28% Faster)"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Raichu",
+          "changes": [
+            {
+              "move": "Stored Power",
+              "status": "buff",
+              "details": [
+                "Attack Speed boost:",
+                "+35% -> +45%"
+              ]
+            },
+            {
+              "move": "Stored Power+",
+              "status": "buff",
+              "details": [
+                "SpDef reduction:",
+                "-5% per stack (-15% max) -> -8% per stack (-24% max)"
+              ]
+            },
+            {
+              "move": "Psychic",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Ratio: 102.4% SpAtk -> 112.64% SpAtk",
+                "Slider: 0 -> 0",
+                "Base: 240 -> 264",
+                "Cooldown:",
+                "9s -> 8s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Yveltal",
+          "changes": [
+            {
+              "move": "Stats",
+              "status": "nerf",
+              "details": [
+                "HP:",
+                "Lv1 3360 -> 3320",
+                "Lv2 3504 -> 3452",
+                "Lv3 3663 -> 3596",
+                "Lv4 3838 -> 3755",
+                "Lv5 4030 -> 3930",
+                "Lv6 4241 -> 4123",
+                "Lv7 4474 -> 4335",
+                "Lv8 4730 -> 4568",
+                "Lv9 5011 -> 4824",
+                "Lv10 5321 -> 5106",
+                "Lv11 5661 -> 5416",
+                "Lv12 6035 -> 5757",
+                "Lv13 6448 -> 6133",
+                "Lv14 6901 -> 6545",
+                "Lv15 7400 -> 7000",
+                "Def:",
+                "Lv1 76 -> 72",
+                "Lv2 85 -> 80",
+                "Lv3 95 -> 89",
+                "Lv4 106 -> 99",
+                "Lv5 117 -> 110",
+                "Lv6 131 -> 122",
+                "Lv7 145 -> 135",
+                "Lv8 161 -> 149",
+                "Lv9 178 -> 165",
+                "Lv10 197 -> 183",
+                "Lv11 218 -> 202",
+                "Lv12 242 -> 223",
+                "Lv13 267 -> 246",
+                "Lv14 295 -> 272",
+                "Lv15 326 -> 300",
+                "SpDef:",
+                "Lv5 118 -> 110",
+                "Lv7 146 -> 135",
+                "Lv8 162 -> 149",
+                "Lv9 180 -> 165",
+                "Lv10 199 -> 183",
+                "Lv11 221 -> 202",
+                "Lv12 244 -> 223",
+                "Lv13 270 -> 246",
+                "Lv14 299 -> 272",
+                "Lv15 330 -> 300"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Zacian",
+          "changes": [
+            {
+              "move": "Auto Attack",
+              "status": "nerf",
+              "details": [
+                "Empowered Auto Attack:",
+                "Additional 2%/3%/3%/4% Max HP damage -> Additional 1%/2%/2%/3% Max HP damage"
+              ]
+            },
+            {
+              "move": "Sacred Sword",
+              "status": "buff",
+              "details": [
+                "Damage - Draw:",
+                "Ratio: 52.5% Atk -> 56.7% Atk",
+                "Slider: 5 -> 5",
+                "Base: 85 -> 92",
+                "Damage - Flurry:",
+                "Ratio: 34.5% Atk -> 37.26% Atk",
+                "Slider: 3 -> 3",
+                "Base: 60 -> 65",
+                "Damage - Empowered Draw:",
+                "Ratio: 67.5% Atk -> 72.9% Atk",
+                "Slider: 6 -> 6",
+                "Base: 118 -> 127",
+                "Damage - Empowered Flurry:",
+                "Ratio: 45% Atk -> 48.6% Atk",
+                "Slider: 4 -> 4",
+                "Base: 75 -> 81"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Zoroark",
+          "changes": [
+            {
+              "move": "Stats",
+              "status": "buff",
+              "details": [
+                "HP:",
+                "Lv1 3030 -> 3030",
+                "Lv2 3100 -> 3105",
+                "Lv3 3181 -> 3191",
+                "Lv4 3274 -> 3290",
+                "Lv5 3698 -> 3741",
+                "Lv6 3821 -> 3872",
+                "Lv7 3962 -> 4022",
+                "Lv8 4125 -> 4195",
+                "Lv9 4312 -> 4394",
+                "Lv10 4528 -> 4624",
+                "Lv11 4776 -> 4887",
+                "Lv12 5061 -> 5190",
+                "Lv13 5389 -> 5539",
+                "Lv14 5766 -> 5939",
+                "Lv15 6200 -> 6400",
+                "Def:",
+                "Lv1 55 -> 55",
+                "Lv2 60 -> 60",
+                "Lv3 65 -> 67",
+                "Lv4 71 -> 74",
+                "Lv5 99 -> 107",
+                "Lv6 107 -> 116",
+                "Lv7 116 -> 127",
+                "Lv8 127 -> 140",
+                "Lv9 139 -> 154",
+                "Lv10 153 -> 171",
+                "Lv11 169 -> 190",
+                "Lv12 187 -> 212",
+                "Lv13 208 -> 237",
+                "Lv14 232 -> 266",
+                "Lv15 260 -> 300",
+                "SpDef:",
+                "Lv1 45 -> 45",
+                "Lv2 48 -> 49",
+                "Lv3 51 -> 53",
+                "Lv4 55 -> 58",
+                "Lv5 73 -> 80",
+                "Lv6 78 -> 86",
+                "Lv7 84 -> 94",
+                "Lv8 91 -> 102",
+                "Lv9 99 -> 112",
+                "Lv10 108 -> 123",
+                "Lv11 119 -> 136",
+                "Lv12 131 -> 151",
+                "Lv13 145 -> 168",
+                "Lv14 161 -> 187",
+                "Lv15 180 -> 210"
+              ]
+            },
+            {
+              "move": "Shadow Claw",
+              "status": "buff",
+              "details": [
+                "Throw Duration:",
+                "0.4s -> 0.5s"
+              ]
+            },
+            {
+              "move": "Shadow Claw+",
+              "status": "buff",
+              "details": [
+                "Throw Duration:",
+                "0.5s -> 0.6s"
+              ]
+            },
+            {
+              "move": "Night Slash",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "8s -> 7s"
+              ]
+            },
+            {
+              "move": "Cut",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Ratio: 85% Atk -> 97.75% Atk",
+                "Slider: 11 -> 13",
+                "Base: 250 -> 287"
+              ]
+            }
+          ]
+        }
+      ]
+    },
     {
       "version": "1.23.3.10",
       "date": "2026-07-20",

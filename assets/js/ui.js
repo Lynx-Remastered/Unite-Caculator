@@ -111,6 +111,7 @@ const PATCH_FIELD_JA = {
   spdef: "特防",
   spd: "特防",
   attackspeed: "攻撃速度",
+  attackboost: "攻撃上昇量",
   movementspeed: "移動速度",
   movementspeedincrease: "移動速度上昇",
   movementspeedreduction: "移動速度低下",
@@ -118,6 +119,15 @@ const PATCH_FIELD_JA = {
   additionaldamage: "追加ダメージ",
   duration: "持続時間",
   range: "範囲",
+  explosion: "爆発ダメージ",
+  outerring: "外周ダメージ",
+  hitboxsize: "命中判定距離",
+  casttimefirstcast: "1段目の硬直時間",
+  casttimesecondcast: "2段目の硬直時間",
+  throwduration: "ふきとばし時間",
+  megaevolutionduration: "メガシンカ継続時間",
+  spdefreduction: "特防低下量",
+  empoweredautoattack: "強化通常攻撃",
   slow: "移動速度低下",
   effect: "効果",
   neweffect: "追加効果",
@@ -179,7 +189,10 @@ function jpPatchMoveName(value) {
 }
 
 function hasUntranslatedPatchText(value) {
-  return /[A-Za-z]/.test(String(value || "").replace(/\b(?:HP|Lv)(?=\d|\b)/gi, ""));
+  return /[A-Za-z]/.test(String(value || "")
+    .replace(/\b(?:HP|FPS)\b/gi, "")
+    .replace(/\bLv(?=\d)/gi, "")
+    .replace(/\b\d+(?:\.\d+)?m\b/gi, ""));
 }
 
 function translatePatchTokens(value) {
@@ -190,7 +203,7 @@ function translatePatchTokens(value) {
     .replace(/Max HP/gi, "最大HP")
     .replace(/Damage Dealt/gi, "与えたダメージ")
     .replace(/Wild Pok[eé]mon/gi, "野生ポケモン")
-    .replace(/Sp\.\s*Atk|SpAtk|SpA\b/gi, "特攻")
+    .replace(/Sp\.\s*Atk|SpAtk|SAtk|SpA\b/gi, "特攻")
     .replace(/Sp\.\s*Def|SpDef|SpD\b/gi, "特防")
     .replace(/\bAtk\b/gi, "攻撃")
     .replace(/\bDef\b/gi, "防御")
@@ -199,6 +212,12 @@ function translatePatchTokens(value) {
     .replace(/\bper hit\b/gi, "1ヒットごと")
     .replace(/\bper tick\b/gi, "1回ごと")
     .replace(/\bper stack\b/gi, "1段階ごと")
+    .replace(/\bmax\b/gi, "最大")
+    .replace(/\bAdditional\b/gi, "追加")
+    .replace(/\bdamage\b/gi, "ダメージ")
+    .replace(/Frames from (?:cast|first hit) until movement/gi, "フレーム")
+    .replace(/Frames until movement/gi, "フレーム")
+    .replace(/\bFaster\b/gi, "短縮")
     .replace(/\bunchanged\b/gi, "変更なし")
     .replace(/(\d+(?:\.\d+)?)s\b/gi, "$1秒")
     .replace(/\s+/g, " ")

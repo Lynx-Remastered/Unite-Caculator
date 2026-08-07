@@ -355,7 +355,7 @@ const DEFENSE_EFFECTS = {
     { id: "psychic-plus", label: "サイコキネシス+命中後", minLevel: 13, maxStacks: 1, spDefenseReductionPercent: 25 }
   ],
   Raichu: [
-    { id: "stored-power", label: "アシストパワー+の段階", minLevel: 11, maxStacks: 3, spDefenseReductionPercent: 10 }
+    { id: "stored-power", label: "アシストパワー+の段階", minLevel: 11, maxStacks: 3, spDefenseReductionPercent: 8 }
   ],
   Skeledirge: [
     { id: "blaze", label: "もうか発動中（次の技）", maxStacks: 1, spDefenseIgnorePercent: 35 }
