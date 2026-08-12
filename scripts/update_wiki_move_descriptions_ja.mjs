@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 const ROOT = resolve(import.meta.dirname, "..");
 const WIKI_BASE_URL = "https://wikiwiki.jp/poke-unite/";
 const OUTPUT_PATH = resolve(ROOT, "data", "wiki_move_descriptions_ja.json");
+const CONFIG_PATH = resolve(ROOT, "assets", "js", "config.js");
 const REQUEST_INTERVAL_MS = 900;
 const REQUEST_LIMIT = Math.max(
   1,
@@ -127,9 +128,9 @@ function parseWikiPage(html) {
   return parsed;
 }
 
-function pokemonJapaneseNames(indexHtml) {
-  const match = indexHtml.match(/const POKEMON_JA\s*=\s*(\{[\s\S]*?\n\s*\});/);
-  if (!match) throw new Error("index.html から POKEMON_JA を取得できませんでした。");
+function pokemonJapaneseNames(configSource) {
+  const match = configSource.match(/const POKEMON_JA\s*=\s*(\{[\s\S]*?\n\s*\});/);
+  if (!match) throw new Error("assets/js/config.js から POKEMON_JA を取得できませんでした。");
   return JSON.parse(match[1]);
 }
 
@@ -183,13 +184,13 @@ async function mapWithConcurrency(items, concurrency, task) {
   return results;
 }
 
-const [indexHtml, pokemon, moveNamesJa, existing] = await Promise.all([
-  readFile(resolve(ROOT, "index.html"), "utf8"),
+const [configSource, pokemon, moveNamesJa, existing] = await Promise.all([
+  readFile(CONFIG_PATH, "utf8"),
   readFile(resolve(ROOT, "data", "pokemon.json"), "utf8").then(JSON.parse),
   readFile(resolve(ROOT, "data", "move_names_ja.json"), "utf8").then(JSON.parse),
   readFile(OUTPUT_PATH, "utf8").then(JSON.parse).catch(() => ({ entries: {}, pages: {}, failed_pages: {} }))
 ]);
-const pokemonNamesJa = pokemonJapaneseNames(indexHtml);
+const pokemonNamesJa = pokemonJapaneseNames(configSource);
 const entries = { ...(existing.entries || {}) };
 const pages = { ...(existing.pages || {}) };
 const failedPages = { ...(existing.failed_pages || {}) };
@@ -201,9 +202,9 @@ for (const [pokemonName, pageName] of Object.entries(PAGE_NAME_OVERRIDES)) {
 const misses = [];
 const pendingPokemon = pokemon
   .filter((pokemonEntry) => (
-    !pages[pokemonEntry.name]
-    && !failedPages[pokemonEntry.name]
-    && (!ONLY_POKEMON.size || ONLY_POKEMON.has(pokemonEntry.name))
+    !ONLY_POKEMON.size
+      ? !pages[pokemonEntry.name] && !failedPages[pokemonEntry.name]
+      : ONLY_POKEMON.has(pokemonEntry.name)
   ))
   .slice(0, REQUEST_LIMIT);
 
