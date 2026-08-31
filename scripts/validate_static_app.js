@@ -56,6 +56,28 @@ function validateJsonData() {
       fail(`${path.relative(ROOT, filePath)} is not valid JSON: ${error.message}`);
     }
   }
+  const pokemon = JSON.parse(fs.readFileSync(path.join(dataDirectory, "pokemon.json"), "utf8"));
+  const stats = JSON.parse(fs.readFileSync(path.join(dataDirectory, "stats.json"), "utf8"));
+  const pokemonNames = pokemon.map((entry) => entry.name);
+  const statsNames = stats.map((entry) => entry.name);
+  if (new Set(pokemonNames).size !== pokemonNames.length) fail("data/pokemon.json contains duplicate Pokémon names");
+  if (new Set(statsNames).size !== statsNames.length) fail("data/stats.json contains duplicate Pokémon names");
+  if (pokemonNames.length !== statsNames.length || pokemonNames.some((name) => !statsNames.includes(name))) {
+    fail("data/pokemon.json and data/stats.json must contain the same Pokémon");
+  }
+  for (const entry of pokemon) {
+    if (!Array.isArray(entry.base_move_levels) || entry.base_move_levels.length !== 2) {
+      fail(`data/pokemon.json ${entry.name} must define two base_move_levels`);
+    }
+    if (entry.base_move_levels.some((level) => !Number.isInteger(Number(level)) || Number(level) < 1 || Number(level) > 15)) {
+      fail(`data/pokemon.json ${entry.name} contains an invalid base move level`);
+    }
+  }
+  for (const entry of stats) {
+    if (!Array.isArray(entry.level) || entry.level.length !== 15) {
+      fail(`data/stats.json ${entry.name} must define stats for 15 levels`);
+    }
+  }
   return files.length;
 }
 

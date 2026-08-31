@@ -5,6 +5,16 @@ function number(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function baseMoveMinLevel(pokemon, moveIndex) {
+  const sourceLevels = Array.isArray(pokemon && pokemon.base_move_levels)
+    ? pokemon.base_move_levels
+    : [];
+  const sourceLevel = number(sourceLevels[moveIndex], 0);
+  if (sourceLevel > 0) return sourceLevel;
+  if (moveIndex === 0) return 1;
+  return String(pokemon && pokemon.early_learn).toLowerCase() === "true" ? 2 : 3;
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }

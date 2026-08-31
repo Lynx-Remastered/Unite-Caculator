@@ -160,7 +160,7 @@ function updateShieldMoveOptions() {
       node,
       rsb: node.rsb,
       groupName: "Move 1",
-      minLevel: node.level1 || node.level || 1
+      minLevel: index === 0 ? baseMoveMinLevel(pokemon, 0) : node.level1 || node.level || 1
     });
   });
 
@@ -171,7 +171,7 @@ function updateShieldMoveOptions() {
       node,
       rsb: node.rsb,
       groupName: "Move 2",
-      minLevel: node.level1 || node.level || 1
+      minLevel: index === 0 ? baseMoveMinLevel(pokemon, 1) : node.level1 || node.level || 1
     });
   });
 
@@ -274,10 +274,10 @@ function healingChoicesForPokemon(pokemon, level) {
   createChoices({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, rsbKey: "boosted_rsb", groupName: "Basic", minLevel: 1, iconName: "Attack" });
 
   [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
-    createChoices({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: node.level1 || node.level || 1 });
+    createChoices({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: index === 0 ? baseMoveMinLevel(pokemon, 0) : node.level1 || node.level || 1 });
   });
   [move2, ...((move2 && move2.upgrades) || [])].filter(Boolean).forEach((node, index) => {
-    createChoices({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: node.level1 || node.level || 1 });
+    createChoices({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: index === 0 ? baseMoveMinLevel(pokemon, 1) : node.level1 || node.level || 1 });
   });
   createChoices({ slotKey: "unite", slotLabel: "ユナイト技", node: unite, rsb: unite && unite.rsb, groupName: "Unite Move", minLevel: unite && unite.level || 1 });
 

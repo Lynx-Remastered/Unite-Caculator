@@ -95,7 +95,7 @@ function updateMoveOptions() {
       node,
       rsb: node.rsb,
       groupName: "Move 1",
-      minLevel: node.level1 || node.level || 1,
+      minLevel: index === 0 ? baseMoveMinLevel(pokemon, 0) : node.level1 || node.level || 1,
       hideWhenNoDamage: true
     });
   });
@@ -107,7 +107,7 @@ function updateMoveOptions() {
       node,
       rsb: node.rsb,
       groupName: "Move 2",
-      minLevel: node.level1 || node.level || 1,
+      minLevel: index === 0 ? baseMoveMinLevel(pokemon, 1) : node.level1 || node.level || 1,
       hideWhenNoDamage: true
     });
   });
@@ -290,10 +290,10 @@ function damageChoicesForPokemon(pokemon, level) {
   createChoice({ slotKey: "basic", slotLabel: "通常", node: basic, rsb: basic && basic.rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
   createChoice({ slotKey: "boosted", slotLabel: "通常強化", node: basic, rsb: basic && basic.boosted_rsb, groupName: "Basic", minLevel: 1, iconName: "Attack" });
   [move1, ...((move1 && move1.upgrades) || [])].filter(Boolean).forEach((node, index) => {
-    createChoice({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: node.level1 || node.level || 1, hideWhenNoDamage: true });
+    createChoice({ slotKey: `move1-${index}`, slotLabel: "技1", node, rsb: node.rsb, groupName: "Move 1", minLevel: index === 0 ? baseMoveMinLevel(pokemon, 0) : node.level1 || node.level || 1, hideWhenNoDamage: true });
   });
   [move2, ...((move2 && move2.upgrades) || [])].filter(Boolean).forEach((node, index) => {
-    createChoice({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: node.level1 || node.level || 1, hideWhenNoDamage: true });
+    createChoice({ slotKey: `move2-${index}`, slotLabel: "技2", node, rsb: node.rsb, groupName: "Move 2", minLevel: index === 0 ? baseMoveMinLevel(pokemon, 1) : node.level1 || node.level || 1, hideWhenNoDamage: true });
   });
   createChoice({ slotKey: "unite", slotLabel: "ユナイト技", node: unite, rsb: unite && unite.rsb, groupName: "Unite Move", minLevel: unite && unite.level || 1, hideWhenNoDamage: true });
   return choices;
