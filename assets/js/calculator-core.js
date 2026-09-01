@@ -1188,7 +1188,10 @@ function updateBalanceTimeline() {
 
       const detailList = document.createElement("ul");
       detailList.className = "balance-detail-list";
-      const details = jpPatchDetails(change.details || [], status);
+      const details = jpPatchDetails(change.details || [], status, {
+        pokemonName,
+        moveName: change.move
+      });
       (details.length ? details : [{ text: patchStatusFallback(status), source: "" }]).forEach((detail) => {
         const item = document.createElement("li");
         item.textContent = detail.text;

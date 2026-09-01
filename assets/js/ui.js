@@ -339,7 +339,7 @@ function translatePatchTokens(value) {
   });
 
   return text
-    .replace(/->|→/g, " → ")
+    .replace(/-\s*>|→/g, " → ")
     .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?user(?:'s)?\s+Max HP/gi, "自分の最大HPの$1%")
     .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Max HP/gi, "相手の最大HPの$1%")
     .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Missing HP/gi, "相手の減少HPの$1%")
@@ -374,6 +374,8 @@ function translatePatchTokens(value) {
     .replace(/Critical Hit Damage/gi, "急所ダメージ")
     .replace(/Defense Penetration|Defense Pierce|Defense Pen/gi, "防御貫通")
     .replace(/Defense Reduction|Defense Debuff/gi, "防御低下")
+    .replace(/Atk\s+or\s+stored\s+Atk/gi, "自分の攻撃または記録した相手の攻撃")
+    .replace(/Attack\s+of\s+(?:the\s+)?Target/gi, "相手の攻撃")
     .replace(/\bAtk\b/gi, "攻撃")
     .replace(/\bDef\b/gi, "防御")
     .replace(/\bAoE\b/gi, "範囲")
@@ -504,12 +506,303 @@ function patchStatusFallback(status) {
   return "効果・挙動を調整";
 }
 
+function splitPatchTransition(value, allowNumericHyphen = false) {
+  const raw = cleanPatchMarkdown(value);
+  let sides = raw.split(/\s*(?:-\s*>|→)\s*/);
+  if (sides.length < 2 && allowNumericHyphen) {
+    const range = raw.match(/^\s*([+-]?\d+(?:\.\d+)?%?)\s*-\s*([+-]?\d+(?:\.\d+)?%?)\s*$/);
+    if (range) sides = [range[1], range[2]];
+  }
+  if (sides.length < 2) return null;
+  const cleanSide = (side) => String(side || "")
+    .replace(/\([^)]*unchanged[^)]*\)/gi, "")
+    .replace(/\bunchanged\b/gi, "")
+    .trim();
+  const before = cleanSide(sides[0]);
+  const after = cleanSide(sides[sides.length - 1]);
+  return {
+    before: before || after,
+    after: after || before
+  };
+}
+
+function normalizedPatchMoveLookup(value) {
+  return normalizedPatchField(cleanPatchMarkdown(value)
+    .replace(/\\?\[[^\]]+\]/g, "")
+    .replace(/^(?:Unite Move|Ability|Passive):\s*/i, "")
+    .replace(/\s+\((?:Scyther|Scizor)\)$/i, "")
+    .replace(/\+$/, "")
+    .trim());
+}
+
+function patchFormulaReference(context = {}, heading = "") {
+  const pokemon = (state.pokemon || []).find((entry) => entry.name === context.pokemonName);
+  if (!pokemon) return null;
+  const rawMove = cleanPatchMarkdown(context.moveName || "")
+    .replace(/\\?\[[^\]]+\]/g, "")
+    .trim();
+  const targetKey = normalizedPatchMoveLookup(rawMove);
+  const genericAttack = /^(?:attack|autoattacks?|basicattacks?|boostedattacks?)$/i.test(targetKey);
+  const wantsBoosted = /boosted/i.test(rawMove);
+  const wantsEnhanced = /\+$/.test(rawMove.replace(/\\?\[[^\]]+\]/g, "").trim());
+  const nodes = [];
+
+  const visit = (value) => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    if ((value.rsb || value.boosted_rsb) && value.name) {
+      const key = normalizedPatchMoveLookup(value.name);
+      let score = 0;
+      if (key === targetKey) score = 100;
+      else if (genericAttack && key === "attack") score = 90;
+      else if (targetKey && key && (key.includes(targetKey) || targetKey.includes(key))) score = 40;
+      if (score) nodes.push({ node: value, score });
+    }
+    if (Array.isArray(value.skills)) visit(value.skills);
+    if (Array.isArray(value.upgrades)) visit(value.upgrades);
+  };
+  visit(pokemon);
+  const match = nodes.sort((left, right) => right.score - left.score)[0];
+  if (!match) return null;
+
+  const rsbRows = [];
+  if (match.node.rsb) rsbRows.push({ rsb: match.node.rsb, boosted: false });
+  if (match.node.boosted_rsb) rsbRows.push({ rsb: match.node.boosted_rsb, boosted: true });
+  const prefixes = ["", "add1", "add2", "add3", "add4", "add5", "enhanced", "enhanced_add1", "enhanced_add2", "enhanced_add3", "enhanced_add4", "enhanced_add5"];
+  const parts = [];
+  rsbRows.forEach(({ rsb, boosted }) => {
+    prefixes.forEach((prefix) => {
+      const field = (name) => rsb[prefix ? `${prefix}_${name}` : name];
+      const label = String(field("label") || (boosted ? "Damage - Boosted" : ""));
+      const ratio = field("ratio");
+      const trueDesc = String(field("true_desc") || "");
+      const hasFormula = ratio !== "" && ratio !== undefined && ratio !== null
+        || /\d+(?:\.\d+)?%\s+(?:Attack|Atk|SpAtk|SpA|Max HP)/i.test(trueDesc);
+      if (!hasFormula) return;
+      parts.push({
+        label,
+        ratio,
+        dmgType: String(field("dmg_type") || rsb.dmg_type || ""),
+        slider: field("slider"),
+        base: field("base"),
+        exception: String(field("exception") || ""),
+        trueDesc,
+        contextText: [rsb.true_desc, rsb.notes, rsb.rsb_info].filter(Boolean).join(" "),
+        enhanced: prefix.startsWith("enhanced"),
+        boosted
+      });
+    });
+  });
+  if (!parts.length) return null;
+
+  const headingKey = normalizedPatchField(String(heading || "")
+    .replace(/\b(?:increased|decreased|reduced|boosted|adjusted)\b/gi, ""));
+  return parts.sort((left, right) => {
+    const score = (part) => {
+      const labelKey = normalizedPatchField(part.label);
+      let value = 0;
+      if (headingKey && labelKey === headingKey) value += 50;
+      if (headingKey && labelKey && (headingKey.includes(labelKey) || labelKey.includes(headingKey))) value += 25;
+      const headingTokens = String(heading || "").toLowerCase().match(/[a-z0-9]+/g) || [];
+      const labelTokens = String(part.label || "").toLowerCase().match(/[a-z0-9]+/g) || [];
+      value += headingTokens.filter((token) => token.length > 2 && labelTokens.includes(token)).length * 4;
+      if (wantsBoosted === part.boosted || !match.node.boosted_rsb) value += 8;
+      if (wantsEnhanced === part.enhanced) value += 4;
+      return value;
+    };
+    return score(right) - score(left);
+  })[0];
+}
+
+function patchFormulaDefaultBasis(context = {}, reference = null) {
+  const type = String(reference?.dmgType || "").toLowerCase();
+  if (/sp|special/.test(type)) return "特攻";
+  if (/atk|attack/.test(type)) return "攻撃";
+  const pokemon = (state.pokemon || []).find((entry) => entry.name === context.pokemonName);
+  return pokemon?.damage_type === "Special" ? "特攻" : "攻撃";
+}
+
+function cleanedPatchFormulaSide(value) {
+  let raw = cleanPatchMarkdown(value)
+    .replace(/\([^)]*unchanged[^)]*\)/gi, "")
+    .replace(/\bunchanged\b/gi, "")
+    .trim();
+  raw = raw.replace(/^%\s*(\d+(?:\.\d+)?)\s*%?\s*/i, "$1% ");
+  raw = raw.replace(/(\d(?:\.\d+)?)\s*(Atk|SpA|SpAtk|SAtk)\b/gi, "$1 $2");
+  return raw.trim();
+}
+
+function patchFormulaBasis(value, context = {}, reference = null, heading = "", fallbackValue = "") {
+  const raw = cleanedPatchFormulaSide(value);
+  const moveKey = normalizedPatchMoveLookup(context.moveName || "");
+  if (/Atk\s+or\s+stored\s+Atk/i.test(raw) || (moveKey === "foulplay" && /Attack\s+of\s+(?:the\s+)?Target/i.test(raw))) {
+    return "自分と1段目で記録した相手のうち高い方の攻撃";
+  }
+  if (/Attack\s+of\s+(?:the\s+)?Target/i.test(raw)) return "相手の攻撃";
+  if (/\b(?:Sp\.?\s*Atk|SpAtk|SAtk|SpA)\b/i.test(raw)) return "特攻";
+  if (/\bAtk\b|\bAttack\b/i.test(raw)) return "攻撃";
+  if (/\b(?:DoT\s+)?Damage\s+Dealt\b|\bDoT\s+damage\b/i.test(raw)) return "与えたダメージ";
+  if (/Max\.?\s*HP/i.test(raw)) {
+    if (/Asleep\s+Pok[eé]mon/i.test(raw)) return "ねむり状態の相手の最大HP";
+    if (/(?:Target|Enemy|Opponent)(?:'s)?\s+Max\.?\s*HP/i.test(raw)) return "相手の最大HP";
+    if (/^(?:Damage|Burn|Explosion|Outer Ring|First Hit|Second Hit|Third Hit|Final Hit|Stream|Mark Proc)/i.test(String(heading || ""))) {
+      return "相手の最大HP";
+    }
+    return "自分の最大HP";
+  }
+  if (/Missing\s*HP/i.test(raw)) {
+    if (/(?:Target|Enemy|Opponent)/i.test(raw) || /^(?:Damage|Burn|Explosion|First Hit|Second Hit|Third Hit|Final Hit)/i.test(String(heading || ""))) {
+      return "相手の減少HP";
+    }
+    return "自分の減少HP";
+  }
+  if (fallbackValue && cleanedPatchFormulaSide(fallbackValue) !== raw) {
+    return patchFormulaBasis(fallbackValue, context, reference, heading);
+  }
+  return patchFormulaDefaultBasis(context, reference);
+}
+
+function patchFormulaRatioTerm(value, context = {}, reference = null, heading = "", fallbackValue = "") {
+  const raw = cleanedPatchFormulaSide(value);
+  if (!raw || /^(?:new|added)$/i.test(raw)) return "なし";
+  const ratio = raw.match(/([+-]?\d+(?:\.\d+)?)\s*%?/);
+  if (!ratio) return translatePatchTokens(raw);
+  const basis = patchFormulaBasis(raw, context, reference, heading, fallbackValue);
+  const interval = raw.match(/(?:\/\s*|every\s+)(\d+(?:\.\d+)?)s\b/i);
+  return `${basis} × ${ratio[1]}%${interval ? `（${interval[1]}秒ごと）` : ""}`;
+}
+
+function patchExplicitFormulaExpression(value, context = {}, reference = null, heading = "") {
+  const raw = cleanedPatchFormulaSide(value);
+  const rsb = raw.match(/^([+-]?\d+(?:\.\d+)?)%?\s*(Atk|Attack|Sp\.?\s*Atk|SpAtk|SAtk|SpA)\s*\+\s*([+-]?\d+(?:\.\d+)?)\s*[x×]\s*\(\s*(?:Level|Lv)\s*-\s*1\s*\)\s*\+\s*([+-]?\d+(?:\.\d+)?)$/i);
+  if (rsb) {
+    const basis = patchFormulaBasis(`${rsb[1]}% ${rsb[2]}`, context, reference, heading);
+    return `${basis} × ${rsb[1]}% + ${rsb[3]} × (Lv - 1) + ${rsb[4]}`;
+  }
+  const muscleGauge = raw.match(/^([+-]?\d+(?:\.\d+)?)%\s+Max\.?\s*HP\s*\+\s*([+-]?\d+(?:\.\d+)?)%\s+HP\s+Muscle\s+Gauge$/i);
+  if (muscleGauge) {
+    return `自分の最大HP × ${muscleGauge[1]}% + 自分の最大HP × ${muscleGauge[2]}% × マッスルゲージ段階`;
+  }
+  return "";
+}
+
+function patchFormulaLevelTerm(value, ratioValue, context = {}, reference = null, heading = "") {
+  const raw = cleanedPatchFormulaSide(value);
+  if (!raw || /^(?:new|added)$/i.test(raw)) return "0 × (Lv - 1)";
+  const numeric = raw.match(/[+-]?\d+(?:\.\d+)?/);
+  if (!numeric) return `${translatePatchTokens(raw)} × (Lv - 1)`;
+  if (/per\s+Muscle\s+Gauge/i.test(raw)) {
+    return `${patchFormulaBasis(ratioValue, context, reference, heading)} × ${numeric[0]}% × マッスルゲージ段階`;
+  }
+  if (/%/.test(raw)) {
+    const hasOwnBasis = /(?:Atk|Attack|SpA|SpAtk|SAtk|Max\.?\s*HP|Missing\s*HP|Damage\s+Dealt)/i.test(raw);
+    const basis = hasOwnBasis
+      ? patchFormulaBasis(raw, context, reference, heading)
+      : patchFormulaBasis(ratioValue, context, reference, heading);
+    return `${basis} × ${numeric[0]}% × (Lv - 1)`;
+  }
+  return `${numeric[0]} × (Lv - 1)`;
+}
+
+function patchFormulaBaseTerm(value) {
+  const raw = cleanedPatchFormulaSide(value);
+  if (!raw || /^(?:new|added)$/i.test(raw)) return "0";
+  const numeric = raw.match(/[+-]?\d+(?:\.\d+)?%?/);
+  return numeric ? numeric[0] : translatePatchTokens(raw);
+}
+
+function patchFormulaExpression(side, parts, context, reference, heading) {
+  const ratioValue = parts.ratio[side];
+  if (/^(?:new|added)$/i.test(cleanedPatchFormulaSide(ratioValue))) return "なし";
+  const explicitFormula = patchExplicitFormulaExpression(ratioValue, context, reference, heading);
+  if (explicitFormula) return explicitFormula;
+  const referenceLevel = reference?.exception === "True" ? "0" : reference?.slider;
+  const referenceBase = reference?.exception === "True" ? "0" : reference?.base;
+  const levelValue = parts.level?.[side] ?? (referenceLevel !== "" && referenceLevel !== undefined && referenceLevel !== null ? String(referenceLevel) : "0");
+  const baseValue = parts.base?.[side] ?? (referenceBase !== "" && referenceBase !== undefined && referenceBase !== null ? String(referenceBase) : "0");
+  const fallbackRatioValue = parts.ratio[side === "before" ? "after" : "before"];
+  const ratioTerms = [patchFormulaRatioTerm(ratioValue, context, reference, heading, fallbackRatioValue)];
+  (parts.additionalRatios || []).forEach((additional) => {
+    const fallback = additional[side === "before" ? "after" : "before"];
+    ratioTerms.push(patchFormulaRatioTerm(additional[side], context, reference, heading, fallback));
+  });
+  return [
+    ...ratioTerms,
+    patchFormulaLevelTerm(levelValue, ratioValue, context, reference, heading),
+    patchFormulaBaseTerm(baseValue)
+  ].join(" + ").replace(/\+\s+-/g, "- ");
+}
+
+function patchFormulaRow(sourceLines, index, context = {}) {
+  const ratioLine = cleanPatchMarkdown(sourceLines[index]);
+  const ratioMatch = ratioLine.match(/^Ratio\s*:\s*(.*)$/i)
+    || ratioLine.match(/^Ratio\s+(?!\d+\s*:)(.*)$/i);
+  if (!ratioMatch) return null;
+  const ratio = splitPatchTransition(ratioMatch[1]);
+  if (!ratio || cleanedPatchFormulaSide(ratio.before).toLowerCase() === cleanedPatchFormulaSide(ratio.after).toLowerCase()) return null;
+
+  const parts = { ratio, additionalRatios: [] };
+  const consumedLines = [ratioLine];
+  let consumed = 1;
+  for (let offset = 1; offset <= 5; offset += 1) {
+    const line = cleanPatchMarkdown(sourceLines[index + offset]);
+    const match = line.match(/^(Slider|Per Level|Scale|Base|Bas)(?:\s*:\s*|\s+)(.*)$/i);
+    const additionalMatch = line.match(/^(Ratio\s*2|Ratio2|Extra)\s*:\s*(.*)$/i);
+    if (!match && !additionalMatch) break;
+    const field = match?.[1] || additionalMatch[1];
+    const rawValue = match?.[2] || additionalMatch[2];
+    const transition = splitPatchTransition(rawValue, /^(?:Slider|Per Level|Scale)$/i.test(field));
+    if (!transition) break;
+    if (/^(?:Base|Bas)$/i.test(field)) parts.base = transition;
+    else if (/^(?:Ratio\s*2|Ratio2|Extra)$/i.test(field)) parts.additionalRatios.push(transition);
+    else parts.level = transition;
+    consumedLines.push(line);
+    consumed += 1;
+  }
+
+  const heading = cleanPatchMarkdown(sourceLines[index - 1]);
+  const reference = patchFormulaReference(context, heading);
+  const explicitBasis = /(?:\bAtk\b|\bAttack\b|\bSp\.?\s*Atk\b|\bSpAtk\b|\bSAtk\b|\bSpA\b|Max\.?\s*HP|Missing\s*HP|Damage\s+Dealt|DoT\s+damage)/i.test(`${ratio.before} ${ratio.after}`);
+  const modifierHeading = /(?:Resistance|Reduction|Increase|Decrease|Penalty|Multiplier|Trigger)/i.test(heading);
+  const formulaHeading = /^(?:Damage|Healing|Heal|Shield|Burn|Explosion|Outer Ring|First Hit|Second Hit|Third Hit|Final Hit|Stream|Mark Proc)(?:\s*(?:[-:(]|$))/i.test(heading);
+  const referenceLooksFormula = Boolean(reference && /(?:Damage|Healing|Heal|Shield|Burn|Attack)/i.test(reference.label || reference.trueDesc));
+  if (!parts.level && !parts.base && !explicitBasis && (!formulaHeading && !referenceLooksFormula || modifierHeading)) return null;
+  const exceptionalRatio = /(?:Max\.?\s*HP|Missing\s*HP|Damage\s+Dealt|DoT\s+damage|Attack\s+of\s+(?:the\s+)?Target|stored\s+Atk)/i.test(`${ratio.before} ${ratio.after}`);
+  const expressionReference = !parts.level && !parts.base && exceptionalRatio && reference
+    ? { ...reference, exception: "True" }
+    : reference;
+
+  return {
+    consumed,
+    row: {
+      text: `計算式: ${patchFormulaExpression("before", parts, context, expressionReference, heading)} → ${patchFormulaExpression("after", parts, context, expressionReference, heading)}`,
+      source: consumedLines.join(" ")
+    }
+  };
+}
+
+function patchStandaloneFormula(value, heading, context = {}) {
+  const ratio = splitPatchTransition(value);
+  if (!ratio || cleanedPatchFormulaSide(ratio.before).toLowerCase() === cleanedPatchFormulaSide(ratio.after).toLowerCase()) return "";
+  const explicitBasis = /(?:\bAtk\b|\bAttack\b|\bSp\.?\s*Atk\b|\bSpAtk\b|\bSAtk\b|\bSpA\b|Max\.?\s*HP|Missing\s*HP|Damage\s+Dealt|DoT\s+damage)/i.test(`${ratio.before} ${ratio.after}`);
+  const formulaHeading = /^(?:Damage|Healing|Heal|Shield|Burn|Explosion|Outer Ring|First Hit|Second Hit|Third Hit|Final Hit|Stream|Mark Proc)(?:\s*(?:[-:(]|$))/i.test(heading);
+  const modifierHeading = /(?:Resistance|Reduction|Increase|Decrease|Penalty|Multiplier|Trigger|and Duration)/i.test(heading);
+  if (!explicitBasis || !formulaHeading || modifierHeading) return "";
+  const reference = patchFormulaReference(context, heading);
+  const expressionReference = reference ? { ...reference, exception: "True" } : { exception: "True" };
+  const parts = { ratio };
+  return `計算式: ${patchFormulaExpression("before", parts, context, expressionReference, heading)} → ${patchFormulaExpression("after", parts, context, expressionReference, heading)}`;
+}
+
 function jpPatchDetail(line, status) {
   const raw = cleanPatchMarkdown(line);
   if (!raw) return "";
   if (PATCH_DETAIL_OVERRIDES_JA[raw]) return PATCH_DETAIL_OVERRIDES_JA[raw];
   const colonIndex = raw.indexOf(":");
-  const transitionIndex = raw.search(/(?:->|→)/);
+  const transitionIndex = raw.search(/(?:-\s*>|→)/);
   const hasField = colonIndex >= 0
     && colonIndex <= 120
     && (transitionIndex < 0 || colonIndex < transitionIndex)
@@ -523,8 +816,8 @@ function jpPatchDetail(line, status) {
   if (fieldJa && !value) return fieldJa;
   if (!hasUntranslatedPatchText(translated)) return translated;
 
-  if (/(?:->|→)/.test(raw)) {
-    const sides = raw.split(/\s*(?:->|→)\s*/).map((side) => translatePatchTokens(side));
+  if (/(?:-\s*>|→)/.test(raw)) {
+    const sides = raw.split(/\s*(?:-\s*>|→)\s*/).map((side) => translatePatchTokens(side));
     let allSidesHaveValues = true;
     const numericSides = sides.map((side) => {
       if (!hasUntranslatedPatchText(side)) return side;
@@ -548,7 +841,7 @@ function jpPatchDetail(line, status) {
 
 function isPatchFieldHeading(line) {
   const raw = cleanPatchMarkdown(line);
-  if (!raw || /(?:->|→)/.test(raw)) return false;
+  if (!raw || /(?:-\s*>|→)/.test(raw)) return false;
   if (/:$/.test(raw)) return !/^https?/i.test(raw) && raw.length <= 140;
   if (/[.!?]$/.test(raw) || raw.length > 100) return false;
   return /^(?:\(?(?:NEW|ADDED)\)?\s+)?(?:Damage|Healing|Heal|Shield|Cooldown|CDR|HP|Health|Attack|Defense|Special|Sp\.?\s*(?:Atk|Def)|Movement|Slow|Stun|Fear|Range|Duration|Energy|Unite|Critical|Crit|Life ?Steal|Effect|Mechanic|Burn|Explosion|Outer Ring|First Hit|Second Hit|Third Hit|Last Hit|Stream|Mark Proc|Return Damage|Base Damage|Stage \d+)/i.test(raw);
@@ -556,18 +849,31 @@ function isPatchFieldHeading(line) {
 
 function isStandalonePatchValue(line) {
   const raw = cleanPatchMarkdown(line);
-  return /(?:->|→)/.test(raw) && !raw.includes(":");
+  return /(?:-\s*>|→)/.test(raw) && !raw.includes(":") && !/^Ratio\s+/i.test(raw);
 }
 
-function jpPatchDetails(lines, status) {
+function jpPatchDetails(lines, status, context = {}) {
   const rows = [];
   const sourceLines = Array.isArray(lines) ? lines : [];
   for (let index = 0; index < sourceLines.length; index += 1) {
     const raw = cleanPatchMarkdown(sourceLines[index]);
     if (!raw) continue;
+    const formula = patchFormulaRow(sourceLines, index, context);
+    if (formula) {
+      rows.push(formula.row);
+      index += formula.consumed - 1;
+      continue;
+    }
     if (isPatchFieldHeading(raw) && isStandalonePatchValue(sourceLines[index + 1])) {
       const nextRaw = cleanPatchMarkdown(sourceLines[index + 1]);
       const field = raw.replace(/[:：\s]+$/g, "");
+      const standaloneFormula = patchStandaloneFormula(nextRaw, field, context);
+      if (standaloneFormula) {
+        rows.push({ text: jpPatchField(field), source: raw });
+        rows.push({ text: standaloneFormula, source: nextRaw });
+        index += 1;
+        continue;
+      }
       if (normalizedPatchField(field) === "shieldandduration" && isStandalonePatchValue(sourceLines[index + 2])) {
         const durationRaw = cleanPatchMarkdown(sourceLines[index + 2]);
         const shieldValue = jpPatchDetail(nextRaw, status);

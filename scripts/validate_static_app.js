@@ -89,7 +89,8 @@ function validatePatchNoteTranslations() {
 
   const context = vm.createContext({
     state: {
-      moveNamesJa: JSON.parse(fs.readFileSync(path.join(ROOT, "data", "move_names_ja.json"), "utf8"))
+      moveNamesJa: JSON.parse(fs.readFileSync(path.join(ROOT, "data", "move_names_ja.json"), "utf8")),
+      pokemon: JSON.parse(fs.readFileSync(path.join(ROOT, "data", "pokemon.json"), "utf8"))
     }
   });
   vm.runInContext(`${uiSource.slice(start, end)}\n;globalThis.patchTranslationTestApi = { cleanPatchMarkdown, jpPatchDetail, jpPatchDetails };`, context);
@@ -104,11 +105,31 @@ function validatePatchNoteTranslations() {
     fail(`Conditional damage reduction translation is incorrect: ${frontalReduction}`);
   }
 
+  const foulPlayDetails = api.jpPatchDetails([
+    "Damage:",
+    "Ratio: 64% Atk -> 58% Atk",
+    "Slider: 7 -> 6",
+    "Base: 160 -> 145",
+    "Damage (Second Hit):",
+    "Ratio: 264% Atk or stored Atk -> 237.6% Atk or stored Atk",
+    "Slider: 0 -> 0",
+    "Base: 0 -> 0"
+  ], "nerf", { pokemonName: "Umbreon", moveName: "Foul Play" });
+  const foulPlayFormula = foulPlayDetails.find((detail) => detail.text.includes("264%"));
+  const expectedFoulPlayFormula = "計算式: 自分と1段目で記録した相手のうち高い方の攻撃 × 264% + 0 × (Lv - 1) + 0 → 自分と1段目で記録した相手のうち高い方の攻撃 × 237.6% + 0 × (Lv - 1) + 0";
+  if (!foulPlayFormula || foulPlayFormula.text !== expectedFoulPlayFormula) {
+    fail(`Foul Play formula translation is incorrect: ${JSON.stringify(foulPlayDetails)}`);
+  }
+
   const patchNotes = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "patch_notes.json"), "utf8"));
+  let formulaCount = 0;
   for (const patch of patchNotes.patches || []) {
     for (const pokemon of patch.pokemon || []) {
       for (const change of pokemon.changes || []) {
-        const details = api.jpPatchDetails(change.details || [], change.status);
+        const details = api.jpPatchDetails(change.details || [], change.status, {
+          pokemonName: pokemon.name,
+          moveName: change.move
+        });
         if (!details.length && (change.details || []).some((line) => api.cleanPatchMarkdown(line))) {
           fail(`Patch ${patch.version} ${pokemon.name} ${change.move} lost all detail text`);
         }
@@ -125,10 +146,23 @@ function validatePatchNoteTranslations() {
           if (/^(?:効果を強化|効果を弱体化|不具合を修正|効果・挙動の仕様を変更|新しい効果を追加|効果・挙動を調整)$/.test(detail.text)) {
             fail(`Patch ${patch.version} ${pokemon.name} ${change.move} hides its source behind a generic description`);
           }
+          if (detail.text.startsWith("計算式:")) {
+            formulaCount += 1;
+            if (!detail.text.includes(" → ")) {
+              fail(`Patch ${patch.version} ${pokemon.name} ${change.move} formula has no before/after transition: ${detail.text}`);
+            }
+            if (/攻撃\s+攻撃|特攻\s+特攻/.test(detail.text)) {
+              fail(`Patch ${patch.version} ${pokemon.name} ${change.move} formula repeats a stat label: ${detail.text}`);
+            }
+            if (/[A-Za-z]/.test(detail.text.replace(/\b(?:Lv|HP|KO|FPS)\b/g, ""))) {
+              fail(`Patch ${patch.version} ${pokemon.name} ${change.move} formula contains untranslated text: ${detail.text}`);
+            }
+          }
         }
       }
     }
   }
+  if (formulaCount < 1200) fail(`Too few ratio changes were rendered as formulas: ${formulaCount}`);
 }
 
 function main() {
