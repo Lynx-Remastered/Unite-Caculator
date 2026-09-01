@@ -1188,10 +1188,11 @@ function updateBalanceTimeline() {
 
       const detailList = document.createElement("ul");
       detailList.className = "balance-detail-list";
-      const details = [...new Set((change.details || []).map((line) => jpPatchDetail(line, status)).filter(Boolean))];
-      (details.length ? details : [patchStatusFallback(status)]).forEach((detail) => {
+      const details = jpPatchDetails(change.details || [], status);
+      (details.length ? details : [{ text: patchStatusFallback(status), source: "" }]).forEach((detail) => {
         const item = document.createElement("li");
-        item.textContent = detail;
+        item.textContent = detail.text;
+        if (detail.source) item.title = `UniteDB原文: ${detail.source}`;
         detailList.appendChild(item);
       });
       changeBlock.append(changeHead, detailList);

@@ -81,6 +81,56 @@ function validateJsonData() {
   return files.length;
 }
 
+function validatePatchNoteTranslations() {
+  const uiSource = fs.readFileSync(path.join(ROOT, "assets", "js", "ui.js"), "utf8");
+  const start = uiSource.indexOf("const PATCH_STATUS_JA");
+  const end = uiSource.indexOf("function pokemonThumbUrl");
+  if (start < 0 || end <= start) fail("Patch-note translation functions were not found in assets/js/ui.js");
+
+  const context = vm.createContext({
+    state: {
+      moveNamesJa: JSON.parse(fs.readFileSync(path.join(ROOT, "data", "move_names_ja.json"), "utf8"))
+    }
+  });
+  vm.runInContext(`${uiSource.slice(start, end)}\n;globalThis.patchTranslationTestApi = { cleanPatchMarkdown, jpPatchDetail, jpPatchDetails };`, context);
+  const api = context.patchTranslationTestApi;
+
+  const wishDetails = api.jpPatchDetails(["Damage Resistance:", "15% -> 20%"], "buff");
+  if (wishDetails.length !== 1 || wishDetails[0].text !== "ダメージ軽減率: 15% → 20%") {
+    fail(`Damage Resistance translation is incorrect: ${JSON.stringify(wishDetails)}`);
+  }
+  const frontalReduction = api.jpPatchDetail("Damage Reduction from the front:", "buff");
+  if (frontalReduction !== "正面から受けるダメージの軽減率") {
+    fail(`Conditional damage reduction translation is incorrect: ${frontalReduction}`);
+  }
+
+  const patchNotes = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "patch_notes.json"), "utf8"));
+  for (const patch of patchNotes.patches || []) {
+    for (const pokemon of patch.pokemon || []) {
+      for (const change of pokemon.changes || []) {
+        const details = api.jpPatchDetails(change.details || [], change.status);
+        if (!details.length && (change.details || []).some((line) => api.cleanPatchMarkdown(line))) {
+          fail(`Patch ${patch.version} ${pokemon.name} ${change.move} lost all detail text`);
+        }
+        for (const line of change.details || []) {
+          const cleaned = api.cleanPatchMarkdown(line);
+          if (cleaned && !details.some((detail) => detail.source.includes(cleaned))) {
+            fail(`Patch ${patch.version} ${pokemon.name} ${change.move} lost source detail: ${cleaned}`);
+          }
+        }
+        for (const detail of details) {
+          if (!detail.text || !detail.source) {
+            fail(`Patch ${patch.version} ${pokemon.name} ${change.move} contains an empty translated detail`);
+          }
+          if (/^(?:効果を強化|効果を弱体化|不具合を修正|効果・挙動の仕様を変更|新しい効果を追加|効果・挙動を調整)$/.test(detail.text)) {
+            fail(`Patch ${patch.version} ${pokemon.name} ${change.move} hides its source behind a generic description`);
+          }
+        }
+      }
+    }
+  }
+}
+
 function main() {
   const html = fs.readFileSync(INDEX_PATH, "utf8");
   const stylesheetPaths = localAssetPaths(
@@ -104,8 +154,9 @@ function main() {
   }
   validateJavaScript(html, scriptPaths);
   const jsonCount = validateJsonData();
+  validatePatchNoteTranslations();
 
-  console.log(`Validated ${stylesheetPaths.length} stylesheets, ${scriptPaths.length} scripts, and ${jsonCount} JSON files.`);
+  console.log(`Validated ${stylesheetPaths.length} stylesheets, ${scriptPaths.length} scripts, ${jsonCount} JSON files, and patch-note translations.`);
 }
 
 main();

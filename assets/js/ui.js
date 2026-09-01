@@ -115,7 +115,18 @@ const PATCH_FIELD_JA = {
   movementspeed: "移動速度",
   movementspeedincrease: "移動速度上昇",
   movementspeedreduction: "移動速度低下",
-  damagereduction: "ダメージ軽減",
+  movementspeedboost: "移動速度上昇率",
+  movementspeedbuff: "移動速度上昇率",
+  attackspeedboost: "攻撃速度上昇率",
+  damageresistance: "ダメージ軽減率",
+  damageresistancebuff: "ダメージ軽減効果",
+  damagereduction: "ダメージ軽減率",
+  damagereductionfromthefront: "正面から受けるダメージの軽減率",
+  damageoutputdebuff: "与ダメージ低下率",
+  damageincreasedebuff: "被ダメージ増加率",
+  missingdamage: "減少HP割合ダメージ",
+  shieldandduration: "シールド量・持続時間",
+  additionaldamagenoretreatformation: "はいすいのじん中の追加ダメージ",
   additionaldamage: "追加ダメージ",
   duration: "持続時間",
   range: "範囲",
@@ -124,6 +135,8 @@ const PATCH_FIELD_JA = {
   hitboxsize: "命中判定距離",
   casttimefirstcast: "1段目の硬直時間",
   casttimesecondcast: "2段目の硬直時間",
+  casttimeandrecoverytime: "発動・終了時の硬直時間",
+  recoverytime: "終了時の硬直時間",
   throwduration: "ふきとばし時間",
   megaevolutionduration: "メガシンカ継続時間",
   spdefreduction: "特防低下量",
@@ -140,37 +153,132 @@ const PATCH_FIELD_JA = {
   lifesteal: "HP吸収",
   notes: "内容",
   note: "内容",
+  extra: "追加分",
+  maxstacks: "最大段階数",
+  unitechargegainedpersecond: "ユナイト技ゲージの時間経過による獲得量",
+  unitechargegainedfrommovehits: "ユナイト技ゲージの技命中による獲得量",
+  unitebuffs5s: "ユナイト技使用後の効果（5秒間）",
+  clonesearchrange: "分身の索敵距離",
+  clonesearchradius: "分身の索敵半径",
+  clonetraveldistance: "分身の移動距離",
+  stackingslow: "重複する移動速度低下率",
+  critrateboost: "急所率上昇量",
+  uniteautoattacklifesteal: "ユナイト技中の通常攻撃によるHP吸収率",
+  subsequenthitdamagepenalty: "2撃目以降のダメージ減衰率",
+  subsequenthealingpenalty: "2回目以降の回復量減衰率",
   bugfix: "不具合修正",
   effectadded: "追加効果",
-  mechanichange: "仕様変更",
+  mechanicchange: "仕様変更",
   moveslearnedlevels: "技の習得レベル"
 };
+
+const PATCH_ACTION_JA = {
+  increased: "を増加",
+  boosted: "を増加",
+  decreased: "を減少",
+  reduced: "を減少",
+  lowered: "を低下",
+  raised: "を増加",
+  added: "を追加",
+  introduced: "を追加",
+  removed: "を削除",
+  changed: "を変更",
+  adjusted: "を調整",
+  normalized: "を統一",
+  extended: "を延長",
+  shortened: "を短縮"
+};
+
+const PATCH_DETAIL_OVERRIDES_JA = {
+  "Increasing the hitbox size without increasing the initiating range makes it a lot less likely for Palkia to miss auto attacks now.": "攻撃開始時の射程は変わらないが、命中判定の拡大によって通常攻撃が外れにくくなった。",
+  "(Previously undocumented): If detect was used without blocking any damage, the dash distance was longer. This is no longer the case.": "（以前は未記載）ダメージを防がずに「みきり」を使った場合だけダッシュ距離が伸びる効果を削除。",
+  "Mechanic Change: Fear in the direction Skeledirge was aiming -> Fear away from Skeledirge's position.": "仕様変更: 恐怖状態で移動する方向を、ラウドボーンが狙った方向から、ラウドボーンから離れる方向へ変更。",
+  "Fear in the direction Skeledirge was aiming -> Fear away from Skeledirge's position.": "恐怖状態で移動する方向を、ラウドボーンが狙った方向から、ラウドボーンから離れる方向へ変更。",
+  "The healing from the second circle overlapping is now half of the value instead of the full value": "2つ目の円が重なったときの回復量を、通常時と同量から半分に減少。",
+  "Fixed a bug where landing Pay Day from a certain distance would not increase the coin mark.": "「ネコにこばん」を特定の距離から命中させると、コインマークが増えない不具合を修正。",
+  "60 -> 100 (Move size is not affected beyond 60 stacks)": "60 → 100（技の大きさは60段階を超えても変化しない）",
+  "Tldr; these changes nerf the relative % gain from scoring, wild KO's or being KO'd yourself, while keeping the overall fast pace of the unite charge (34s) and the amount gained from hitting with moves.": "ゴール、野生ポケモンのKO、自身のKOによるユナイト技ゲージ獲得割合を低下。技命中時の獲得量と、最短34秒の回転率は維持。",
+  "10m -> 5m (note: the search radius may actually be smaller than 5m)": "10m → 5m（実際の索敵半径は5m未満の可能性あり）",
+  "Reverted back to 4 rotating hitboxes.": "回転する4つの命中判定へ戻した。"
+};
+
+const PATCH_MOVE_NAME_JA = {
+  "Spinning Edge": "スピニングエッジ",
+  "Shell Armor": "シェルアーマー",
+  "Flame Body": "ほのおのからだ",
+  "Pixilate": "フェアリースキン",
+  "Mold Breaker": "かたやぶり",
+  "Solar Power": "サンパワー",
+  "Tough Claws": "かたいツメ",
+  "Infiltrator": "すりぬけ",
+  "Mega Close Combat": "メガインファイト",
+  "Mega Flamethrower": "メガかえんほうしゃ",
+  "Rough Skin": "さめはだ",
+  "Mega Dragon Breath": "メガりゅうのいぶき"
+};
+
+function cleanPatchMarkdown(value) {
+  return String(value || "")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/~~|[*_`]/g, "")
+    .replace(/\\([\[\]])/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function normalizedPatchField(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 function jpPatchField(value) {
-  const raw = String(value || "").trim();
+  const raw = cleanPatchMarkdown(value).replace(/[:：\s]+$/g, "").trim();
   const normalized = normalizedPatchField(raw);
   if (PATCH_FIELD_JA[normalized]) return PATCH_FIELD_JA[normalized];
   const levelMatch = raw.match(/^(?:Level|Lvl|Lv)\s*(\d+)$/i);
   if (levelMatch) return `Lv${levelMatch[1]}`;
-  if (/^Damage\b/i.test(raw)) return `ダメージ${/First/i.test(raw) ? "・初撃" : /Second/i.test(raw) ? "・2撃目" : /Third/i.test(raw) ? "・3撃目" : /Boosted/i.test(raw) ? "・強化攻撃" : /Additional/i.test(raw) ? "・追加" : ""}`;
-  if (/^Healing\b/i.test(raw)) return "回復量";
-  if (/^Shield\b/i.test(raw)) return "シールド量";
-  if (/Cooldown/i.test(raw)) return /increase/i.test(raw) ? "待ち時間を延長" : /decrease|reduce/i.test(raw) ? "待ち時間を短縮" : "待ち時間";
-  if (/Movement Speed/i.test(raw)) return "移動速度";
-  if (/Attack Speed/i.test(raw)) return "攻撃速度";
-  if (/Damage Reduction/i.test(raw)) return "ダメージ軽減";
-  if (/Energy|Charge/i.test(raw)) return "必要量";
-  return "調整値";
+
+  const actionMatch = raw.match(/^(.*?)\s+(increased|boosted|decreased|reduced|lowered|raised|added|introduced|removed|changed|adjusted|normalized|extended|shortened)\.?$/i);
+  if (actionMatch) {
+    const subject = jpPatchField(actionMatch[1]);
+    const action = PATCH_ACTION_JA[actionMatch[2].toLowerCase()];
+    if (!/^調整項目/.test(subject)) return `${subject}${action}`;
+  }
+
+  if (/^Damage (?:Resistance|Reduction)\b/i.test(raw)) {
+    const condition = raw.replace(/^Damage (?:Resistance|Reduction)(?: Buff)?\s*/i, "").trim();
+    return condition ? `ダメージ軽減率（${translatePatchQualifier(condition)}）` : "ダメージ軽減率";
+  }
+  const damageMatch = raw.match(/^(?:\(?(?:NEW|ADDED)\)?\s+)?Damage(?:\s*[-:]\s*|\s*\((.+)\)\s*|\s+)(.*)?$/i);
+  if (damageMatch) {
+    const qualifier = (damageMatch[1] || damageMatch[2] || "").replace(/^[-\s]+/, "").trim();
+    return qualifier ? `ダメージ（${translatePatchQualifier(qualifier)}）` : "ダメージ";
+  }
+  const healingMatch = raw.match(/^(?:\(?(?:NEW|ADDED)\)?\s+)?(?:Healing|Heal)(?:\s*[-:]\s*|\s*\((.+)\)\s*|\s+)(.*)?$/i);
+  if (healingMatch) {
+    const qualifier = (healingMatch[1] || healingMatch[2] || "").replace(/^[-\s]+/, "").trim();
+    return qualifier ? `回復量（${translatePatchQualifier(qualifier)}）` : "回復量";
+  }
+  const shieldMatch = raw.match(/^(?:\(?(?:NEW|ADDED)\)?\s+)?(?:Overheal )?Shield(?:ing)?(?:\s*[-:]\s*|\s*\((.+)\)\s*|\s+)(.*)?$/i);
+  if (shieldMatch) {
+    const qualifier = (shieldMatch[1] || shieldMatch[2] || "").replace(/^[-\s]+/, "").trim();
+    return qualifier ? `シールド量（${translatePatchQualifier(qualifier)}）` : "シールド量";
+  }
+
+  const translated = translatePatchTokens(raw);
+  return hasUntranslatedPatchText(translated) ? `調整項目（${raw}）` : translated;
 }
 
 function jpPatchMoveName(value) {
-  const raw = String(value || "").replace(/\\?\[[^\]]+\]/g, "").replace(/[:：\s]+$/g, "").trim();
+  const raw = cleanPatchMarkdown(value).replace(/\[[^\]]+\]/g, "").replace(/[:：\s]+$/g, "").trim();
   const plus = /\+$/.test(raw) ? "+" : "";
-  const cleaned = raw.replace(/^Unite Move:\s*/i, "").replace(/\+$/, "").trim();
+  const hasUnitePrefix = /^Unite(?: Move)?(?::|$)/i.test(raw);
+  const cleaned = raw
+    .replace(/^(?:Ability|Passive):\s*/i, "")
+    .replace(/^Unite Move:\s*/i, "")
+    .replace(/\s+\((?:Scyther|Scizor)\)$/i, "")
+    .replace(/\+$/, "")
+    .trim();
   const generic = {
     "General Adjustments": "全般",
     "Natural Stats": "能力値",
@@ -179,49 +287,212 @@ function jpPatchMoveName(value) {
     "Progression": "成長・習得レベル",
     "Auto Attack": "通常攻撃",
     "Auto Attacks": "通常攻撃",
+    "Basic Attack": "通常攻撃",
+    "Basic Attacks": "通常攻撃",
+    "Attack": "通常攻撃",
+    "Attack & Boosted Attack": "通常攻撃・強化攻撃",
+    "Basic & Boosted Attack": "通常攻撃・強化攻撃",
     "Boosted Attack": "強化攻撃",
     "Boosted Attacks": "強化攻撃",
+    "Held Item Adjustment": "もちもの",
+    "Evolution Level": "進化レベル",
+    "Evolution Levels": "進化レベル",
+    "Added to the game": "新規追加",
+    "Has Been Added To The Game": "新規追加",
     "BUGFIXES": "不具合修正"
   };
   if (generic[cleaned]) return `${generic[cleaned]}${plus}`;
-  const translated = state.moveNamesJa[cleaned] || state.moveNamesJa[raw];
-  return translated && !hasUntranslatedPatchText(translated) ? `${translated.replace(/\+$/, "")}${plus}` : plus ? `技・特性${plus}` : "技・特性";
+  if (hasUnitePrefix && !cleaned) return "ユナイト技";
+  const normalized = normalizedPatchField(cleaned);
+  const translatedEntry = Object.entries(state.moveNamesJa || {}).find(([name]) => normalizedPatchField(name) === normalized);
+  const translated = PATCH_MOVE_NAME_JA[cleaned] || state.moveNamesJa[cleaned] || state.moveNamesJa[raw] || (translatedEntry && translatedEntry[1]);
+  if (translated && !hasUntranslatedPatchText(translated)) return `${translated.replace(/\+$/, "")}${plus}`;
+  return `${hasUnitePrefix ? "ユナイト技" : "技・特性"}（${cleaned || raw}）${plus}`;
 }
 
 function hasUntranslatedPatchText(value) {
   return /[A-Za-z]/.test(String(value || "")
-    .replace(/\b(?:HP|FPS)\b/gi, "")
+    .replace(/\b(?:HP|FPS|KO)\b/gi, "")
     .replace(/\bLv(?=\d)/gi, "")
     .replace(/\b\d+(?:\.\d+)?m\b/gi, ""));
 }
 
+let patchMoveTranslationSource = null;
+let patchMoveTranslationEntries = [];
+
+function currentPatchMoveTranslationEntries() {
+  if (patchMoveTranslationSource !== state.moveNamesJa) {
+    patchMoveTranslationSource = state.moveNamesJa;
+    patchMoveTranslationEntries = Object.entries(state.moveNamesJa || {})
+      .sort(([left], [right]) => right.length - left.length);
+  }
+  return patchMoveTranslationEntries;
+}
+
 function translatePatchTokens(value) {
-  return String(value || "")
+  let text = cleanPatchMarkdown(value)
+    .replace(/[’]/g, "'");
+
+  currentPatchMoveTranslationEntries().forEach(([name, translated]) => {
+    if (name.length < 4 || !text.toLowerCase().includes(name.toLowerCase())) return;
+    text = text.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), translated);
+  });
+
+  return text
     .replace(/->|→/g, " → ")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?user(?:'s)?\s+Max HP/gi, "自分の最大HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Max HP/gi, "相手の最大HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Missing HP/gi, "相手の減少HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:user(?:'s)?\s+)?Missing HP/gi, "自分の減少HPの$1%")
     .replace(/Target Missing HP/gi, "相手の減少HP")
     .replace(/Target Max HP/gi, "相手の最大HP")
+    .replace(/(?:Opponent|Enemy)(?:'s)? Missing HP/gi, "相手の減少HP")
+    .replace(/(?:Opponent|Enemy)(?:'s)? Max HP/gi, "相手の最大HP")
+    .replace(/User(?:'s)? Missing HP/gi, "自分の減少HP")
+    .replace(/User(?:'s)? Max HP/gi, "自分の最大HP")
+    .replace(/Remaining HP/gi, "残りHP")
+    .replace(/Current HP/gi, "現在HP")
     .replace(/Max HP/gi, "最大HP")
+    .replace(/Damage (?:Resistance|Reduction)/gi, "ダメージ軽減率")
+    .replace(/Damage Output/gi, "与ダメージ")
     .replace(/Damage Dealt/gi, "与えたダメージ")
+    .replace(/Damage Received/gi, "受けたダメージ")
     .replace(/Wild Pok[eé]mon/gi, "野生ポケモン")
+    .replace(/Opposing Pok[eé]mon/gi, "相手チームのポケモン")
+    .replace(/Allied Pok[eé]mon/gi, "味方のポケモン")
+    .replace(/Pok[eé]mon/gi, "ポケモン")
     .replace(/Sp\.\s*Atk|SpAtk|SAtk|SpA\b/gi, "特攻")
     .replace(/Sp\.\s*Def|SpDef|SpD\b/gi, "特防")
+    .replace(/Special Attack/gi, "特攻")
+    .replace(/Special Defense/gi, "特防")
+    .replace(/Attack Speed/gi, "攻撃速度")
+    .replace(/Movement Speed/gi, "移動速度")
+    .replace(/Cooldown Reduction|\bCDR\b/gi, "待ち時間短縮率")
+    .replace(/Cooldown/gi, "待ち時間")
+    .replace(/Life ?Steal/gi, "HP吸収")
+    .replace(/Critical(?: Hit)? Chance|Crit(?:ical)? Rate|Crit Chance/gi, "急所率")
+    .replace(/Critical Hit Damage/gi, "急所ダメージ")
+    .replace(/Defense Penetration|Defense Pierce|Defense Pen/gi, "防御貫通")
+    .replace(/Defense Reduction|Defense Debuff/gi, "防御低下")
     .replace(/\bAtk\b/gi, "攻撃")
     .replace(/\bDef\b/gi, "防御")
+    .replace(/\bAoE\b/gi, "範囲")
+    .replace(/\bDoT\b/gi, "継続ダメージ")
+    .replace(/\bHoT\b/gi, "継続回復")
+    .replace(/\bRSB(?:s)?\b/gi, "計算式")
+    .replace(/\bICD\b/gi, "内部待ち時間")
     .replace(/\b(?:Level|Lvl|Lv)\s*(\d+)/gi, "Lv$1")
     .replace(/\bper second\b/gi, "1秒ごと")
     .replace(/\bper hit\b/gi, "1ヒットごと")
     .replace(/\bper tick\b/gi, "1回ごと")
     .replace(/\bper stack\b/gi, "1段階ごと")
-    .replace(/\bmax\b/gi, "最大")
+    .replace(/\bper (?:Mark|Counter)\b/gi, "1マークごと")
+    .replace(/\bper (?:Projectile|Bullet|Blade|Leaf|Shuriken|Punch|Coin|Comet)\b/gi, "1発ごと")
+    .replace(/\bup to\s*(\d+)x\b/gi, "最大$1回")
+    .replace(/\bx(\d+)\s*(?:hits?|ticks?)\b/gi, "$1回")
+    .replace(/\b(\d+)\s*(?:hits?|ticks?)\b/gi, "$1回")
+    .replace(/\b(\d+)\s*(?:stacks?)\b/gi, "$1段階")
+    .replace(/\b(\d+)\s*(?:marks?|counters?)\b/gi, "$1マーク")
+    .replace(/\b(\d+)\s*(?:charges?)\b/gi, "$1チャージ")
+    .replace(/\bfor\s+(\d+(?:\.\d+)?)s\b/gi, "$1秒間")
+    .replace(/\bagainst wilds?\b/gi, "野生ポケモンに対して")
+    .replace(/\bboth values are half\b/gi, "両方の値が半分")
+    .replace(/\bFirst Hit\b/gi, "初撃")
+    .replace(/\bSecond Hit\b/gi, "2撃目")
+    .replace(/\bThird Hit\b/gi, "3撃目")
+    .replace(/\bFinal Hit\b/gi, "最終撃")
+    .replace(/\bSubsequent Hits?\b/gi, "2撃目以降")
+    .replace(/\bBoosted Attack\b/gi, "強化攻撃")
+    .replace(/\bBasic Attack\b|\bAuto Attack\b/gi, "通常攻撃")
     .replace(/\bAdditional\b/gi, "追加")
+    .replace(/\bInitial\b/gi, "初撃")
+    .replace(/\bFinal\b/gi, "最終")
+    .replace(/\bExplosion\b/gi, "爆発")
+    .replace(/\bProjectile\b/gi, "弾")
+    .replace(/\bClose(?:st)?(?: Range)?\b/gi, "近距離")
+    .replace(/\bMid(?:dle)?(?: Range)?\b/gi, "中距離")
+    .replace(/\bFar(?:thest)?(?: Range)?\b|\bMax Range\b/gi, "遠距離")
+    .replace(/\bLow Charge\b|\bMin Charge\b/gi, "低チャージ")
+    .replace(/\bMid Charge\b/gi, "中チャージ")
+    .replace(/\bMax Charge\b|\bFull Charge\b/gi, "最大チャージ")
+    .replace(/\bNo Charge\b|\bUncharged\b/gi, "チャージなし")
+    .replace(/\bFull Gauge\b/gi, "ゲージ最大")
+    .replace(/\bFighter Mode\b/gi, "ファイターモード")
+    .replace(/\bCharged\b/gi, "チャージ時")
+    .replace(/\bDestructive Fang\b/gi, "破壊のキバ")
+    .replace(/\b(\d+) Fangs?\b/gi, "$1本のキバ")
+    .replace(/\bSword Stance\b/gi, "ブレードフォルム")
+    .replace(/\bShield Stance\b/gi, "シールドフォルム")
+    .replace(/\bQueenly Majesty (?:buff|Buff)\b/gi, "じょおうのいげん発動中")
+    .replace(/\bTorrent\b/gi, "げきりゅう発動中")
+    .replace(/\bLight Screen Boost\b/gi, "ひかりのかべ強化中")
+    .replace(/\bNew\b/gi, "新規")
+    .replace(/\band\b/gi, "・")
+    .replace(/\bmax\b/gi, "最大")
     .replace(/\bdamage\b/gi, "ダメージ")
+    .replace(/\bhealing\b|\bheal\b/gi, "回復量")
+    .replace(/\bshield\b/gi, "シールド")
+    .replace(/\bduration\b/gi, "持続時間")
+    .replace(/\brange\b/gi, "範囲")
+    .replace(/\bslow\b/gi, "移動速度低下")
+    .replace(/\bstun\b/gi, "行動不能")
+    .replace(/\bfear\b/gi, "恐怖")
+    .replace(/\bburn\b/gi, "やけど")
+    .replace(/\battack\b/gi, "攻撃")
+    .replace(/\bdefense\b/gi, "防御")
     .replace(/Frames from (?:cast|first hit) until movement/gi, "フレーム")
     .replace(/Frames until movement/gi, "フレーム")
     .replace(/\bFaster\b/gi, "短縮")
     .replace(/\bunchanged\b/gi, "変更なし")
     .replace(/(\d+(?:\.\d+)?)s\b/gi, "$1秒")
+    .replace(/\s*\(\s*/g, "（")
+    .replace(/\s*\)\s*/g, "）")
+    .replace(/\s*\|\s*/g, "・")
+    .replace(/\s*\/\s*/g, "／")
+    .replace(/\s*→\s*/g, " → ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function translatePatchQualifier(value) {
+  const translated = translatePatchTokens(value)
+    .replace(/\bFirst or Second Mark\b/gi, "1～2個目のマーク")
+    .replace(/\bThird Mark\b/gi, "3個目のマーク")
+    .replace(/\bper\b/gi, "1回ごと")
+    .replace(/\bHit\b/gi, "命中")
+    .replace(/\bHits\b/gi, "命中")
+    .replace(/\bTick\b/gi, "継続1回")
+    .replace(/\bTicks\b/gi, "継続")
+    .replace(/\bBasic\b/gi, "通常")
+    .replace(/\bBoosted\b/gi, "強化")
+    .replace(/\bExecute\b/gi, "とどめ")
+    .replace(/\bArea(?: of Effect)?\b/gi, "範囲")
+    .replace(/\bOuter Ring\b/gi, "外周")
+    .replace(/\bInner Ring\b/gi, "内周")
+    .replace(/\bDash\b/gi, "突進")
+    .replace(/\bReturn\b/gi, "復路")
+    .replace(/\bBackstab\b/gi, "背後命中")
+    .replace(/\bRupture\b/gi, "破裂")
+    .replace(/\bJab\b/gi, "突き")
+    .replace(/\bThrow\b/gi, "投げ")
+    .replace(/\bFreezing\b/gi, "凍結")
+    .replace(/\bCollision\b/gi, "衝突")
+    .replace(/\bDraw\b/gi, "構え")
+    .replace(/\bFlurry\b/gi, "連撃")
+    .replace(/\bSlash\b/gi, "斬撃")
+    .replace(/\bSlam\b/gi, "叩きつけ")
+    .replace(/\bShockwave\b/gi, "衝撃波")
+    .replace(/\bBeam\b/gi, "ビーム")
+    .replace(/\bOrb\b/gi, "弾")
+    .replace(/\bCircle\b/gi, "円形範囲")
+    .replace(/\bMark\b/gi, "マーク")
+    .replace(/\bProc\b/gi, "発動")
+    .replace(/\bBase\b/gi, "基本")
+    .replace(/\bRegular\b/gi, "通常")
+    .replace(/\bEmpowered\b|\bEnhanced\b/gi, "強化時")
+    .replace(/\s+/g, " ")
+    .trim();
+  return translated || "詳細";
 }
 
 function patchStatusFallback(status) {
@@ -234,30 +505,96 @@ function patchStatusFallback(status) {
 }
 
 function jpPatchDetail(line, status) {
-  const raw = String(line || "").trim();
+  const raw = cleanPatchMarkdown(line);
   if (!raw) return "";
-  if (/fixed (?:a |an )?bug|bug ?fix/i.test(raw)) return "不具合を修正";
+  if (PATCH_DETAIL_OVERRIDES_JA[raw]) return PATCH_DETAIL_OVERRIDES_JA[raw];
   const colonIndex = raw.indexOf(":");
-  const field = colonIndex >= 0 ? raw.slice(0, colonIndex) : "";
-  const value = colonIndex >= 0 ? raw.slice(colonIndex + 1).trim() : raw;
+  const transitionIndex = raw.search(/(?:->|→)/);
+  const hasField = colonIndex >= 0
+    && colonIndex <= 120
+    && (transitionIndex < 0 || colonIndex < transitionIndex)
+    && !/^https?/i.test(raw)
+    && !/[.!?]\s/.test(raw.slice(0, colonIndex));
+  const field = hasField ? raw.slice(0, colonIndex) : "";
+  const value = hasField ? raw.slice(colonIndex + 1).trim() : raw;
   const fieldJa = field ? jpPatchField(field) : "";
   const translatedValue = translatePatchTokens(value);
-  if (hasUntranslatedPatchText(translatedValue)) {
-    return fieldJa ? `${fieldJa}: ${patchStatusFallback(status)}` : patchStatusFallback(status);
-  }
   let translated = fieldJa ? (translatedValue ? `${fieldJa}: ${translatedValue}` : fieldJa) : translatedValue;
+  if (fieldJa && !value) return fieldJa;
   if (!hasUntranslatedPatchText(translated)) return translated;
 
-  if (/\s(?:->|→)\s/.test(raw)) {
+  if (/(?:->|→)/.test(raw)) {
     const sides = raw.split(/\s*(?:->|→)\s*/).map((side) => translatePatchTokens(side));
+    let allSidesHaveValues = true;
     const numericSides = sides.map((side) => {
       if (!hasUntranslatedPatchText(side)) return side;
-      const parts = side.match(/[+-]?\d+(?:\.\d+)?%?|最大HP|相手の最大HP|攻撃|特攻|防御|特防|\d+(?:\.\d+)?秒/g);
-      return parts ? parts.join(" ") : "変更値";
+      const parts = side.match(/[+-]?\d+(?:[,.]\d+)*(?:\.\d+)?%?|最大HP|減少HP|残りHP|攻撃速度|移動速度|攻撃|特攻|防御|特防|待ち時間短縮率|ダメージ軽減率|\d+(?:\.\d+)?秒/g);
+      if (parts) return parts.join(" ");
+      allSidesHaveValues = false;
+      return "";
     });
-    return `${fieldJa || "調整値"}: ${numericSides.join(" → ")}`;
+    if (allSidesHaveValues) return `${fieldJa ? `${fieldJa}: ` : ""}${numericSides.join(" → ")}`;
   }
-  return patchStatusFallback(status);
+
+  const actionMatch = raw.match(/^(.*?)\s+(increased|boosted|decreased|reduced|lowered|raised|added|introduced|removed|changed|adjusted|normalized|extended|shortened)\.?$/i);
+  if (actionMatch) {
+    const subject = jpPatchField(actionMatch[1]);
+    if (!/^調整項目/.test(subject)) return `${subject}${PATCH_ACTION_JA[actionMatch[2].toLowerCase()]}`;
+  }
+
+  const fallback = /fixed (?:a |an )?(?:bug|issue)|bug ?fix/i.test(raw) ? "不具合を修正" : patchStatusFallback(status);
+  return `${fallback}（UniteDB原文: ${raw}）`;
+}
+
+function isPatchFieldHeading(line) {
+  const raw = cleanPatchMarkdown(line);
+  if (!raw || /(?:->|→)/.test(raw)) return false;
+  if (/:$/.test(raw)) return !/^https?/i.test(raw) && raw.length <= 140;
+  if (/[.!?]$/.test(raw) || raw.length > 100) return false;
+  return /^(?:\(?(?:NEW|ADDED)\)?\s+)?(?:Damage|Healing|Heal|Shield|Cooldown|CDR|HP|Health|Attack|Defense|Special|Sp\.?\s*(?:Atk|Def)|Movement|Slow|Stun|Fear|Range|Duration|Energy|Unite|Critical|Crit|Life ?Steal|Effect|Mechanic|Burn|Explosion|Outer Ring|First Hit|Second Hit|Third Hit|Last Hit|Stream|Mark Proc|Return Damage|Base Damage|Stage \d+)/i.test(raw);
+}
+
+function isStandalonePatchValue(line) {
+  const raw = cleanPatchMarkdown(line);
+  return /(?:->|→)/.test(raw) && !raw.includes(":");
+}
+
+function jpPatchDetails(lines, status) {
+  const rows = [];
+  const sourceLines = Array.isArray(lines) ? lines : [];
+  for (let index = 0; index < sourceLines.length; index += 1) {
+    const raw = cleanPatchMarkdown(sourceLines[index]);
+    if (!raw) continue;
+    if (isPatchFieldHeading(raw) && isStandalonePatchValue(sourceLines[index + 1])) {
+      const nextRaw = cleanPatchMarkdown(sourceLines[index + 1]);
+      const field = raw.replace(/[:：\s]+$/g, "");
+      if (normalizedPatchField(field) === "shieldandduration" && isStandalonePatchValue(sourceLines[index + 2])) {
+        const durationRaw = cleanPatchMarkdown(sourceLines[index + 2]);
+        const shieldValue = jpPatchDetail(nextRaw, status);
+        const durationValue = jpPatchDetail(durationRaw, status);
+        rows.push({
+          text: `シールド量: ${shieldValue}／持続時間: ${durationValue}`,
+          source: `${raw} ${nextRaw} ${durationRaw}`
+        });
+        index += 2;
+        continue;
+      }
+      const text = `${jpPatchField(field)}: ${jpPatchDetail(nextRaw, status).replace(/^変更値:\s*/, "")}`;
+      rows.push({ text, source: `${raw} ${nextRaw}` });
+      index += 1;
+      continue;
+    }
+    rows.push({ text: jpPatchDetail(raw, status), source: raw });
+  }
+
+  const seen = new Set();
+  return rows.filter((row) => {
+    if (!row.text) return false;
+    const key = `${row.text}\n${row.source}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function pokemonThumbUrl(name) {
