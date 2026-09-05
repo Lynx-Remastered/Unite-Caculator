@@ -58,12 +58,20 @@ function validateJsonData() {
   }
   const pokemon = JSON.parse(fs.readFileSync(path.join(dataDirectory, "pokemon.json"), "utf8"));
   const stats = JSON.parse(fs.readFileSync(path.join(dataDirectory, "stats.json"), "utf8"));
+  const configSource = fs.readFileSync(path.join(ROOT, "assets", "js", "config.js"), "utf8");
+  const pokemonJaMatch = configSource.match(/const POKEMON_JA\s*=\s*(\{[\s\S]*?\n\s*\});/);
+  if (!pokemonJaMatch) fail("assets/js/config.js must define POKEMON_JA");
+  const pokemonJa = JSON.parse(pokemonJaMatch[1]);
   const pokemonNames = pokemon.map((entry) => entry.name);
   const statsNames = stats.map((entry) => entry.name);
   if (new Set(pokemonNames).size !== pokemonNames.length) fail("data/pokemon.json contains duplicate Pokémon names");
   if (new Set(statsNames).size !== statsNames.length) fail("data/stats.json contains duplicate Pokémon names");
   if (pokemonNames.length !== statsNames.length || pokemonNames.some((name) => !statsNames.includes(name))) {
     fail("data/pokemon.json and data/stats.json must contain the same Pokémon");
+  }
+  const missingJapaneseNames = pokemonNames.filter((name) => !pokemonJa[name]);
+  if (missingJapaneseNames.length) {
+    fail(`assets/js/config.js is missing Japanese Pokémon names: ${missingJapaneseNames.join(", ")}`);
   }
   for (const entry of pokemon) {
     if (!Array.isArray(entry.base_move_levels) || entry.base_move_levels.length !== 2) {

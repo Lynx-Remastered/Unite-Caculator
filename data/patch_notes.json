@@ -1,8 +1,397 @@
 {
   "source": "https://unite-db.com/patch-notes",
-  "fetchedAt": "2026-09-01",
+  "fetchedAt": "2026-09-05",
   "patchCount": 100,
   "patches": [
+    {
+      "version": "1.24.1.3",
+      "date": "2026-09-03",
+      "slug": "patch-1-24-1-3-drive-to-victory",
+      "pokemon": [
+        {
+          "name": "Articuno",
+          "changes": [
+            {
+              "move": "Ice Beam",
+              "status": "buff",
+              "details": [
+                "Slow:",
+                "30% -> 40%"
+              ]
+            },
+            {
+              "move": "Unite Move: Ice Wing Whiteout",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 68% SpAtk + 0 x (Level - 1) + 340",
+                "New: 74.8% SpAtk + 0 x (Level - 1) + 374",
+                "Frozen Goal Zone HP:",
+                "9000 -> 10,000"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Buzzwole",
+          "changes": [
+            {
+              "move": "Boosted Attack",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 80% Atk + 0 x (Level - 1) + 0",
+                "New: 90% Atk + 0 x (Level - 1) + 0"
+              ]
+            },
+            {
+              "move": "Super Power",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "8s -> 7.5s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Comfey",
+          "changes": [
+            {
+              "move": "Sweet Kiss",
+              "status": "nerf",
+              "details": [
+                "Infatuated duration:",
+                "0.6s + 0.1s x flowers -> 0.2s + 0.1s x flowers",
+                "Cooldown:",
+                "6s -> 7s"
+              ]
+            },
+            {
+              "move": "Unite Move: Flowery Fields Forever",
+              "status": "buff",
+              "details": [
+                "Empowered Sweet Kiss bonus duration:",
+                "+1.3s -> +1.4s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Crustle",
+          "changes": [
+            {
+              "move": "Rock Tomb",
+              "status": "buff",
+              "details": [
+                "Slow duration:",
+                "2s -> 3s"
+              ]
+            },
+            {
+              "move": "Unite Move: Rubble Rouser",
+              "status": "buff",
+              "details": [
+                "Unite Charge:",
+                "120,000 / 134s -> 110,000 / 123s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Dodrio",
+          "changes": [
+            {
+              "move": "Jump Kick",
+              "status": "buff",
+              "details": [
+                "Cooldown:",
+                "6.5s -> 6s"
+              ]
+            },
+            {
+              "move": "Drill Peck",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 78.8% Atk + 2 x (Level - 1) + 72",
+                "New: 85.1% Atk + 2 x (Level - 1) + 78"
+              ]
+            },
+            {
+              "move": "Unite Move: Triple Trample",
+              "status": "buff",
+              "details": [
+                "Unite Charge:",
+                "120,000 / 134s -> 110,000 / 123s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Duraludon",
+          "changes": [
+            {
+              "move": "Flash Cannon",
+              "status": "nerf",
+              "details": [
+                "Cooldown:",
+                "5s -> 6s"
+              ]
+            },
+            {
+              "move": "Unite Move: Revolving Ruin",
+              "status": "nerf",
+              "details": [
+                "Unite Charge:",
+                "100,000 / 112s -> 110,000 / 123s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Feraligatr",
+          "changes": [
+            {
+              "move": "Waterfall",
+              "status": "nerf",
+              "details": [
+                "Cooldown:",
+                "6.5s -> 7.5s",
+                "Shield:",
+                "Old: 240% Atk + 0 x (Level - 1) + 720",
+                "New: 204% Atk + 0 x (Level - 1) + 612"
+              ]
+            },
+            {
+              "move": "Crunch",
+              "status": "nerf",
+              "details": [
+                "Damage - Gluttonous/Clamping Fangs (Red/Purple):",
+                "Old: 220.8% Atk + 0 x (Level - 1) + 662",
+                "New: 198.7% Atk + 0 x (Level - 1) + 596"
+              ]
+            },
+            {
+              "move": "Crunch+",
+              "status": "nerf",
+              "details": [
+                "Damage - Gluttonous/Clamping Fangs (Red/Purple):",
+                "Old: 253.9% Atk + 0 x (Level - 1) + 762",
+                "New: 232% Atk + 0 x (Level - 1) + 695"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Garchomp",
+          "changes": [
+            {
+              "move": "Dragon Rush",
+              "status": "nerf",
+              "details": [
+                "Cooldown:",
+                "5.5s -> 6s"
+              ]
+            },
+            {
+              "move": "Dragon Claw",
+              "status": "nerf",
+              "details": [
+                "Cooldown:",
+                "4s -> 5s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Greedent",
+          "changes": [
+            {
+              "move": "Stats",
+              "status": "nerf",
+              "details": [
+                "Def:",
+                "Lv1 75 -> 75",
+                "Lv2 85 -> 84",
+                "Lv3 97 -> 95",
+                "Lv4 111 -> 108",
+                "Lv5 173 -> 165",
+                "Lv6 191 -> 181",
+                "Lv7 212 -> 200",
+                "Lv8 236 -> 222",
+                "Lv9 263 -> 247",
+                "Lv10 295 -> 276",
+                "Lv11 331 -> 309",
+                "Lv12 373 -> 347",
+                "Lv13 421 -> 391",
+                "Lv14 476 -> 442",
+                "Lv15 540 -> 500",
+                "SpDef:",
+                "Lv1 60 -> 60",
+                "Lv2 69 -> 68",
+                "Lv3 79 -> 77",
+                "Lv4 91 -> 88",
+                "Lv5 144 -> 136",
+                "Lv6 159 -> 150",
+                "Lv7 177 -> 166",
+                "Lv8 198 -> 184",
+                "Lv9 222 -> 206",
+                "Lv10 249 -> 230",
+                "Lv11 280 -> 258",
+                "Lv12 316 -> 291",
+                "Lv13 357 -> 328",
+                "Lv14 405 -> 371",
+                "Lv15 460 -> 420"
+              ]
+            },
+            {
+              "move": "Unite Move: Berry Belly Flop",
+              "status": "nerf",
+              "details": [
+                "Unite Charge:",
+                "90,000 / 100s -> 100,000 / 112s"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MewtwoY",
+          "changes": [
+            {
+              "move": "Auto Attack",
+              "status": "buff",
+              "details": [
+                "Damage Auto Attack:",
+                "Old: 43% SpAtk + 4 x (Level - 1) + 80",
+                "New: 47.3% SpAtk + 4 x (Level - 1) + 88",
+                "Damage Mega Auto Attack:",
+                "Old: 49% SpAtk + 5 x (Level - 1) + 90",
+                "New: 52.92% SpAtk + 5 x (Level - 1) + 98"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Moltres",
+          "changes": [
+            {
+              "move": "Sky Attack",
+              "status": "buff",
+              "details": [
+                "Def and SpDef buff per stack:",
+                "8% -> 10%"
+              ]
+            },
+            {
+              "move": "Unite Move: Firebird Inferno",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 140% SpAtk + 10 x (Level - 1) + 700",
+                "New: 154% SpAtk + 11 x (Level - 1) + 770"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Ninetales",
+          "changes": [
+            {
+              "move": "Boosted Attack",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 53.2% SpAtk + 13 x (Level - 1) + 250",
+                "New: 57.46% SpAtk + 14 x (Level - 1) + 270"
+              ]
+            },
+            {
+              "move": "Avalanche",
+              "status": "buff",
+              "details": [
+                "Damage:",
+                "Old: 40% SpAtk + 9 x (Level - 1) + 208",
+                "New: 44% SpAtk + 10 x (Level - 1) + 229"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Reshiram",
+          "changes": [
+            {
+              "move": "Boosted Attack",
+              "status": "nerf",
+              "details": [
+                "Unite Move Cooldown Reduction:",
+                "15% of remaining cooldown -> 10% of remaining cooldown"
+              ]
+            },
+            {
+              "move": "Blue Flare",
+              "status": "nerf",
+              "details": [
+                "Damage:",
+                "Old: 110% SpAtk + 0 x (Level - 1) + 700",
+                "New: 99% SpAtk + 0 x (Level - 1) + 630",
+                "Damage - Burn:",
+                "Old: 11% SpAtk + 0 x (Level - 1) + 70",
+                "New: 9.9% SpAtk + 0 x (Level - 1) + 63"
+              ]
+            },
+            {
+              "move": "Unite Move: Flames That Bring Lightning",
+              "status": "nerf",
+              "details": [
+                "Damage - Flames:",
+                "Old: 100% SpAtk + 0 x (Level - 1) + 500",
+                "New: 90% SpAtk + 0 x (Level - 1) + 450",
+                "Damage - Lightning:",
+                "Old: 60% SpAtk + 0 x (Level - 1) + 300",
+                "New: 54% SpAtk + 0 x (Level - 1) + 270",
+                "Unite Buffs from 3rd activation:",
+                "Duration: 6s -> 4s",
+                "Shield: 20% Max HP -> 10% Max HP",
+                "Movement Speed Boost: 30% -> 15%",
+                "CDR: 30% -> 10%"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Yveltal",
+          "changes": [
+            {
+              "move": "Dark Aura",
+              "status": "nerf",
+              "details": [
+                "Damage Boost per mark:",
+                "3% -> 2%"
+              ]
+            },
+            {
+              "move": "Oblivion Wing",
+              "status": "nerf",
+              "details": [
+                "Damage:",
+                "Old: 244% SpAtk + 0 x (Level - 1) + 684",
+                "New: 231.8% SpAtk + 0 x (Level - 1) + 650"
+              ]
+            },
+            {
+              "move": "Oblivion Wing+",
+              "status": "nerf",
+              "details": [
+                "Damage:",
+                "Old: 280% SpAtk + 0 x (Level - 1) + 786",
+                "New: 273.6% SpAtk + 0 x (Level - 1) + 747"
+              ]
+            }
+          ]
+        }
+      ]
+    },
     {
       "version": "1.23.3.12",
       "date": "2026-08-06",

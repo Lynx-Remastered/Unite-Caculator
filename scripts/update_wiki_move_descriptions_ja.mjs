@@ -82,6 +82,7 @@ function strongTexts(html) {
 function meaningfulDescription(value) {
   const text = String(value || "").trim();
   return text
+    && !/(?:説明文|要検証)/u.test(text)
     && !/^レベル\d+になったとき/u.test(text)
     && !/^以下\d+つのわざ/u.test(text);
 }
@@ -228,7 +229,12 @@ await mapWithConcurrency(pendingPokemon, 1, async (pokemonEntry) => {
   }
 
   const parsed = parseWikiPage(fetched.html);
-  pages[pokemonEntry.name] = { page: pageName, url: fetched.url };
+  if (ONLY_POKEMON.has(pokemonEntry.name)) {
+    for (const key of Object.keys(entries)) {
+      if (key.startsWith(`${pokemonEntry.name}::`)) delete entries[key];
+    }
+  }
+  let importedEntryCount = 0;
   for (const skill of pokemonEntry.skills || []) {
     for (const node of [skill, ...(skill.upgrades || [])]) {
       let overview = "";
@@ -239,14 +245,21 @@ await mapWithConcurrency(pendingPokemon, 1, async (pokemonEntry) => {
       } else {
         overview = findMoveDescription(parsed, moveNamesJa[node.name] || node.name);
       }
-      if (!overview) continue;
+      if (!meaningfulDescription(overview)) continue;
       for (const rsbKey of ["rsb", "boosted_rsb"]) {
         if (!node[rsbKey]) continue;
         entries[descriptionKey(pokemonEntry, skill, node, rsbKey)] = [
           { label: "技の概要", text: overview }
         ];
+        importedEntryCount += 1;
       }
     }
+  }
+  if (importedEntryCount) {
+    pages[pokemonEntry.name] = { page: pageName, url: fetched.url };
+  } else {
+    delete pages[pokemonEntry.name];
+    misses.push({ pokemon: pokemonEntry.name, page: pageName, reason: "日本語説明なし" });
   }
 });
 
