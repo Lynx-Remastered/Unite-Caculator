@@ -1108,7 +1108,6 @@ function renderBalanceFilterOptions(history, pokemonName) {
 
 function createBalanceDetailItem(detail) {
   const item = document.createElement("li");
-  if (detail.source) item.title = `UniteDB原文: ${detail.source}`;
   (detail.parts || [{ text: detail.text }]).forEach((part) => {
     if (!part.tone) {
       item.appendChild(document.createTextNode(part.text));
@@ -1187,7 +1186,7 @@ function updateBalanceTimeline() {
     header.className = "balance-entry-head";
     const title = document.createElement("h3");
     title.className = "balance-entry-title";
-    title.textContent = `バージョン ${patch.version}`;
+    title.textContent = `バージョン ${jpPatchVersion(patch.version)}`;
     const date = document.createElement("time");
     date.className = "balance-date";
     date.dateTime = patch.date;
@@ -1216,7 +1215,7 @@ function updateBalanceTimeline() {
         pokemonName,
         moveName: change.move
       });
-      const groups = patchDetailGroups(details.length ? details : [{ text: patchStatusFallback(status), source: "" }]);
+      const groups = patchDetailGroups(details.length ? details : [{ text: patchStatusFallback(status), source: "" }], status);
       groups.forEach((detail) => {
         detailList.appendChild(createBalanceDetailItem(detail));
       });

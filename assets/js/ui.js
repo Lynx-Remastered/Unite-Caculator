@@ -84,6 +84,13 @@ const PATCH_STATUS_JA = {
   new: "新規追加"
 };
 
+const PATCH_TRANSLATION_PENDING_JA = "この変更の日本語訳を確認中です。";
+
+function jpPatchVersion(value) {
+  const raw = cleanPatchMarkdown(value);
+  return PATCH_TEXT_JA[raw] || (/^\d+(?:\.\d+)+$/.test(raw) ? raw : "更新（日本語名を確認中）");
+}
+
 const PATCH_FIELD_JA = {
   ratio: "倍率",
   slider: "レベル補正",
@@ -233,6 +240,7 @@ function normalizedPatchField(value) {
 
 function jpPatchField(value) {
   const raw = cleanPatchMarkdown(value).replace(/[:：\s]+$/g, "").trim();
+  if (PATCH_TEXT_JA[raw] || PATCH_TEXT_JA[`${raw}:`]) return PATCH_TEXT_JA[raw] || PATCH_TEXT_JA[`${raw}:`];
   const normalized = normalizedPatchField(raw);
   if (PATCH_FIELD_JA[normalized]) return PATCH_FIELD_JA[normalized];
   const levelMatch = raw.match(/^(?:Level|Lvl|Lv)\s*(\d+)$/i);
@@ -242,7 +250,7 @@ function jpPatchField(value) {
   if (actionMatch) {
     const subject = jpPatchField(actionMatch[1]);
     const action = PATCH_ACTION_JA[actionMatch[2].toLowerCase()];
-    if (!/^調整項目/.test(subject)) return `${subject}${action}`;
+    if (!hasUntranslatedPatchText(subject)) return `${subject}${action}`;
   }
 
   if (/^Damage (?:Resistance|Reduction)\b/i.test(raw)) {
@@ -266,11 +274,12 @@ function jpPatchField(value) {
   }
 
   const translated = translatePatchTokens(raw);
-  return hasUntranslatedPatchText(translated) ? `調整項目（${raw}）` : translated;
+  return translated;
 }
 
 function jpPatchMoveName(value) {
   const raw = cleanPatchMarkdown(value).replace(/\[[^\]]+\]/g, "").replace(/[:：\s]+$/g, "").trim();
+  if (PATCH_NAMES_JA[raw]) return PATCH_NAMES_JA[raw];
   const plus = /\+$/.test(raw) ? "+" : "";
   const hasUnitePrefix = /^Unite(?: Move)?(?::|$)/i.test(raw);
   const cleaned = raw
@@ -307,13 +316,15 @@ function jpPatchMoveName(value) {
   const translatedEntry = Object.entries(state.moveNamesJa || {}).find(([name]) => normalizedPatchField(name) === normalized);
   const translated = PATCH_MOVE_NAME_JA[cleaned] || state.moveNamesJa[cleaned] || state.moveNamesJa[raw] || (translatedEntry && translatedEntry[1]);
   if (translated && !hasUntranslatedPatchText(translated)) return `${translated.replace(/\+$/, "")}${plus}`;
-  return `${hasUnitePrefix ? "ユナイト技" : "技・特性"}（${cleaned || raw}）${plus}`;
+  if (!hasUntranslatedPatchText(raw)) return raw;
+  return `${hasUnitePrefix ? "ユナイト技" : "技・特性"}（日本語名を確認中）${plus}`;
 }
 
 function hasUntranslatedPatchText(value) {
   return /[A-Za-z]/.test(String(value || "")
-    .replace(/\b(?:HP|FPS|KO)\b/gi, "")
-    .replace(/\bLv(?=\d)/gi, "")
+    .replace(/サーチXクラッシュ|ミュウツナイト[XY]|ミュウツー[XY]/g, "")
+    .replace(/\b(?:HP|FPS|KO)(?=\b|\d)/gi, "")
+    .replace(/\bLv\b|\bLv(?=\d)/gi, "")
     .replace(/\b\d+(?:\.\d+)?m\b/gi, ""));
 }
 
@@ -332,18 +343,20 @@ function currentPatchMoveTranslationEntries() {
 function translatePatchTokens(value) {
   let text = cleanPatchMarkdown(value)
     .replace(/[’]/g, "'");
+  if (PATCH_TEXT_JA[text]) return PATCH_TEXT_JA[text];
 
   currentPatchMoveTranslationEntries().forEach(([name, translated]) => {
     if (name.length < 4 || !text.toLowerCase().includes(name.toLowerCase())) return;
-    text = text.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), translated);
+    text = text.replace(new RegExp(`(?<![A-Za-z])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z])`, "gi"), translated);
   });
 
   return text
     .replace(/-\s*>|→/g, " → ")
     .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?user(?:'s)?\s+Max HP/gi, "自分の最大HPの$1%")
-    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Max HP/gi, "相手の最大HPの$1%")
-    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy)(?:'s)?\s+Missing HP/gi, "相手の減少HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy|target)(?:'s)?\s+Max HP/gi, "相手の最大HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:opponent|enemy|target)(?:'s)?\s+Missing HP/gi, "相手の減少HPの$1%")
     .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?(?:the\s+)?(?:user(?:'s)?\s+)?Missing HP/gi, "自分の減少HPの$1%")
+    .replace(/(\d+(?:\.\d+)?)%\s+(?:of\s+)?Max HP/gi, "最大HPの$1%")
     .replace(/Target Missing HP/gi, "相手の減少HP")
     .replace(/Target Max HP/gi, "相手の最大HP")
     .replace(/(?:Opponent|Enemy)(?:'s)? Missing HP/gi, "相手の減少HP")
@@ -383,7 +396,7 @@ function translatePatchTokens(value) {
     .replace(/\bHoT\b/gi, "継続回復")
     .replace(/\bRSB(?:s)?\b/gi, "計算式")
     .replace(/\bICD\b/gi, "内部待ち時間")
-    .replace(/\b(?:Level|Lvl|Lv)\s*(\d+)/gi, "Lv$1")
+    .replace(/\b(?:Level|Lvl|Lv)\.?\s*(\d+)/gi, "Lv$1")
     .replace(/\bper second\b/gi, "1秒ごと")
     .replace(/\bper hit\b/gi, "1ヒットごと")
     .replace(/\bper tick\b/gi, "1回ごと")
@@ -803,7 +816,9 @@ function patchStandaloneFormula(value, heading, context = {}) {
 function jpPatchDetail(line, status) {
   const raw = cleanPatchMarkdown(line);
   if (!raw) return "";
-  if (/^(?:Old|New)\s*:/i.test(raw)) return raw;
+  if (PATCH_TEXT_JA[raw]) return PATCH_TEXT_JA[raw];
+  const comparisonLabel = raw.match(/^(Old|New)\s*:\s*(.*)$/i);
+  if (comparisonLabel) return `${comparisonLabel[1].toLowerCase() === "old" ? "変更前" : "変更後"}: ${patchExplicitFormulaExpression(comparisonLabel[2]) || translatePatchTokens(comparisonLabel[2])}`;
   if (PATCH_DETAIL_OVERRIDES_JA[raw]) return PATCH_DETAIL_OVERRIDES_JA[raw];
   const colonIndex = raw.indexOf(":");
   const transitionIndex = raw.search(/(?:-\s*>|→)/);
@@ -820,27 +835,13 @@ function jpPatchDetail(line, status) {
   if (fieldJa && !value) return fieldJa;
   if (!hasUntranslatedPatchText(translated)) return translated;
 
-  if (/(?:-\s*>|→)/.test(raw)) {
-    const sides = raw.split(/\s*(?:-\s*>|→)\s*/).map((side) => translatePatchTokens(side));
-    let allSidesHaveValues = true;
-    const numericSides = sides.map((side) => {
-      if (!hasUntranslatedPatchText(side)) return side;
-      const parts = side.match(/[+-]?\d+(?:[,.]\d+)*(?:\.\d+)?%?|最大HP|減少HP|残りHP|攻撃速度|移動速度|攻撃|特攻|防御|特防|待ち時間短縮率|ダメージ軽減率|\d+(?:\.\d+)?秒/g);
-      if (parts) return parts.join(" ");
-      allSidesHaveValues = false;
-      return "";
-    });
-    if (allSidesHaveValues) return `${fieldJa ? `${fieldJa}: ` : ""}${numericSides.join(" → ")}`;
-  }
-
   const actionMatch = raw.match(/^(.*?)\s+(increased|boosted|decreased|reduced|lowered|raised|added|introduced|removed|changed|adjusted|normalized|extended|shortened)\.?$/i);
   if (actionMatch) {
     const subject = jpPatchField(actionMatch[1]);
-    if (!/^調整項目/.test(subject)) return `${subject}${PATCH_ACTION_JA[actionMatch[2].toLowerCase()]}`;
+    if (!hasUntranslatedPatchText(subject)) return `${subject}${PATCH_ACTION_JA[actionMatch[2].toLowerCase()]}`;
   }
 
-  const fallback = /fixed (?:a |an )?(?:bug|issue)|bug ?fix/i.test(raw) ? "不具合を修正" : patchStatusFallback(status);
-  return `${fallback}（UniteDB原文: ${raw}）`;
+  return translated;
 }
 
 function isPatchFieldHeading(line) {
@@ -866,10 +867,12 @@ function jpPatchDetails(lines, status, context = {}) {
     const nextRaw = cleanPatchMarkdown(sourceLines[index + 1]);
     const newMatch = nextRaw.match(/^New\s*:\s*(.+)$/i);
     if (oldMatch && newMatch) {
+      const before = patchExplicitFormulaExpression(oldMatch[1], context) || translatePatchTokens(oldMatch[1]);
+      const after = patchExplicitFormulaExpression(newMatch[1], context) || translatePatchTokens(newMatch[1]);
       rows.push({
-        text: `${raw}\n${nextRaw}`,
+        text: `変更前: ${before}\n変更後: ${after}`,
         source: `${raw} ${nextRaw}`,
-        comparison: { before: oldMatch[1], after: newMatch[1] }
+        comparison: { before, after }
       });
       index += 1;
       continue;
@@ -920,7 +923,16 @@ function jpPatchDetails(lines, status, context = {}) {
   }
 
   const seen = new Set();
-  return rows.filter((row) => {
+  return rows.map((row) => {
+    const text = PATCH_TEXT_JA[row.source] || row.text;
+    const comparison = row.comparison || (text.startsWith("計算式:") ? splitPatchTransition(text.replace(/^計算式:\s*/, "")) : null);
+    // Never publish an unreviewed English fallback, including Old/New expression text.
+    const untranslated = hasUntranslatedPatchText(text)
+      || Boolean(comparison && [comparison.before, comparison.after].some(hasUntranslatedPatchText));
+    return untranslated
+      ? { ...row, text: PATCH_TRANSLATION_PENDING_JA, comparison: null, untranslated: true }
+      : { ...row, text, comparison };
+  }).filter((row) => {
     if (!row.text) return false;
     const key = `${row.text}\n${row.source}`;
     if (seen.has(key)) return false;
@@ -929,7 +941,7 @@ function jpPatchDetails(lines, status, context = {}) {
   });
 }
 
-function patchComparedNumberParts(before, after, field = "") {
+function patchComparedNumberParts(before, after, field = "", status = "") {
   const tokenPattern = /[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?/g;
   const oldNumbers = [...before.matchAll(tokenPattern)];
   const newNumbers = [...after.matchAll(tokenPattern)];
@@ -939,6 +951,7 @@ function patchComparedNumberParts(before, after, field = "") {
     return [{ text: after }];
   }
   const reverse = normalizedPatchField(field) === "unitecharge";
+  const statusTone = status === "buff" ? "positive" : status === "nerf" ? "negative" : "";
   const parts = [];
   let offset = 0;
   newNumbers.forEach((match, index) => {
@@ -948,7 +961,7 @@ function patchComparedNumberParts(before, after, field = "") {
     const direction = Math.sign(current - previous);
     parts.push({
       text: match[0],
-      tone: direction === 0 ? "" : direction * (reverse ? -1 : 1) > 0 ? "positive" : "negative",
+      tone: direction === 0 ? "" : statusTone || (direction * (reverse ? -1 : 1) > 0 ? "positive" : "negative"),
       description: direction === 0 ? "" : `${oldNumbers[index][0]} → ${match[0]}（${direction > 0 ? "増加" : "減少"}）`
     });
     offset = match.index + match[0].length;
@@ -957,19 +970,18 @@ function patchComparedNumberParts(before, after, field = "") {
   return parts;
 }
 
-function patchInlineNumberParts(text, field) {
-  if (text.includes("UniteDB原文:")) return [{ text }];
+function patchInlineNumberParts(text, field, status) {
   const sides = text.split(/\s*→\s*/);
-  if (sides.length !== 2) return [{ text }];
+  if (sides.length !== 2 || sides.some((side) => !side.trim())) return [{ text }];
   // Keep field names and level labels out of the numerical comparison.
   const prefix = sides[0].match(/^.*?:\s*|^Lv\s*\d+\s+/)?.[0] || "";
   return [
     { text: `${sides[0]} → ` },
-    ...patchComparedNumberParts(sides[0].slice(prefix.length), sides[1], field)
+    ...patchComparedNumberParts(sides[0].slice(prefix.length), sides[1], field, status)
   ];
 }
 
-function patchDetailGroups(details) {
+function patchDetailGroups(details, status = "") {
   const groups = [];
   let heading = null;
   for (const detail of details) {
@@ -985,17 +997,17 @@ function patchDetailGroups(details) {
         groups.push(heading);
       }
       heading.children.push(
-        { text: `Old: ${before}`, source: detail.source },
+        { text: `変更前: ${before}`, source: detail.source },
         {
-          text: `New: ${after}`,
+          text: `変更後: ${after}`,
           source: detail.source,
-          parts: [{ text: "New: " }, ...patchComparedNumberParts(before, after, heading.field)]
+          parts: [{ text: "変更後: " }, ...patchComparedNumberParts(before, after, heading.field, status)]
         }
       );
       continue;
     }
     if (detail.field) heading = null;
-    const row = { ...detail, parts: patchInlineNumberParts(detail.text, detail.field || heading?.field) };
+    const row = { ...detail, parts: patchInlineNumberParts(detail.text, detail.field || heading?.field, status) };
     (heading ? heading.children : groups).push(row);
   }
   return groups;

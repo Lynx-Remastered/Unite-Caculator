@@ -34,6 +34,7 @@ assets/
     responsive.css         画面幅別の調整
   js/
     config.js              データ参照先・定数・共有状態
+    patch-translations.js  バランス調整の確認済み日本語訳
     ui.js                  翻訳、共通UI、ナビゲーション
     calculator-core.js     選択値、技データ、計算の共通基盤
     damage-ranking.js      ダメージ・回復ランキング
@@ -58,4 +59,8 @@ node scripts/update_patch_notes.js
 node scripts/update_wiki_move_descriptions_ja.mjs
 ```
 
-更新後は `npm test` を実行し、JSON形式とアセット参照を確認してください。
+更新後は `npm test` を実行し、JSON形式・アセット参照・バランス調整の日本語表示を確認してください。
+
+バランス調整の取得元データは検証用にそのまま保持しますが、画面の本文やツールチップには英語の原文を表示しません。定型的な数式は `ui.js` で日本語化し、個別の説明・条件・補足は `patch-translations.js` の `PATCH_TEXT_JA`、技名の別表記は `PATCH_NAMES_JA` に登録します。キーには、Markdownを除去した原文（複数行をまとめる場合は空白で連結した原文）を使います。
+
+訳文では、数値・対象・発動条件・不確かな情報を保持し、取得元の感想や予測は「取得元の解説」などとして変更内容と区別してください。未対応の文言は画面で日本語訳の確認中と表示され、テストが該当箇所を報告します。訳文を追加してテストを通してから公開してください。
