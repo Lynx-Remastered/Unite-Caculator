@@ -101,7 +101,7 @@ function validatePatchNoteTranslations() {
       pokemon: JSON.parse(fs.readFileSync(path.join(ROOT, "data", "pokemon.json"), "utf8"))
     }
   });
-  vm.runInContext(`${uiSource.slice(start, end)}\n;globalThis.patchTranslationTestApi = { cleanPatchMarkdown, jpPatchDetail, jpPatchDetails };`, context);
+  vm.runInContext(`${uiSource.slice(start, end)}\n;globalThis.patchTranslationTestApi = { cleanPatchMarkdown, jpPatchDetail, jpPatchDetails, patchDetailGroups, patchComparedNumberParts };`, context);
   const api = context.patchTranslationTestApi;
 
   const wishDetails = api.jpPatchDetails(["Damage Resistance:", "15% -> 20%"], "buff");
@@ -130,6 +130,58 @@ function validatePatchNoteTranslations() {
   }
 
   const patchNotes = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "patch_notes.json"), "utf8"));
+  const septemberPatch = patchNotes.patches.find((patch) => patch.version === "1.24.1.3");
+  const blueFlare = septemberPatch.pokemon.find((pokemon) => pokemon.name === "Reshiram").changes.find((change) => change.move === "Blue Flare");
+  const blueFlareGroups = api.patchDetailGroups(api.jpPatchDetails(blueFlare.details, blueFlare.status));
+  if (blueFlareGroups.length !== 2 || blueFlareGroups[0].text !== "ダメージ" || blueFlareGroups[1].text !== "ダメージ（やけど）") {
+    fail(`Old/New formulas were not grouped by damage type: ${JSON.stringify(blueFlareGroups)}`);
+  }
+  const expectedPairs = [
+    ["110% SpAtk + 0 x (Level - 1) + 700", "99% SpAtk + 0 x (Level - 1) + 630", ["99%", "630"]],
+    ["11% SpAtk + 0 x (Level - 1) + 70", "9.9% SpAtk + 0 x (Level - 1) + 63", ["9.9%", "63"]]
+  ];
+  blueFlareGroups.forEach((group, index) => {
+    const [before, after, changed] = expectedPairs[index];
+    if (group.children.length !== 2 || group.children[0].text !== `Old: ${before}` || group.children[1].text !== `New: ${after}`) {
+      fail(`Old/New formula text was altered: ${JSON.stringify(group)}`);
+    }
+    const highlighted = group.children[1].parts.filter((part) => part.tone);
+    if (JSON.stringify(highlighted.map((part) => part.text)) !== JSON.stringify(changed) || highlighted.some((part) => part.tone !== "negative")) {
+      fail(`Only decreased Blue Flare values should be highlighted red: ${JSON.stringify(highlighted)}`);
+    }
+  });
+  const comparisonCases = [
+    ["10%", "15%", "Damage", "positive"],
+    ["15%", "10%", "Damage", "negative"],
+    ["120,000 / 134s", "110,000 / 123s", "Unite Charge", "positive"],
+    ["100,000 / 112s", "110,000 / 123s", "Unite Charge", "negative"],
+    ["100", "110", "Unite Charge gained per second", "positive"],
+    ["-5", "-3", "Defense", "positive"]
+  ];
+  comparisonCases.forEach(([before, after, field, tone]) => {
+    const parts = api.patchComparedNumberParts(before, after, field);
+    const highlighted = parts.filter((part) => part.tone);
+    if (!highlighted.length || highlighted.some((part) => part.tone !== tone) || parts.map((part) => part.text).join("") !== after) {
+      fail(`Wrong numerical highlighting for ${field}: ${JSON.stringify(parts)}`);
+    }
+  });
+  const chargeGroups = api.patchDetailGroups(api.jpPatchDetails(["Unite Charge:", "120,000 / 134s -> 110,000 / 123s"], "buff"));
+  if (chargeGroups[0].parts.filter((part) => part.tone === "positive").length !== 2) {
+    fail(`Inline Unite Charge reductions must be green: ${JSON.stringify(chargeGroups)}`);
+  }
+  const separateCharge = api.patchDetailGroups(api.jpPatchDetails(["Unite Charge:", "Old: 120,000 / 134s", "New: 110,000 / 123s"], "buff"));
+  if (separateCharge[0].children[1].parts.filter((part) => part.tone === "positive").length !== 2) {
+    fail(`Old/New Unite Charge reductions must be green: ${JSON.stringify(separateCharge)}`);
+  }
+  const mixed = api.patchDetailGroups(api.jpPatchDetails([...blueFlare.details, "Cooldown:", "6s -> 7s"], "nerf"));
+  if (mixed.length !== 3 || mixed[2].children || !mixed[2].text.startsWith("待ち時間:")) {
+    fail(`An unrelated cooldown change was nested inside a damage formula: ${JSON.stringify(mixed)}`);
+  }
+  const unchanged = api.patchComparedNumberParts("10% + 0", "10% + 0", "Damage");
+  const incompatible = api.patchComparedNumberParts("10%", "10% + 100", "Damage");
+  if ([...unchanged, ...incompatible].some((part) => part.tone)) {
+    fail("Unchanged or unmatched values must not receive highlighting");
+  }
   let formulaCount = 0;
   for (const patch of patchNotes.patches || []) {
     for (const pokemon of patch.pokemon || []) {

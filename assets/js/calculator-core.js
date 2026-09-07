@@ -1106,6 +1106,30 @@ function renderBalanceFilterOptions(history, pokemonName) {
   });
 }
 
+function createBalanceDetailItem(detail) {
+  const item = document.createElement("li");
+  if (detail.source) item.title = `UniteDB原文: ${detail.source}`;
+  (detail.parts || [{ text: detail.text }]).forEach((part) => {
+    if (!part.tone) {
+      item.appendChild(document.createTextNode(part.text));
+      return;
+    }
+    const value = document.createElement("span");
+    value.className = `balance-value-${part.tone}`;
+    value.textContent = part.text;
+    value.title = part.description;
+    value.setAttribute("aria-label", part.description);
+    item.appendChild(value);
+  });
+  if (detail.children?.length) {
+    const children = document.createElement("ul");
+    children.className = "balance-detail-children";
+    detail.children.forEach((child) => children.appendChild(createBalanceDetailItem(child)));
+    item.appendChild(children);
+  }
+  return item;
+}
+
 function updateBalanceTimeline() {
   if (!el.balancePokemonSelect || !el.balanceTimeline) return;
   const pokemonName = el.balancePokemonSelect.value;
@@ -1192,11 +1216,9 @@ function updateBalanceTimeline() {
         pokemonName,
         moveName: change.move
       });
-      (details.length ? details : [{ text: patchStatusFallback(status), source: "" }]).forEach((detail) => {
-        const item = document.createElement("li");
-        item.textContent = detail.text;
-        if (detail.source) item.title = `UniteDB原文: ${detail.source}`;
-        detailList.appendChild(item);
+      const groups = patchDetailGroups(details.length ? details : [{ text: patchStatusFallback(status), source: "" }]);
+      groups.forEach((detail) => {
+        detailList.appendChild(createBalanceDetailItem(detail));
       });
       changeBlock.append(changeHead, detailList);
       changes.appendChild(changeBlock);

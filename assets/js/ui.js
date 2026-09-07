@@ -775,10 +775,13 @@ function patchFormulaRow(sourceLines, index, context = {}) {
     ? { ...reference, exception: "True" }
     : reference;
 
+  const before = patchFormulaExpression("before", parts, context, expressionReference, heading);
+  const after = patchFormulaExpression("after", parts, context, expressionReference, heading);
   return {
     consumed,
     row: {
-      text: `計算式: ${patchFormulaExpression("before", parts, context, expressionReference, heading)} → ${patchFormulaExpression("after", parts, context, expressionReference, heading)}`,
+      text: `計算式: ${before} → ${after}`,
+      comparison: { before, after },
       source: consumedLines.join(" ")
     }
   };
@@ -800,6 +803,7 @@ function patchStandaloneFormula(value, heading, context = {}) {
 function jpPatchDetail(line, status) {
   const raw = cleanPatchMarkdown(line);
   if (!raw) return "";
+  if (/^(?:Old|New)\s*:/i.test(raw)) return raw;
   if (PATCH_DETAIL_OVERRIDES_JA[raw]) return PATCH_DETAIL_OVERRIDES_JA[raw];
   const colonIndex = raw.indexOf(":");
   const transitionIndex = raw.search(/(?:-\s*>|→)/);
@@ -858,6 +862,18 @@ function jpPatchDetails(lines, status, context = {}) {
   for (let index = 0; index < sourceLines.length; index += 1) {
     const raw = cleanPatchMarkdown(sourceLines[index]);
     if (!raw) continue;
+    const oldMatch = raw.match(/^Old\s*:\s*(.+)$/i);
+    const nextRaw = cleanPatchMarkdown(sourceLines[index + 1]);
+    const newMatch = nextRaw.match(/^New\s*:\s*(.+)$/i);
+    if (oldMatch && newMatch) {
+      rows.push({
+        text: `${raw}\n${nextRaw}`,
+        source: `${raw} ${nextRaw}`,
+        comparison: { before: oldMatch[1], after: newMatch[1] }
+      });
+      index += 1;
+      continue;
+    }
     const formula = patchFormulaRow(sourceLines, index, context);
     if (formula) {
       rows.push(formula.row);
@@ -869,8 +885,12 @@ function jpPatchDetails(lines, status, context = {}) {
       const field = raw.replace(/[:：\s]+$/g, "");
       const standaloneFormula = patchStandaloneFormula(nextRaw, field, context);
       if (standaloneFormula) {
-        rows.push({ text: jpPatchField(field), source: raw });
-        rows.push({ text: standaloneFormula, source: nextRaw });
+        rows.push({ text: jpPatchField(field), source: raw, heading: true, field });
+        rows.push({
+          text: standaloneFormula,
+          source: nextRaw,
+          comparison: splitPatchTransition(standaloneFormula.replace(/^計算式:\s*/, ""))
+        });
         index += 1;
         continue;
       }
@@ -886,11 +906,17 @@ function jpPatchDetails(lines, status, context = {}) {
         continue;
       }
       const text = `${jpPatchField(field)}: ${jpPatchDetail(nextRaw, status).replace(/^変更値:\s*/, "")}`;
-      rows.push({ text, source: `${raw} ${nextRaw}` });
+      rows.push({ text, source: `${raw} ${nextRaw}`, field });
       index += 1;
       continue;
     }
-    rows.push({ text: jpPatchDetail(raw, status), source: raw });
+    const heading = isPatchFieldHeading(raw) && !raw.includes(": ");
+    rows.push({
+      text: jpPatchDetail(raw, status),
+      source: raw,
+      heading,
+      field: heading ? raw.replace(/[:：\s]+$/g, "") : raw.includes(":") ? raw.slice(0, raw.indexOf(":")) : ""
+    });
   }
 
   const seen = new Set();
@@ -901,6 +927,78 @@ function jpPatchDetails(lines, status, context = {}) {
     seen.add(key);
     return true;
   });
+}
+
+function patchComparedNumberParts(before, after, field = "") {
+  const tokenPattern = /[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?/g;
+  const oldNumbers = [...before.matchAll(tokenPattern)];
+  const newNumbers = [...after.matchAll(tokenPattern)];
+  // Only compare matching expressions; added terms or changed units cannot be paired safely.
+  const skeleton = (text) => text.replace(tokenPattern, "#").replace(/\s+/g, "");
+  if (!oldNumbers.length || oldNumbers.length !== newNumbers.length || skeleton(before) !== skeleton(after)) {
+    return [{ text: after }];
+  }
+  const reverse = normalizedPatchField(field) === "unitecharge";
+  const parts = [];
+  let offset = 0;
+  newNumbers.forEach((match, index) => {
+    if (match.index > offset) parts.push({ text: after.slice(offset, match.index) });
+    const previous = Number(oldNumbers[index][0].replace(/[,%]/g, ""));
+    const current = Number(match[0].replace(/[,%]/g, ""));
+    const direction = Math.sign(current - previous);
+    parts.push({
+      text: match[0],
+      tone: direction === 0 ? "" : direction * (reverse ? -1 : 1) > 0 ? "positive" : "negative",
+      description: direction === 0 ? "" : `${oldNumbers[index][0]} → ${match[0]}（${direction > 0 ? "増加" : "減少"}）`
+    });
+    offset = match.index + match[0].length;
+  });
+  if (offset < after.length) parts.push({ text: after.slice(offset) });
+  return parts;
+}
+
+function patchInlineNumberParts(text, field) {
+  if (text.includes("UniteDB原文:")) return [{ text }];
+  const sides = text.split(/\s*→\s*/);
+  if (sides.length !== 2) return [{ text }];
+  // Keep field names and level labels out of the numerical comparison.
+  const prefix = sides[0].match(/^.*?:\s*|^Lv\s*\d+\s+/)?.[0] || "";
+  return [
+    { text: `${sides[0]} → ` },
+    ...patchComparedNumberParts(sides[0].slice(prefix.length), sides[1], field)
+  ];
+}
+
+function patchDetailGroups(details) {
+  const groups = [];
+  let heading = null;
+  for (const detail of details) {
+    if (detail.heading) {
+      heading = { ...detail, children: [] };
+      groups.push(heading);
+      continue;
+    }
+    if (detail.comparison) {
+      const { before, after } = detail.comparison;
+      if (!heading) {
+        heading = { text: "計算式", source: detail.source, children: [] };
+        groups.push(heading);
+      }
+      heading.children.push(
+        { text: `Old: ${before}`, source: detail.source },
+        {
+          text: `New: ${after}`,
+          source: detail.source,
+          parts: [{ text: "New: " }, ...patchComparedNumberParts(before, after, heading.field)]
+        }
+      );
+      continue;
+    }
+    if (detail.field) heading = null;
+    const row = { ...detail, parts: patchInlineNumberParts(detail.text, detail.field || heading?.field) };
+    (heading ? heading.children : groups).push(row);
+  }
+  return groups;
 }
 
 function pokemonThumbUrl(name) {

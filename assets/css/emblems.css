@@ -565,6 +565,37 @@
   color: var(--accent);
 }
 
+.balance-detail-children {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 8px;
+  padding-left: 20px;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-detail-list li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.balance-value-positive,
+.balance-value-negative {
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 800;
+}
+
+.balance-value-positive {
+  color: var(--good-ink);
+  background: rgba(46, 180, 105, 0.16);
+}
+
+.balance-value-negative {
+  color: var(--bad-ink);
+  background: rgba(235, 82, 82, 0.16);
+}
+
 .balance-empty {
   padding: 24px 16px;
   color: var(--muted);
