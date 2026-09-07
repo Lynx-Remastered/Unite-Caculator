@@ -20,7 +20,7 @@ function accelerationPercentValue(value) {
 function accelerationMatchIsPositive(match) {
   const exact = String(match && match[0] || "");
   if (/(?:movement speed|speed)\s+(?:decrease|reduction|penalty)/i.test(exact)) return false;
-  if (/movement speed[^.;%]{0,55}?(?:decay|diminish|decreas)/i.test(exact)) return false;
+  if (/movement speed[^.;%]*?(?:decay|diminish|decreas|reduc|lower)/i.test(exact)) return false;
   if (/(?:decreas(?:e|es|ed|ing)|reduc(?:e|es|ed|ing)|lower(?:s|ed|ing)?)\s+[^.;%]{0,45}?movement speed/i.test(exact)) return false;
   if (/(?:opposing|enemy|enemies|target['’]s|targets['’])[^.;%]{0,45}?movement speed/i.test(exact)
       && !/(?:ally|allies|teammate)/i.test(exact)) return false;
@@ -31,8 +31,8 @@ function accelerationExplicitMaximum(text, match) {
   const near = text.slice(Math.max(0, match.index - 80), Math.min(text.length, match.index + match[0].length + 190));
   const patterns = [
     /(?:maximum|max(?:imum)?(?:\s+of)?|up to)\s+(\d+(?:\.\d+)?)%\s+(?:increased\s+)?movement speed/i,
-    /movement speed[^;]{0,180}?(?:up to|maximum(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
-    /(?:ramp\w*\s+up|increas(?:e|es|ed|ing)\s+by\s+an\s+additional)[^;]{0,90}?(?:up to|maximum(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
+    /movement speed[^;]{0,180}?(?:up to|max(?:imum)?(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
+    /(?:ramp\w*\s+up|increas(?:e|es|ed|ing)\s+by\s+(?:an\s+additional\s+)?)[^;]{0,90}?(?:up to|max(?:imum)?(?:\s+of)?)\s+(\d+(?:\.\d+)?)%/i,
     /(?:up to\s+\d+\s+times|up to\s+\d+\s+stacks)[^.;]{0,45}?maximum\s+(\d+(?:\.\d+)?)%/i,
     /(?:strengthened|increased)\s+to\s+(\d+(?:\.\d+)?)%/i
   ];
@@ -51,28 +51,54 @@ function accelerationMinimum(text, match, basePercent) {
 function accelerationStackMultiplier(text, match) {
   const after = text.slice(match.index, Math.min(text.length, match.index + match[0].length + 300));
   const sameSentence = after.split(/\.(?=\s+[A-Z])|;/, 1)[0];
-  const stack = sameSentence.match(/(?:stack(?:s|ed|ing)?\s+up to|up to)\s+(\d+)\s+(?:times|stacks)/i)
+  const stack = sameSentence.match(/(?:stack(?:s|ed|ing)?\s+(?:up to\s+)?|up to\s+)(\d+)\s+(?:times|stacks)/i)
     || after.match(/\.\s+This buff stacks up to\s+(\d+)\s+times/i);
   return stack ? Math.max(1, number(stack[1], 1)) : 1;
 }
 
 function accelerationDurationForMatch(text, match, matchEnd) {
+  // Keep durations attached to their effect. An adjacent sentence can describe
+  // attack speed, enemy crowd control, or a prerequisite instead of this buff.
+  const durationPattern = /\b(?:for|lasting|lasts?(?:\s+for)?)\s+(?:up to\s+)?(\d+(?:\.\d+)?)\s*s(?:econds?)?\b/i;
   const exact = String(match[0] || "");
   const speedIndex = exact.toLowerCase().lastIndexOf("movement speed");
-  const withinDuration = exact.slice(Math.max(0, speedIndex)).match(/\b(?:for|lasting)\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+  const withinDuration = exact.slice(Math.max(0, speedIndex)).match(durationPattern);
   if (withinDuration) return number(withinDuration[1], 0);
-  const after = text.slice(matchEnd, Math.min(text.length, matchEnd + 180));
-  const afterDuration = after.match(/^[^;]{0,150}?\b(?:for|lasting)\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+  const after = text.slice(matchEnd).split(/(?<!\bSp)\.(?=\s|$)|;/i, 1)[0];
+  const ownAfter = after.split(/\b(?:creat(?:e|es|ing)|damaging|deal(?:s|ing)? damage|throw(?:s|ing)?|stun(?:s|ning)?|decreas(?:e|es|ing))\b/i, 1)[0];
+  const afterDuration = ownAfter.slice(0, 150).match(durationPattern);
   if (afterDuration) return number(afterDuration[1], 0);
-  const before = text.slice(Math.max(0, match.index - 110), match.index);
-  const nearby = text.slice(Math.max(0, match.index - 120), Math.min(text.length, matchEnd + 180));
-  const nearbyDecay = speedDecaySpec(nearby);
-  if (nearbyDecay && nearbyDecay.duration > 0) return number(nearbyDecay.duration, 0);
-  const beforeDurations = [...before.matchAll(/\b(?:for\s+(?:up to\s+)?|up to\s+)(\d+(?:\.\d+)?)s\b[^:.;]{0,70}$/gi)];
-  if (beforeDurations.length) return number(beforeDurations[beforeDurations.length - 1][1], 0);
-  const nearbyDuration = nearby.match(/\b(?:movement speeds?|movement speed increase)[^;]{0,150}?\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i)
-    || nearby.match(/\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b[^;]{0,150}?\bmovement speeds?\b/i);
-  if (nearbyDuration) return number(nearbyDuration[1], 0);
+  const decay = speedDecaySpec(`${exact} ${after}`);
+  if (decay && decay.duration > 0) return number(decay.duration, 0);
+  const preceding = text.slice(0, match.index);
+  const before = preceding.split(/(?<!\bSp)\.(?=\s|$)|;/i).pop();
+  const activeEffect = /for the duration|until the move ends|while (?:this move|the [a-z ]+?|[a-z ]+?) is active|while (?:in|inside)|during mega evolution/i.test(`${before} ${exact} ${after}`);
+  if (activeEffect) {
+    const total = text.match(/\btotal\s+(?:[a-z-]+\s+){0,3}?duration\s+of\s+(\d+(?:\.\d+)?)s\b/i);
+    if (total) return number(total[1], 0);
+  }
+  const beforeDurations = [...before.matchAll(new RegExp(durationPattern.source, "gi"))];
+  if (beforeDurations.length
+      && !/\b(?:not (?:been )?in combat|out of combat|outside combat)\b/i.test(before)
+      && !/\b(?:if|when)\b[^,;]{0,150}\bfor\s+\d/i.test(before)) {
+    return number(beforeDurations[beforeDurations.length - 1][1], 0);
+  }
+  // Explicit references to an active move/buff may inherit its preceding
+  // duration, including when the two effects are in separate sentences.
+  if (activeEffect) {
+    const charge = preceding.match(/\bcharg(?:e|es|ing)\s+(?:[a-z]+\s+){0,5}?for\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
+    if (charge) return number(charge[1], 0);
+    const inherited = [...preceding.matchAll(new RegExp(durationPattern.source, "gi"))].filter((duration) => (
+      !/\b(?:stun(?:ned|ning)?|throw(?:n|ing)?|paralyz(?:ed|ing)?|hindrance resistant|not (?:been )?in combat)\b[^.;]{0,50}$/i.test(preceding.slice(Math.max(0, duration.index - 90), duration.index))
+    ));
+    if (inherited.length) return number(inherited[inherited.length - 1][1], 0);
+    const namedEffect = text.match(/\b(?:buff|vortex|shield|zone|veil|move)\s+lasts?\s+(?:for\s+)?(\d+(?:\.\d+)?)s\b/i);
+    if (namedEffect) return number(namedEffect[1], 0);
+  }
+  const sharedDuration = text.slice(matchEnd).match(/\b(?:all|these) buffs?\s+lasts?\s+(?:for\s+)?(\d+(?:\.\d+)?)s\b/i);
+  if (sharedDuration) return number(sharedDuration[1], 0);
+  const growthDuration = after.match(/\bevery\s+\d+(?:\.\d+)?s\s+over\s+(\d+(?:\.\d+)?)s\b/i);
+  if (growthDuration) return number(growthDuration[1], 0);
   return 0;
 }
 
@@ -99,7 +125,7 @@ function accelerationPercentCandidates(value, enhanced = false) {
       if (candidates.some((candidate) => candidate.key === key)) continue;
       const decays = /(?:decay|diminish|decreasing by)/i.test(context);
       const conditionalMaximum = /(?:strengthened|increased)\s+to\s+\d+(?:\.\d+)?%\s+for/i.test(context);
-      const grows = /(?:ramp\w*\s+up|increasing by an additional|increase(?:s|d)? by \d+(?:\.\d+)?% every)/i.test(context)
+      const grows = /(?:ramp\w*\s+up|increas(?:e|es|ed|ing) by (?:an additional )?\d+(?:\.\d+)?% every)/i.test(context)
         || (explicitMaximum > basePercent && multiplier === 1 && !decays && !conditionalMaximum);
       candidates.push({
         key,
@@ -159,6 +185,7 @@ function accelerationEffectDuration(row) {
     new RegExp(`(?:strengthened|increased)\\s+to\\s+${formatNumber(row && row.accelerationPercent, 1)}%\\s+for\\s+(\\d+(?:\\.\\d+)?)s`, "i")
   );
   if (conditionalMaximumDuration) return number(conditionalMaximumDuration[1], explicit);
+  if (row && Object.prototype.hasOwnProperty.call(row, "accelerationDuration")) return explicit;
   if (explicit > 0) return explicit;
   const afterPercent = context.match(/movement speed[^.;%]{0,90}?\d+(?:\.\d+)?%[^;]{0,150}?\bfor\s+(?:up to\s+)?(\d+(?:\.\d+)?)s\b/i);
   if (afterPercent) return number(afterPercent[1], 0);
@@ -435,6 +462,10 @@ function pokemonAccelerationRankingRows(pokemon) {
         const variants = [];
         if (bestNormal) {
           const normalCandidate = { ...bestNormal };
+          if (!normalCandidate.duration && /(?:strengthen|increas)\w*\s+(?:the\s+)?movement speed increase/i.test(bestNormal.context)) {
+            const initialEffect = normalCandidates.find((candidate) => candidate.duration > 0);
+            if (initialEffect) normalCandidate.duration = initialEffect.duration;
+          }
           const normalContext = normalCandidates.map((candidate) => candidate.context).join(" ");
           const conditionalAdditive = normalContext.match(
             /\b(?:additionally|further)\s+increas(?:e|es|ed|ing)\s+[^.;%]{0,70}?movement speed\s+by\s+(\d+(?:\.\d+)?)%/i
@@ -465,6 +496,20 @@ function pokemonAccelerationRankingRows(pokemon) {
             plusCandidate.minPercent = Math.min(bestNormal.minPercent, plusCandidate.percent);
             plusCandidate.variable = bestNormal.variable;
           }
+          const enhancedDecay = speedDecaySpec(enhancedAccelerationText);
+          const normalDecay = bestNormal && speedDecaySpec(bestNormal.context);
+          if (bestNormal) {
+            if (!plusCandidate.duration) plusCandidate.duration = bestNormal.duration;
+            if (!enhancedDecay && normalDecay) {
+              plusCandidate.decays = true;
+              plusCandidate.variable = true;
+              // Without an explicit floor, recompute the final value from the
+              // upgraded peak and the inherited decrement/duration.
+              plusCandidate.minPercent = normalDecay.minimum > 0
+                ? Math.min(plusCandidate.percent, normalDecay.minimum)
+                : plusCandidate.percent;
+            }
+          }
           variants.push({
             candidate: plusCandidate,
             moveName: `${moveName}+`,
@@ -472,7 +517,9 @@ function pokemonAccelerationRankingRows(pokemon) {
             minPercent: plusCandidate.minPercent,
             variable: plusCandidate.variable,
             context: [bestNormal && bestNormal.context, enhancedAccelerationText, bestEnhanced.context].filter(Boolean).join(" "),
-            decayContext: enhancedAccelerationText || bestEnhanced.context || (bestNormal && bestNormal.context) || "",
+            decayContext: enhancedDecay || !normalDecay
+              ? enhancedAccelerationText || bestEnhanced.context
+              : bestNormal.context,
             isPlus: true
           });
         }
@@ -513,6 +560,51 @@ function pokemonAccelerationRankingRows(pokemon) {
           });
         });
       });
+    });
+  });
+  (pokemon.skills || []).filter((skill) => skill.ability === "Unite Move").forEach((skill) => {
+    const buffs = cleanSlowDescription(skill.buffs);
+    const match = buffs.match(/(\d+(?:\.\d+)?)%\s+(?:increased\s+)?movement speed\b/i);
+    if (!match) return;
+    const percent = number(match[1], 0);
+    const durationMatch = buffs.slice(match.index + match[0].length).match(/^\s+for\s+(\d+(?:\.\d+)?)s\b/i);
+    const duration = durationMatch ? number(durationMatch[1], 0) : number(skill.buff_duration, 0);
+    const moveName = jpMoveName(skill.name);
+    // The move's own description sometimes already includes the common buff.
+    // Keep distinct phases/effects when their values or durations differ.
+    const duplicate = rows.some((row) => row.moveName === moveName
+      && row.accelerationPercent === percent
+      && accelerationEffectDuration(row) === duration
+      && row.targetLabel === "自分" && !row.variable && !row.enhanced);
+    if (duplicate) return;
+    const afterMove = /(?:applied|granted)\s+(?:when|at)\s+the\s+(?:move ends|end)|after stopping/i.test(buffs);
+    rows.push({
+      sourceType: "pokemon",
+      sourceName: pokemon.name,
+      sourceLabel: jpPokemonName(pokemon),
+      sourceIcon: pokemonThumbUrl(pokemon.name),
+      sourceBadge: "",
+      sourceBadgeClass: "",
+      moveName,
+      moveNote: "ユナイトわざの追加効果・自分",
+      moveIcon: skillIconUrl(pokemon.name, skill.name),
+      accelerationPercent: percent,
+      basePercent: percent,
+      stackMultiplier: 1,
+      minAccelerationPercent: percent,
+      enhanced: false,
+      decays: false,
+      grows: false,
+      variable: false,
+      accelerationDuration: duration,
+      accelerationContext: `Increases the user's movement speed by ${percent}%${duration > 0 ? ` for ${duration}s` : ""}.`,
+      targetLabel: "自分",
+      descriptionKey: slowDescriptionKey(pokemon, skill, skill, "rsb"),
+      accelerationDetailPartsJa: [
+        { label: "加速条件", text: afterMove ? "ユナイトわざの効果が終了したとき。" : "ユナイトわざを使用したとき。" },
+        { label: "加速効果", text: `自分の移動速度を${formatNumber(percent, 1)}%上げます。${duration > 0 ? `持続時間は${formatNumber(duration, 1)}秒です。` : ""}` }
+      ],
+      detailParts: [{ label: "", text: buffs }]
     });
   });
   return rows;

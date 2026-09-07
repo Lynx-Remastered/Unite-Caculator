@@ -205,6 +205,18 @@ function renderShieldMoveChoices() {
   });
 }
 
+// Unite-DB gives the regular and upgraded Giga Drain heal different labels.
+// Keep this alias specific so additional and conditional heals remain separate.
+const HEALING_EFFECT_GROUP_ALIASES = Object.freeze({
+  "Venusaur|Giga Drain|healing-per target": "healing"
+});
+
+function healingEffectGroupKey(pokemonName, moveName, label) {
+  const normalizedLabel = normalizeHealingLabel(label);
+  return HEALING_EFFECT_GROUP_ALIASES[`${pokemonName}|${moveName}|${normalizedLabel}`]
+    || normalizedLabel;
+}
+
 function healingChoicesForPokemon(pokemon, level) {
   const choices = [];
   if (!pokemon) return choices;
@@ -234,7 +246,7 @@ function healingChoicesForPokemon(pokemon, level) {
     const groups = new Map();
     healingEntries.forEach((entry) => {
       entry.pokemonName = pokemon.name;
-      const key = normalizeHealingLabel(entry.label);
+      const key = healingEffectGroupKey(pokemon.name, displayName, entry.label);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(entry);
     });

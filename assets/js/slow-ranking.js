@@ -46,6 +46,8 @@ const SLOW_PERCENT_PATTERNS = [
   /\band\s+(?:their\s+|the\s+)?movement speed[^.;%]{0,45}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
   /movement speed(?:\s+of\s+[^.;,%]{0,65}?)?\s+(?:is\s+)?(?:also\s+)?(?:decreas(?:e|es|ed)|reduc(?:e|es|ed)|lowered)[^.;,%]{0,35}?(?:by|to)\s+(\d+(?:\.\d+)?)%/gi,
   /(\d+(?:\.\d+)?)%\s+(?:decreas(?:e|ed)|reduc(?:e|ed))\s+movement speed/gi,
+  /(\d+(?:\.\d+)?)%\s+movement speed\s+(?:decrease|reduction)\b/gi,
+  /\bmovement speed (?:decrease|reduction)\s+for\s+[\d.]+s,\s*(\d+(?:\.\d+)?)%\s+if\s+Sprint empowered/gi,
   /\bslow(?:s|ed|ing)?\s+by\s+(\d+(?:\.\d+)?)%/gi,
   /slow(?:s|ed|ing)?(?:\s+movement speed)?\s+[^.;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
   /\bslow(?:s|ed|ing)?\s+(\d+(?:\.\d+)?)%/gi,
@@ -54,7 +56,8 @@ const SLOW_PERCENT_PATTERNS = [
   /movement speed (?:decrease|reduction)[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
   /(?:increases?|strengthens?)\s+(?:the\s+)?movement speed (?:decrease|reduction)[^.;%]{0,100}?\s+to\s+(\d+(?:\.\d+)?)%/gi,
   /\bslow[^.;%]{0,60}?(?:increased|strengthened)\s+to\s+(\d+(?:\.\d+)?)%/gi,
-  /\b(?:increases?|strengthens?)\s+the\s+slow\s+to\s+(\d+(?:\.\d+)?)%/gi
+  /\b(?:increases?|strengthens?)\s+the\s+slow(?:ing)?(?:\s+effect)?\s+to\s+(\d+(?:\.\d+)?)%/gi,
+  /\bimproves?\s+the\s+movement speed(?:\s+and\s+attack speed)?\s+debuffs?\s+to\s+(\d+(?:\.\d+)?)%/gi
 ];
 
 function cleanSlowDescription(value) {
@@ -76,6 +79,19 @@ function lastSlowContextIndex(text, patterns) {
 
 function slowMatchTargetsOpponent(text, match, pokemonName = "") {
   const exact = match[0].toLowerCase();
+  const escapedName = String(pokemonName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const precedingClause = text.slice(0, match.index).replace(/\bSp\./g, "Sp").split(/[.;!?](?=\s|$)/).pop();
+  // A shared "and movement speed" clause may describe a buff, not a slow.
+  if (/movement speed\s+(?:is\s+)?increas/i.test(exact)) return false;
+  if (/^and\s+(?:their\s+|the\s+)?movement speed/i.test(exact)
+      && !/(?:decreas|reduc|lower)/i.test(exact)) {
+    const modifiers = [...precedingClause.matchAll(/\b(increas\w*|decreas\w*|reduc\w*|lower\w*)\b/gi)];
+    if (modifiers.length && /^increas/i.test(modifiers[modifiers.length - 1][1])) return false;
+  }
+  // Never use the amount lost at each decay tick as the initial slow.
+  if (/\b(?:decay\w*|diminish\w*)\s+by\s+\d/i.test(exact)) return false;
+  if (escapedName && new RegExp(`${escapedName}['’]s\\s+movement speed`, "i").test(exact)) return false;
+  if (/\b(?:ally|allied|teammates?)\b/i.test(exact)) return false;
   if (/(?:opposing|enem(?:y|ies)|targets?|those(?:\s+that)?(?:\s+are)?\s+hit|them\b|linked target)/i.test(exact)) return true;
   if (/(?:the user|user's|itself|themselves|their own)/i.test(exact)) return false;
   if (/\b(?:slows?|slowed|slowing)\s+pok(?:é|e)mon\b/i.test(exact)) return true;
@@ -90,6 +106,10 @@ function slowMatchTargetsOpponent(text, match, pokemonName = "") {
   }
   const before = text.slice(Math.max(0, match.index - 180), match.index).toLowerCase();
   const beforeWide = text.slice(Math.max(0, match.index - 320), match.index).toLowerCase();
+  if (/\bdeals? damage to (?:it|them)\s+and\s*$/i.test(before)
+      && /\b(?:its|their) movement speed/i.test(exact)) return true;
+  if (/\bwhile held down\b[^;]*$/i.test(precedingClause)) return false;
+  if (/\b(?:ally|allied) pok(?:é|e)mon\b[^.;]*$/i.test(precedingClause)) return false;
   if (/target['’]s\s*$/i.test(before)
       || /affected pok(?:é|e)mon['’]s[\s\S]{0,310}$/i.test(beforeWide)
       || (/\btheir movement speed/i.test(exact) && (/\bwhen hitting an enemy\b/i.test(after) || /\bdealing damage\b[^.;]{0,45}$/i.test(before)))) {
@@ -106,7 +126,6 @@ function slowMatchTargetsOpponent(text, match, pokemonName = "") {
     /those hit(?![\s\S]*those hit)/i,
     /pok(?:é|e)mon hit(?![\s\S]*pok(?:é|e)mon hit)/i
   ]);
-  const escapedName = String(pokemonName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const selfPatterns = [
     /the user(?![\s\S]*the user)/i,
     /user's(?![\s\S]*user's)/i,
@@ -131,11 +150,32 @@ function slowStackMultiplier(text, match) {
     ...near.matchAll(/up to\s+(\d+)\s+stacks/gi)
   ];
   let multiplier = stackMatches.reduce((max, row) => Math.max(max, number(row[1], 1)), 1);
+  // Some projectiles specify their cumulative cap instead of a stack count.
+  const projectileMaximum = after.match(/(?:for|from) each projectile[^;]{0,70}?\bby\s+(\d+(?:\.\d+)?)%\s+for\s+[\d.]+s\s*\(maximum\s+(\d+(?:\.\d+)?)%\)/i);
+  if (projectileMaximum) {
+    const count = number(projectileMaximum[2], 0) / number(projectileMaximum[1], 1);
+    if (Number.isInteger(count)) multiplier = Math.max(multiplier, count);
+  }
   if (/per\s+['"]?note['"]?/i.test(near)) {
     const noteCount = near.match(/(?:reaching|up to)\s+(\d+)\s+notes?/i);
     if (noteCount) multiplier = Math.max(multiplier, number(noteCount[1], 1));
   }
   return Math.max(1, multiplier);
+}
+
+function slowMatchContext(text, match) {
+  // Keep other effects (especially the user's buffs) out of duration/decay parsing.
+  const start = match.index;
+  const tail = text.slice(match.index + match[0].length);
+  const end = tail.search(/[.;!?](?=\s|$)/);
+  const length = match.index + match[0].length + (end < 0 ? tail.length : end + 1);
+  let context = text.slice(start, length).trim();
+  const following = text.slice(length).trim();
+  if (/^(?:the slow\b|this movement speed (?:decrease|reduction)\b|then the \d+(?:\.\d+)?% slow\b)/i.test(following)) {
+    const nextEnd = following.search(/[.;!?](?=\s|$)/);
+    context += ` ${nextEnd < 0 ? following : following.slice(0, nextEnd + 1)}`;
+  }
+  return context;
 }
 
 function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
@@ -146,7 +186,7 @@ function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
     let match;
     while ((match = pattern.exec(text))) {
       const basePercent = number(match[1], 0);
-      const context = text.slice(Math.max(0, match.index - 120), Math.min(text.length, pattern.lastIndex + 180));
+      const context = slowMatchContext(text, match);
       const hardStopOnly = SLOW_HARD_STOP_PATTERN.test(match[0]) && !slowTextHasEffect(match[0]);
       if (hardStopOnly) continue;
       if (basePercent <= 0 || !slowMatchTargetsOpponent(text, match, pokemonName)) continue;
@@ -159,7 +199,10 @@ function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
         multiplier,
         percent: basePercent * multiplier,
         enhanced,
-        decays: /decay/i.test(text.slice(match.index, match.index + 140)),
+        decays: Boolean(speedDecaySpec(context)),
+        duration: slowEffectDuration({ slowContext: context }) || slowEffectDuration({
+          slowContext: text.slice(Math.max(0, match.index - 120), pattern.lastIndex)
+        }),
         context
       });
     }
@@ -210,9 +253,15 @@ function slowEffectDuration(row) {
   const explicit = number(row && row.slowDuration, 0);
   if (explicit > 0) return explicit;
   const context = String(row && row.slowContext || "");
+  const twoPhases = context.match(/\bslow\s+to\s+\d+(?:\.\d+)?%\s+for\s+([\d.]+)s\s+decaying\s+to\s+\d+(?:\.\d+)?%\s+for\s+([\d.]+)s/i);
+  if (twoPhases) return number(twoPhases[1], 0) + number(twoPhases[2], 0);
+  const lingering = context.match(/\bslow\s+over\s+([\d.]+)s[\s\S]{0,80}?slow lingers for an additional\s+(?:(\d+(?:\.\d+)?)s|second)\b/i);
+  if (lingering) return number(lingering[1], 0) + number(lingering[2], 1);
   const patterns = [
-    /(?:movement speed|slow(?:s|ed|ing)?)[^.]{0,100}?(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?)s\b/i,
-    /(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?)s\b[^.]{0,80}(?:movement speed|slow)/i
+    /(?:movement speed|slow(?:s|ed|ing)?)[^.;]{0,100}?\bduration\s+to\s+(\d+(?:\.\d+)?|\.\d+)s\b/i,
+    /(?:movement speed|slow(?:s|ed|ing)?)[^.]{0,100}?(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?|\.\d+)s\b/i,
+    /(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?|\.\d+)s\b[^.]{0,80}(?:movement speed|slow)/i,
+    /\b(?:decay\w*|diminish\w*)[\s\S]{0,80}?\bover\s+(\d+(?:\.\d+)?|\.\d+)s\b/i
   ];
   for (const pattern of patterns) {
     const match = context.match(pattern);
@@ -262,6 +311,7 @@ function speedDecayMinimum(context) {
 
 function speedDecaySpec(context) {
   const text = String(context || "")
+    .replace(/\bdecreas(?:e|es|ed|ing)(?=\s+by\s+\d+(?:\.\d+)?%\s+(?:every|per|after)\b)/gi, "decaying")
     .replace(/\b(every|per)\s+(?:one\s+)?second\b/gi, "$1 1s")
     .replace(/\b(every|per)\s+half\s+(?:a\s+)?second\b/gi, "$1 0.5s");
   if (!/(?:decay|diminish)/i.test(text)) return null;
@@ -373,7 +423,9 @@ function japaneseSlowFallbackParts(row) {
       details.push(`${transition}${formatNumber(finalPercent, 1)}%まで減衰します。`);
     }
   }
-  const condition = /(?:near the center|center of)/i.test(row.slowContext || "")
+  const condition = /Sprint empowered/i.test(row.slowContext || "")
+    ? "ダッシュゲージが満タンの状態で強化された効果です。"
+    : /(?:near the center|center of)/i.test(row.slowContext || "")
     ? "効果範囲の中心付近に命中した相手へ適用されます。"
     : /outer ring/i.test(row.slowContext || "")
     ? "効果範囲の外周に触れた相手へ適用されます。"
@@ -457,7 +509,7 @@ function pokemonSlowRankingRows(pokemon) {
             candidate: bestNormal,
             minSlowPercent: Math.min(...normalCandidates.map((candidate) => candidate.percent)),
             variable: bestNormal.decays || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1,
-            slowDuration: slowEffectDuration({ slowContext: bestNormal.context }),
+            slowDuration: bestNormal.duration,
             slowContext: bestNormal.context,
             slowDecayContext: bestNormal.context,
             isPlus: false
@@ -476,7 +528,7 @@ function pokemonSlowRankingRows(pokemon) {
             plusCandidate.percent = plusCandidate.basePercent * plusCandidate.multiplier;
           }
           const enhancedDuration = slowEffectDuration({ slowContext: enhancedSlowText });
-          const inheritedDuration = bestNormal ? slowEffectDuration({ slowContext: bestNormal.context }) : 0;
+          const inheritedDuration = bestNormal ? bestNormal.duration : 0;
           const plusSourceCandidates = enhancedCandidates.length ? enhancedCandidates : normalCandidates;
           generalVariants.push({
             candidate: plusCandidate,
@@ -488,7 +540,9 @@ function pokemonSlowRankingRows(pokemon) {
             variable: plusCandidate.decays || new Set(plusSourceCandidates.map((candidate) => candidate.percent)).size > 1,
             slowDuration: enhancedDuration || inheritedDuration,
             slowContext: [bestNormal && bestNormal.context, enhancedSlowText, bestEnhanced && bestEnhanced.context].filter(Boolean).join(" "),
-            slowDecayContext: enhancedSlowText || (bestEnhanced && bestEnhanced.context) || (bestNormal && bestNormal.context) || "",
+            slowDecayContext: speedDecaySpec(enhancedSlowText)
+              ? enhancedSlowText
+              : (bestNormal && bestNormal.context) || (bestEnhanced && bestEnhanced.context) || "",
             isPlus: true
           });
         }
@@ -496,6 +550,7 @@ function pokemonSlowRankingRows(pokemon) {
         generalVariants.forEach((variant) => {
           variant.useGeneratedSlowDetail = splitByUpgrade;
         });
+        const isScald = pokemon.name === "Slowbro" && node.name === "Scald" && rsbKey === "rsb";
         const variants = isSweetScent
           ? [
             {
@@ -530,7 +585,24 @@ function pokemonSlowRankingRows(pokemon) {
               }]
             }
           ]
-          : generalVariants;
+          : isScald
+            ? [
+              {
+                candidate: { basePercent: 80, multiplier: 1, percent: 80, enhanced: false, decays: false },
+                moveNote: "熱湯が命中した時",
+                slowDuration: 0.5,
+                slowContext: "The stream slows enemies by 80% for 0.5s.",
+                slowDetailPartsJa: [{ label: "減速仕様", text: "熱湯が命中した相手の移動速度を80%低下させます。持続時間は0.5秒です。" }]
+              },
+              {
+                candidate: { basePercent: 30, multiplier: 1, percent: 30, enhanced: false, decays: false },
+                moveNote: "蒸気の範囲内",
+                slowDuration: 3,
+                slowContext: "The cloud of steam slows enemies by 30% for 3s.",
+                slowDetailPartsJa: [{ label: "減速仕様", text: "蒸気の範囲内にいる相手の移動速度を30%低下させます。持続時間は3秒です。着弾時の80%減速とは別の効果です。" }]
+              }
+            ]
+            : generalVariants;
         variants.forEach((variant) => {
           const bestCandidate = variant.candidate;
           rows.push({

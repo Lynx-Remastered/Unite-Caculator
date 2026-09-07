@@ -757,7 +757,7 @@ function damageSequenceEntries(pokemon, choice, level, entries) {
 function entriesWithHitInfo(entries, pokemon = null, choice = null, level = 1) {
   const profiledEntries = damageSequenceEntries(pokemon, choice, level, entries);
   return profiledEntries.map((entry) => {
-    const hitInfo = inferHitInfo(entry);
+    const hitInfo = inferHitInfo(entry, level);
     const hitCountOverride = number(entry.hitCountOverride, 0);
     return {
       ...entry,
@@ -799,13 +799,15 @@ function selectedMoveParts(choice = selectedMoveChoice()) {
   const damageEntries = isSylveonHyperVoice
     ? activeEntries.filter((entry) => hyperVoiceRange.test(String(entry.label || "")))
     : activeEntries.filter(isAutoIncludedDamageEntry);
-  const usableEntries = damageEntries.length ? damageEntries : activeEntries.slice(0, 1);
-  return entriesWithHitInfo(usableEntries, pokemon, choice, level);
+  return entriesWithHitInfo(damageEntries, pokemon, choice, level);
 }
 
 function enhancedEntryIsAdditive(entry, regularEntries) {
   const regular = regularEntries.find((candidate) => candidate.basePartKey === entry.basePartKey);
   if (!regular) return true;
+  // RSB reuses the base prefix for added upgrade effects such as defense.
+  // Those effects must not replace the move's original damage formula.
+  if (isVariantDamageCandidateEntry(regular) && !isVariantDamageCandidateEntry(entry)) return true;
   const enhancedLabel = normalizedMovePartLabel(entry.label).toLowerCase();
   const regularLabel = normalizedMovePartLabel(regular.label).toLowerCase();
   if (enhancedLabel === regularLabel) return false;
@@ -1480,7 +1482,7 @@ function isAutoIncludedDamageEntry(entry) {
     || entry.partKey === "base";
 }
 
-function inferHitInfo(entry) {
+function inferHitInfo(entry, level = 1) {
   const label = String(entry.label || "");
   const notes = String(entry.contextText || entry.notes || "");
   const labelCount = inferHitCountFromText(label, true);
@@ -1494,7 +1496,13 @@ function inferHitInfo(entry) {
     return { count: 1, note: "" };
   }
 
-  const textCount = inferHitCountFromText(notes, false);
+  // A level upgrade can change the number of projectiles without changing the
+  // per-hit formula. Read its absolute count before the regular description.
+  const enhancedCount = /\bper\b|\bticks?\b/i.test(label)
+    && level >= number(entry.enhancedMinLevel, 99)
+    ? inferHitCountFromText(entry.enhancedNotes, false)
+    : { count: 1 };
+  const textCount = enhancedCount.count > 1 ? enhancedCount : inferHitCountFromText(notes, false);
   if (textCount.count > 1 && /subsequent/i.test(label)) {
     const count = Math.max(1, textCount.count - 1);
     return { count, note: `${formatNumber(count, 0)}ヒット（初撃を除く）` };
@@ -1544,7 +1552,7 @@ function inferHealingHitInfo(entry, level = 15) {
     return { count, note: count > 1 ? `${formatNumber(count, 0)}回` : "" };
   }
 
-  const own = inferHitInfo(entry);
+  const own = inferHitInfo(entry, level);
   if (!/\bper\b/i.test(label)
     && /\b(?:first|initial|second|third|fourth|fifth|final)\s+(?:hit|flame|star|wave|bolt|pulse|projectile|punch|kick|slash|leaf|seed|meteorite)\b/i.test(label)) {
     return own;
@@ -1575,7 +1583,7 @@ function inferHealingHitInfo(entry, level = 15) {
 
 function inferHitCountFromText(value, preferLabel) {
   const text = normalizeCountWords(String(value || ""));
-  const units = "(?:hits?|ticks?|attacks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shuriken|comets?|meteorites?|creams?|copies|targets?|diagonals?|times)";
+  const units = "(?:hits?|ticks?|attacks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shurikens?|comets?|meteorites?|creams?|copies|targets?|diagonals?|times)";
   const checks = [
     { regex: /\((?:[^)]*?)(\d+)\s+max[^)]*\)/i, group: 1, suffix: "最大" },
     { regex: new RegExp(`\\\((?:[^)]*?)(\\d+)\\s*-\\s*(\\d+)\\s*${units}[^)]*\\\)`, "i"), group: 2, suffix: "最大" },
@@ -1599,7 +1607,7 @@ function inferHitCountFromText(value, preferLabel) {
   }
 
   if (!preferLabel) {
-    const duration = text.match(/\bevery\s+(\d+(?:\.\d+)?)s\s+over\s+(\d+(?:\.\d+)?)s\b/i);
+    const duration = text.match(/\bevery\s+(\d*\.?\d+)s\s+(?:over|for)\s+(\d*\.?\d+)s\b/i);
     if (duration) {
       const count = Math.max(1, Math.floor(number(duration[2], 0) / number(duration[1], 1)));
       if (count > 1) return { count, note: `${formatNumber(count, 0)}ヒット（最大）` };
@@ -1765,10 +1773,14 @@ function parseTargetHpDamage(text) {
     || /\b(?:to|against)\s+(?:the\s+)?(?:enemies?|enemy|targets?|target|opposing)\b/i.test(nearbyAfter)
     || /\b(?:enemies?|enemy|targets?|target|opposing)\b.{0,50}\b(?:takes?|receives?)\b/i.test(nearbyBefore);
   const selfCostContext = source.slice(Math.max(0, matchIndex - 50), matchIndex);
+  // A list of ratios describes conditional alternatives; choosing the last
+  // value would silently apply a charged/empowered effect to the base attack.
+  if (/\d\s*%\s*\/\s*$/.test(selfCostContext)) return null;
   const describesSelfCost = /\b(?:the\s+)?user\s+(?:instead\s+)?(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
     || /\b(?:itself|their\s+own)\s+(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
     || /\binstead\s+(?:takes?|loses?|consumes?|receives?)\s*$/i.test(selfCostContext)
-    || /\blosing\s*$/i.test(selfCostContext);
+    || /\blosing\s*$/i.test(selfCostContext)
+    || /\b(?:in\s+exchange\s+for|at\s+(?:(?:a|the)\s+)?cost\s+of)\s*$/i.test(selfCostContext);
   if (describesSelfCost && !targetNamedInFormula) return null;
 
   const rawBasis = String(match[2] || "").toLowerCase();

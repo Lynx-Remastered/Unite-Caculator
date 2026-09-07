@@ -24,7 +24,7 @@ function updateMoveOptions() {
       defaultDmgType: /special/i.test(String(pokemon.damage_type || "")) ? "SpAtk" : "Atk",
       enhancedMinLevel: node.level2 || minLevel || node.level1 || node.level || 1
     });
-    if (!entries.length && hideWhenNoDamage) return;
+    if (hideWhenNoDamage && !entries.some(isVariantDamageCandidateEntry)) return;
     entries.forEach((entry, index) => {
       entry.id = `${slotKey}-${index}`;
       entry.slotKey = slotKey;
@@ -262,7 +262,7 @@ function damageChoicesForPokemon(pokemon, level) {
       defaultDmgType: /special/i.test(String(pokemon.damage_type || "")) ? "SpAtk" : "Atk",
       enhancedMinLevel: node.level2 || minLevel || node.level1 || node.level || 1
     });
-    if (!entries.length && hideWhenNoDamage) return;
+    if (hideWhenNoDamage && !entries.some(isVariantDamageCandidateEntry)) return;
     entries.forEach((entry, index) => {
       entry.id = `${slotKey}-${index}`;
       entry.slotKey = slotKey;
@@ -306,8 +306,7 @@ function rankingPartsForChoice(pokemon, choice, level, rangeVariant = "") {
   const damageEntries = isSylveonHyperVoice && rangeVariant
     ? activeEntries.filter((entry) => (rangeVariant === "far" ? /Far/i : /Near/i).test(String(entry.label || "")))
     : activeEntries.filter(isAutoIncludedDamageEntry);
-  const usableEntries = damageEntries.length ? damageEntries : activeEntries.slice(0, 1);
-  return entriesWithHitInfo(usableEntries, pokemon, choice, level);
+  return entriesWithHitInfo(damageEntries, pokemon, choice, level);
 }
 
 function rankingVariantsForChoice(pokemon, choice, level) {
