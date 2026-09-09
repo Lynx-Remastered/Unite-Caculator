@@ -137,6 +137,32 @@ body.ranking-column-resizing {
   font-weight: 800;
 }
 
+/* Match each damage value to the leading edge of its column heading. */
+#rankingPanel .ranking-table th,
+#rankingPanel .ranking-table td {
+  text-align: left;
+}
+
+#rankingPanel .ranking-table td {
+  vertical-align: middle;
+}
+
+#rankingPanel .ranking-rank,
+#rankingPanel .ranking-number {
+  font-variant-numeric: tabular-nums;
+}
+
+#rankingPanel .ranking-move > span {
+  min-width: 0;
+}
+
+#rankingPanel .ranking-move .ranking-name,
+#rankingPanel .ranking-note {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .healing-ranking-table {
   min-width: 760px;
 }
