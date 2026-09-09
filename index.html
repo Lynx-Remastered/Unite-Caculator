@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="assets/css/rankings.css">
   <link rel="stylesheet" href="assets/css/emblems.css">
   <link rel="stylesheet" href="assets/css/dialogs.css">
+  <link rel="stylesheet" href="assets/css/bgm.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
 </head>
 <body>
@@ -95,6 +96,15 @@
               <option value="bulbasaur">フシギダネ</option>
             </select>
           </label>
+        </div>
+        <div class="bgm-controls" role="group" aria-label="BGM">
+          <audio id="bgmAudio" loop preload="none" src="https://jetta.vgmtreasurechest.com/soundtracks/pokemon-red-green-super-music-collection/rewvmygj/1-06.%20Road%20to%20Viridian%20City%20Leaving%20Pallet%20Town.mp3"></audio>
+          <button id="bgmToggleButton" class="bgm-toggle-button" type="button" aria-label="BGMを再生" aria-controls="bgmAudio" aria-pressed="false" title="Road to Viridian City Leaving Pallet Town">♪ BGM OFF</button>
+          <label class="bgm-volume" for="bgmVolume">
+            <span>音量</span>
+            <input id="bgmVolume" type="range" min="0" max="100" step="1" value="20" aria-label="BGMの音量" aria-valuetext="20%">
+          </label>
+          <span id="bgmStatus" class="bgm-status" role="status" aria-live="polite"></span>
         </div>
         <button id="openFeedbackButton" class="feedback-trigger" type="button">要望・不具合を送る</button>
       </div>
@@ -1502,6 +1512,7 @@
   <script src="assets/js/calculations.js"></script>
   <script src="assets/js/feedback.js"></script>
   <script src="assets/js/events.js"></script>
+  <script src="assets/js/bgm.js"></script>
   <script src="assets/js/bootstrap.js"></script>
 </body>
 </html>

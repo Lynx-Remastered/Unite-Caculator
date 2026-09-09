@@ -2,6 +2,8 @@
 
 ポケモンユナイト向けの計算・比較ツールです。ビルド工程を持たない静的サイトなので、`index.html` と各アセットをそのまま GitHub Pages へ配信できます。
 
+上部の「BGM OFF」を押すとBGMをループ再生し、「BGM ON」で停止できます。初期音量は20%で、変更した音量はブラウザに保存されます。画面を切り替えても再生は続きますが、ページを開いた直後は自動再生しません。音源は `index.html` の `bgmAudio` に指定した外部MP3 URLから読み込みます。
+
 ## ローカル確認
 
 JSON を `fetch` するため、`index.html` を直接開かずローカルサーバー経由で確認します。
@@ -31,6 +33,7 @@ assets/
     rankings.css           各ランキング画面
     emblems.css            サポートメダル編集UI
     dialogs.css            読み込み表示とフィードバック画面
+    bgm.css                BGM操作と音量調整の表示
     responsive.css         画面幅別の調整
   js/
     config.js              データ参照先・定数・共有状態
@@ -44,6 +47,7 @@ assets/
     calculations.js        ステータス補正と最終計算・描画
     feedback.js            フィードバック内容の生成
     events.js              DOMイベントの接続
+    bgm.js                 BGM再生・停止と音量設定の保存
     bootstrap.js           JSON読込とアプリ起動
 data/                      アプリが参照するJSONデータ
 scripts/                   ローカル配信・データ更新・静的検証

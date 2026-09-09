@@ -1,0 +1,91 @@
+/* Shared BGM controls remain available while switching calculator views. */
+.bgm-controls {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  max-width: 240px;
+}
+
+.bgm-toggle-button {
+  min-width: 92px;
+  min-height: 34px;
+  border-color: var(--line);
+  background: var(--surface-3);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.bgm-toggle-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+}
+
+.bgm-toggle-button:hover {
+  border-color: var(--accent);
+}
+
+.bgm-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bgm-volume input {
+  width: 70px;
+  min-height: 34px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.bgm-toggle-button:focus-visible,
+.bgm-volume input:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+.bgm-status {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.bgm-status:empty {
+  display: none;
+}
+
+@media (min-width: 621px) and (max-width: 900px) {
+  .calculator-toolbar {
+    flex-wrap: wrap;
+    padding-bottom: 8px;
+  }
+
+  .calculator-navigation {
+    flex-basis: 100%;
+  }
+
+  .bgm-controls {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .bgm-controls {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .bgm-controls {
+    grid-row: 4;
+  }
+}
