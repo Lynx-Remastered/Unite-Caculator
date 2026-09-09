@@ -376,6 +376,11 @@ function wireEvents() {
     el[id].addEventListener("change", updateHealingRanking);
   });
 
+  ["shieldRankingLevelRange", "shieldRankingLimitSelect", "shieldRankingTargetFilter", "shieldRankingIncludeItems"].forEach((id) => {
+    el[id].addEventListener("input", updateShieldRanking);
+    el[id].addEventListener("change", updateShieldRanking);
+  });
+
   el.damageVariantSelect.addEventListener("change", () => {
     state.selectedDamageVariantKey = el.damageVariantSelect.value;
     updateAll();

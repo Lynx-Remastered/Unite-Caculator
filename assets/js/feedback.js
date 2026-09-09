@@ -182,6 +182,17 @@ function feedbackHealingRankingContext() {
   ];
 }
 
+function feedbackShieldRankingContext() {
+  return [
+    `- 画面: ${CALCULATOR_VIEWS.shieldRanking.title}`,
+    `- 使用者レベル: Lv${el.shieldRankingLevelRange.value}`,
+    `- シールドの対象: ${selectedOptionLabel(el.shieldRankingTargetFilter)}`,
+    `- 持ち物補正: ${el.shieldRankingIncludeItems.checked ? "ON（推奨持ち物Lv40）" : "OFF（持ち物なし）"}`,
+    `- 表示件数: ${selectedOptionLabel(el.shieldRankingLimitSelect)}`,
+    `- 表示状況: ${el.shieldRankingSummary.textContent.trim()}`
+  ];
+}
+
 function feedbackSlowRankingContext() {
   return [
     `- 画面: ${CALCULATOR_VIEWS.slowRanking.title}`,
@@ -217,6 +228,7 @@ function feedbackCalculationContext() {
     damage: feedbackDamageContext,
     ranking: feedbackRankingContext,
     healingRanking: feedbackHealingRankingContext,
+    shieldRanking: feedbackShieldRankingContext,
     slowRanking: feedbackSlowRankingContext,
     accelerationRanking: feedbackAccelerationRankingContext,
     shield: feedbackShieldContext,

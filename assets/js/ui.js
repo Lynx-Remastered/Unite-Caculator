@@ -1326,7 +1326,7 @@ function bindElements() {
     "errorBox", "calculator", "damageTabButton", "rankingTabButton", "healingRankingTabButton", "slowRankingTabButton", "accelerationRankingTabButton", "shieldTabButton", "healingTabButton", "balanceTabButton",
     "calculatorNavigation", "navigationMenuButton", "navigationMenu", "calculatorViewTitle",
     "calculationMenuButton", "calculationSubmenu", "rankingMenuButton", "rankingSubmenu",
-    "damagePanel", "rankingPanel", "healingRankingPanel", "slowRankingPanel", "accelerationRankingPanel", "shieldPanel", "healingPanel", "balancePanel",
+    "damagePanel", "rankingPanel", "healingRankingPanel", "shieldRankingPanel", "shieldRankingTabButton", "slowRankingPanel", "accelerationRankingPanel", "shieldPanel", "healingPanel", "balancePanel",
     "modeToggleButton", "themeSelect",
     "pokemonSelect", "levelRange", "levelValue",
     "moveChoices", "applyBuildButton", "clearItemsButton", "targetSelect",
@@ -1381,6 +1381,8 @@ function bindElements() {
     "rankingLevelRange", "rankingLevelValue", "rankingTargetSelect", "rankingTargetLevelRange",
     "rankingTargetLevelValue", "rankingSlotFilter", "rankingLimitSelect", "rankingSingleHit", "rankingSummary", "rankingBody",
     "healingRankingLevelRange", "healingRankingLevelValue", "healingRankingLimitSelect", "healingRankingBody",
+    "shieldRankingLevelRange", "shieldRankingLevelValue", "shieldRankingLimitSelect", "shieldRankingTargetFilter", "shieldRankingSummary", "shieldRankingBody",
+    "shieldRankingIncludeItems", "shieldRankingTable", "shieldRankingItemColumn", "shieldRankingItemHeader", "shieldRankingGuide",
     "slowFilterOptions", "slowRankingSortOrder", "slowFilterStatus", "slowRankingBody",
     "accelerationFilterOptions", "accelerationRankingSortOrder", "accelerationFilterStatus", "accelerationRankingBody",
     "balancePokemonSelect", "balanceSummary", "balanceFilterOptions", "balanceFilterStatus", "balanceFilterClearButton",
@@ -1507,6 +1509,7 @@ function selectCalculatorTab(tabName) {
   closeCalculatorNavigation();
   if (selectedTab === "ranking") updateDamageRanking();
   if (selectedTab === "healingRanking") updateHealingRanking();
+  if (selectedTab === "shieldRanking") updateShieldRanking();
   if (selectedTab === "slowRanking") updateSlowRanking();
   if (selectedTab === "accelerationRanking") updateAccelerationRanking();
   if (selectedTab === "shield") updateShieldAll();

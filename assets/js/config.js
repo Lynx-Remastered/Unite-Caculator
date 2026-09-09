@@ -544,6 +544,7 @@ const state = {
   healingMoveChoices: [],
   rankingRows: [],
   healingRankingRows: [],
+  shieldRankingRows: [],
   slowRankingRows: [],
   accelerationRankingRows: [],
   selectedMoveSlot: "basic",
@@ -594,6 +595,7 @@ const CALCULATOR_VIEWS = {
   damage: { title: "ダメージ計算", buttonId: "damageTabButton", panelId: "damagePanel" },
   ranking: { title: "ダメージランキング", buttonId: "rankingTabButton", panelId: "rankingPanel" },
   healingRanking: { title: "回復ランキング", buttonId: "healingRankingTabButton", panelId: "healingRankingPanel" },
+  shieldRanking: { title: "シールドランキング", buttonId: "shieldRankingTabButton", panelId: "shieldRankingPanel" },
   slowRanking: { title: "減速ランキング", buttonId: "slowRankingTabButton", panelId: "slowRankingPanel" },
   accelerationRanking: { title: "加速ランキング", buttonId: "accelerationRankingTabButton", panelId: "accelerationRankingPanel" },
   shield: { title: "シールド量計算", buttonId: "shieldTabButton", panelId: "shieldPanel" },
@@ -609,6 +611,6 @@ const NAVIGATION_GROUPS = {
   ranking: {
     buttonId: "rankingMenuButton",
     submenuId: "rankingSubmenu",
-    tabs: ["ranking", "healingRanking", "accelerationRanking", "slowRanking"]
+    tabs: ["ranking", "shieldRanking", "healingRanking", "accelerationRanking", "slowRanking"]
   }
 };

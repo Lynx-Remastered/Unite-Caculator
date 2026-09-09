@@ -1,4 +1,59 @@
-/* Damage, healing, slow, and acceleration ranking views. */
+/* Damage, shield, healing, slow, and acceleration ranking views. */
+.shield-ranking-controls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.shield-ranking-item-toggle {
+  align-self: end;
+}
+
+.shield-ranking-move-content {
+  min-width: 0;
+}
+
+.shield-ranking-table .ranking-name,
+.shield-ranking-table .ranking-note {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.shield-ranking-breakdown {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.shield-ranking-breakdown summary {
+  width: fit-content;
+  color: var(--accent-2);
+  cursor: pointer;
+}
+
+.shield-ranking-breakdown dl {
+  margin: 6px 0 0;
+}
+
+.shield-ranking-breakdown dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 3px 0;
+  border-top: 1px solid var(--line);
+}
+
+.shield-ranking-breakdown dt {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.shield-ranking-breakdown dd {
+  margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .healing-ranking-controls {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
@@ -163,38 +218,38 @@ body.ranking-column-resizing {
   overflow-wrap: anywhere;
 }
 
-.healing-ranking-table {
+:is(.healing-ranking-table, .shield-ranking-table) {
   min-width: 760px;
 }
 
-.healing-ranking-table col:nth-child(1) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(1) {
   width: 64px;
 }
 
-.healing-ranking-table col:nth-child(2) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(2) {
   width: 170px;
 }
 
-.healing-ranking-table col:nth-child(3) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(3) {
   width: 320px;
 }
 
-.healing-ranking-table col:nth-child(4) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(4) {
   width: 80px;
 }
 
-.healing-ranking-table col:nth-child(5) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(5) {
   width: 110px;
 }
 
-.healing-ranking-table col:nth-child(6) {
+:is(.healing-ranking-table, .shield-ranking-table) col:nth-child(6) {
   width: 140px;
 }
 
-.healing-ranking-table th:nth-child(4),
-.healing-ranking-table th:nth-child(5),
-.healing-ranking-table td:nth-child(4),
-.healing-ranking-table td:nth-child(5) {
+:is(.healing-ranking-table, .shield-ranking-table) th:nth-child(4),
+:is(.healing-ranking-table, .shield-ranking-table) th:nth-child(5),
+:is(.healing-ranking-table, .shield-ranking-table) td:nth-child(4),
+:is(.healing-ranking-table, .shield-ranking-table) td:nth-child(5) {
   text-align: left;
 }
 
@@ -499,7 +554,7 @@ body.ranking-column-resizing {
 }
 
 .slow-ranking-table .slow-move-icon-trigger img,
-.healing-ranking-table .healing-move-icon-trigger img {
+:is(.healing-ranking-table, .shield-ranking-table) .healing-move-icon-trigger img {
   width: 30px;
   height: 30px;
   object-fit: contain;
@@ -641,7 +696,7 @@ body.ranking-column-resizing {
   text-align: center;
 }
 
-:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-guide {
+:is(#slowRankingPanel, #accelerationRankingPanel, #shieldRankingPanel) .slow-ranking-guide {
   margin: 0;
   padding: 12px 14px 14px;
   color: var(--muted);

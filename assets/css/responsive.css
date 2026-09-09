@@ -107,29 +107,29 @@
     font-size: 42px;
   }
 
-  .healing-ranking-table-wrap {
+  :is(.healing-ranking-table-wrap, .shield-ranking-table-wrap) {
     overflow: visible;
     padding: 0 10px 12px;
   }
 
-  .healing-ranking-table {
+  :is(.healing-ranking-table, .shield-ranking-table) {
     display: block;
     width: 100% !important;
     min-width: 0;
     table-layout: auto;
   }
 
-  .healing-ranking-table colgroup,
-  .healing-ranking-table thead {
+  :is(.healing-ranking-table, .shield-ranking-table) colgroup,
+  :is(.healing-ranking-table, .shield-ranking-table) thead {
     display: none;
   }
 
-  .healing-ranking-table tbody {
+  :is(.healing-ranking-table, .shield-ranking-table) tbody {
     display: grid;
     gap: 10px;
   }
 
-  .healing-ranking-table tr {
+  :is(.healing-ranking-table, .shield-ranking-table) tr {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     grid-template-areas:
@@ -145,49 +145,49 @@
     background: var(--surface-2);
   }
 
-  .healing-ranking-table td {
+  :is(.healing-ranking-table, .shield-ranking-table) td {
     display: block;
     min-width: 0;
     padding: 0;
     border: 0;
   }
 
-  .healing-ranking-table tr.healing-ranking-empty {
+  :is(.healing-ranking-table, .shield-ranking-table) tr:is(.healing-ranking-empty, .shield-ranking-empty) {
     display: block;
   }
 
-  .healing-ranking-table tr.healing-ranking-empty td {
+  :is(.healing-ranking-table, .shield-ranking-table) tr:is(.healing-ranking-empty, .shield-ranking-empty) td {
     width: 100%;
     padding: 12px;
     text-align: center;
   }
 
-  .healing-ranking-table td:nth-child(1) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(1) {
     grid-area: rank;
     width: auto;
     color: var(--accent-2);
     text-align: left;
   }
 
-  .healing-ranking-table td:nth-child(1)::before {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(1)::before {
     content: "順位 ";
     color: var(--muted);
     font-size: 10px;
     font-weight: 800;
   }
 
-  .healing-ranking-table td:nth-child(2) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(2) {
     grid-area: pokemon;
   }
 
-  .healing-ranking-table td:nth-child(3) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(3) {
     grid-area: move;
     padding-top: 8px;
     border-top: 1px solid var(--line);
   }
 
-  .healing-ranking-table td:nth-child(4),
-  .healing-ranking-table td:nth-child(5) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(4),
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(5) {
     display: grid;
     gap: 2px;
     padding-top: 8px;
@@ -195,31 +195,46 @@
     text-align: left;
   }
 
-  .healing-ranking-table td:nth-child(4) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(4) {
     grid-area: hits;
   }
 
-  .healing-ranking-table td:nth-child(4)::before {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(4)::before {
     content: "回復回数";
   }
 
-  .healing-ranking-table td:nth-child(5) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(5) {
     grid-area: healing;
   }
 
-  .healing-ranking-table td:nth-child(5)::before {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(5)::before {
     content: "回復量";
   }
 
-  .healing-ranking-table td:nth-child(4)::before,
-  .healing-ranking-table td:nth-child(5)::before,
-  .healing-ranking-table td:nth-child(6)::before {
+  .shield-ranking-table td:nth-child(4)::before {
+    content: "対象";
+  }
+
+  .shield-ranking-table td:nth-child(5)::before {
+    content: "シールド量";
+  }
+
+  .shield-ranking-table.without-items tr {
+    grid-template-areas:
+      "rank pokemon"
+      "move move"
+      "hits healing";
+  }
+
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(4)::before,
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(5)::before,
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(6)::before {
     color: var(--muted);
     font-size: 10px;
     font-weight: 800;
   }
 
-  .healing-ranking-table td:nth-child(6) {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(6) {
     grid-area: assumption;
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr);
@@ -229,42 +244,42 @@
     border-top: 1px solid var(--line);
   }
 
-  .healing-ranking-table td:nth-child(6)::before {
+  :is(.healing-ranking-table, .shield-ranking-table) td:nth-child(6)::before {
     content: "持ち物";
   }
 
-  .healing-ranking-table .ranking-pokemon,
-  .healing-ranking-table .ranking-move {
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-pokemon,
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-move {
     grid-template-columns: 32px minmax(0, 1fr);
     gap: 7px;
   }
 
-  .healing-ranking-table .ranking-pokemon img {
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-pokemon img {
     width: 32px;
     height: 32px;
   }
 
-  .healing-ranking-table .healing-move-icon-trigger {
+  :is(.healing-ranking-table, .shield-ranking-table) .healing-move-icon-trigger {
     width: 32px;
     height: 32px;
     min-height: 32px;
   }
 
-  .healing-ranking-table .healing-move-icon-trigger img {
+  :is(.healing-ranking-table, .shield-ranking-table) .healing-move-icon-trigger img {
     width: 28px;
     height: 28px;
   }
 
-  .healing-ranking-table .ranking-name {
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-name {
     white-space: nowrap;
   }
 
-  .healing-ranking-table .ranking-note {
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-note {
     white-space: normal;
     overflow-wrap: anywhere;
   }
 
-  .healing-ranking-table .ranking-item-icons {
+  :is(.healing-ranking-table, .shield-ranking-table) .ranking-item-icons {
     min-height: 24px;
   }
 

@@ -76,6 +76,7 @@
               </button>
               <div id="rankingSubmenu" class="navigation-submenu" role="group" aria-label="ランキング" hidden>
                 <button id="rankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="rankingPanel">ダメージ<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
+                <button id="shieldRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="shieldRankingPanel">シールド<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
                 <button id="healingRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="healingRankingPanel">回復<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
                 <button id="accelerationRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="accelerationRankingPanel">加速<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
                 <button id="slowRankingTabButton" class="navigation-menu-item" type="button" role="menuitem" aria-controls="slowRankingPanel">減速<span class="navigation-menu-check" aria-hidden="true">✓</span></button>
@@ -708,6 +709,71 @@
                   </tr>
                 </thead>
                 <tbody id="rankingBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="shieldRankingPanel" class="tab-panel" role="region" aria-labelledby="calculatorViewTitle" hidden>
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>ランキング条件</h2>
+            </div>
+            <div class="panel-body stack">
+              <div class="ranking-controls shield-ranking-controls">
+                <label>
+                  使用者レベル
+                  <div class="range-row">
+                    <input id="shieldRankingLevelRange" type="range" min="1" max="15" value="15">
+                    <span id="shieldRankingLevelValue" class="range-value">15</span>
+                  </div>
+                </label>
+                <label>
+                  シールドの対象
+                  <select id="shieldRankingTargetFilter">
+                    <option value="all">すべて</option>
+                    <option value="self">自分</option>
+                    <option value="ally">味方</option>
+                  </select>
+                </label>
+                <label>
+                  表示件数
+                  <select id="shieldRankingLimitSelect">
+                    <option value="25">上位25件</option>
+                    <option value="50" selected>上位50件</option>
+                    <option value="100">上位100件</option>
+                    <option value="9999">全件</option>
+                  </select>
+                </label>
+                <label class="check-row shield-ranking-item-toggle">
+                  <span>持ち物補正</span>
+                  <input id="shieldRankingIncludeItems" type="checkbox" checked>
+                </label>
+              </div>
+              <div id="shieldRankingSummary" class="effect-note ranking-summary" role="status" aria-live="polite"></div>
+            </div>
+          </section>
+          <section class="panel result-panel">
+            <div class="result-head">
+              <h2>シールド量ランキング</h2>
+            </div>
+            <p id="shieldRankingGuide" class="slow-ranking-guide"></p>
+            <div class="ranking-table-wrap shield-ranking-table-wrap">
+              <table id="shieldRankingTable" class="ranking-table shield-ranking-table" aria-describedby="shieldRankingGuide">
+                <colgroup><col><col><col><col><col><col id="shieldRankingItemColumn"></colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col">順位</th>
+                    <th scope="col">ポケモン</th>
+                    <th scope="col">技・シールド効果</th>
+                    <th scope="col">対象</th>
+                    <th scope="col">シールド量（合計）</th>
+                    <th id="shieldRankingItemHeader" scope="col">持ち物</th>
+                  </tr>
+                </thead>
+                <tbody id="shieldRankingBody"></tbody>
               </table>
             </div>
           </section>
@@ -1509,6 +1575,8 @@
   <script src="assets/js/slow-ranking.js"></script>
   <script src="assets/js/acceleration-ranking.js"></script>
   <script src="assets/js/support-calculators.js"></script>
+  <script src="assets/js/shield-ranking.js"></script>
+  <script src="assets/js/shield-ranking-view.js"></script>
   <script src="assets/js/calculations.js"></script>
   <script src="assets/js/feedback.js"></script>
   <script src="assets/js/events.js"></script>
