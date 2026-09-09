@@ -851,38 +851,48 @@
             </div>
             <div class="panel-body stack">
               <div class="slow-display-filter">
-                <fieldset class="slow-filter-group">
-                  <legend>
-                    効果タイプ
-                    <span class="slow-filter-legend-note">複数選択はAND</span>
-                  </legend>
-                  <div id="accelerationFilterOptions" class="slow-filter-options">
-                    <label class="slow-filter-option">
-                      <input type="checkbox" value="stack">
-                      <span>累積</span>
-                    </label>
-                    <label class="slow-filter-option">
-                      <input type="checkbox" value="decay">
-                      <span>減衰</span>
-                    </label>
-                    <label class="slow-filter-option">
-                      <input type="checkbox" value="instant">
-                      <span>即効</span>
-                    </label>
-                    <label class="slow-filter-option">
-                      <input type="checkbox" value="enhanced">
-                      <span>強化後</span>
-                    </label>
-                  </div>
-                </fieldset>
+                <div id="accelerationFilterOptions" class="slow-filter-layout">
+                  <fieldset class="slow-filter-group">
+                    <legend>効果タイプ</legend>
+                    <div class="slow-filter-options">
+                      <label class="slow-filter-option">
+                        <input type="checkbox" value="fixed">
+                        <span>一定</span>
+                      </label>
+                      <label class="slow-filter-option">
+                        <input type="checkbox" value="stack">
+                        <span>累積</span>
+                      </label>
+                      <label class="slow-filter-option">
+                        <input type="checkbox" value="decay">
+                        <span>減衰</span>
+                      </label>
+                      <label class="slow-filter-option">
+                        <input type="checkbox" value="growth">
+                        <span>徐々に増加</span>
+                      </label>
+                    </div>
+                    <p class="slow-filter-help">一定：加速率が変わらない ／ 累積：重ねると強まる ／ 減衰：時間で弱まる ／ 徐々に増加：時間で強まる</p>
+                  </fieldset>
+                  <fieldset class="slow-filter-group">
+                    <legend>強化状態</legend>
+                    <div class="slow-filter-options">
+                      <label class="slow-filter-option">
+                        <input type="checkbox" value="enhanced">
+                        <span>強化後のみ</span>
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
                 <label class="slow-filter-sort" for="accelerationRankingSortOrder">
                   並び順
                   <select id="accelerationRankingSortOrder">
-                    <option value="desc">加速率が高い順（降順）</option>
-                    <option value="asc">加速率が低い順（昇順）</option>
+                    <option value="desc">最大加速率が高い順</option>
+                    <option value="asc">最大加速率が低い順</option>
+                    <option value="duration">持続時間が長い順</option>
                   </select>
                 </label>
-                <div id="accelerationFilterStatus" class="slow-filter-status" aria-live="polite">条件未選択時はすべて表示します。</div>
+                <div id="accelerationFilterStatus" class="slow-filter-status" aria-live="polite">未選択ですべて表示。複数選択すると、選んだ条件をすべて満たす効果を表示します。</div>
               </div>
             </div>
           </section>
@@ -891,9 +901,11 @@
             <div class="result-head">
               <h2>自分・味方への移動速度上昇率</h2>
             </div>
+            <p id="accelerationRankingGuide" class="slow-ranking-guide">加速率は最大値で比較します。「初期」は付与時、「最大」は累積や時間、条件によって到達する値です。持続時間や効果の対象もあわせて確認できます。</p>
             <div class="ranking-table-wrap slow-ranking-table-wrap">
-              <table class="ranking-table slow-ranking-table acceleration-ranking-table">
+              <table class="ranking-table slow-ranking-table acceleration-ranking-table" aria-describedby="accelerationRankingGuide">
                 <colgroup>
+                  <col>
                   <col>
                   <col>
                   <col>
@@ -901,10 +913,11 @@
                 </colgroup>
                 <thead>
                   <tr>
-                    <th>順位</th>
-                    <th>ポケモン</th>
-                    <th>技</th>
-                    <th>加速</th>
+                    <th scope="col">順位</th>
+                    <th scope="col">ポケモン・効果元</th>
+                    <th scope="col">技・効果</th>
+                    <th scope="col">加速率と変化</th>
+                    <th scope="col">持続時間</th>
                   </tr>
                 </thead>
                 <tbody id="accelerationRankingBody"></tbody>

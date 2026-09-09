@@ -563,51 +563,59 @@ body.ranking-column-resizing {
   color: var(--success);
 }
 
-/* Give the slow ranking its own comparison layout; acceleration shares the base classes. */
+/* Both movement-speed rankings share the same comparison layout. */
 #slowRankingPanel {
-  container: slow-ranking / inline-size;
+  --speed-ranking-effect-label: "減速率と変化";
+}
+
+#accelerationRankingPanel {
+  --speed-ranking-effect-label: "加速率と変化";
+}
+
+:is(#slowRankingPanel, #accelerationRankingPanel) {
+  container: speed-ranking / inline-size;
   min-width: 0;
 }
 
-#slowRankingPanel > .stack {
+:is(#slowRankingPanel, #accelerationRankingPanel) > .stack {
   grid-template-columns: minmax(0, 1fr);
 }
 
-#slowRankingPanel .panel,
-#slowRankingPanel .panel-body,
-#slowRankingPanel .slow-ranking-table-wrap,
-#slowRankingPanel .slow-filter-sort {
+:is(#slowRankingPanel, #accelerationRankingPanel) .panel,
+:is(#slowRankingPanel, #accelerationRankingPanel) .panel-body,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table-wrap,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort {
   min-width: 0;
   max-width: 100%;
 }
 
-#slowRankingPanel .slow-ranking-table {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table {
   width: 100%;
   min-width: 0;
 }
 
-#slowRankingPanel .slow-ranking-table col:nth-child(1) { width: 6%; }
-#slowRankingPanel .slow-ranking-table col:nth-child(2) { width: 19%; }
-#slowRankingPanel .slow-ranking-table col:nth-child(3) { width: 25%; }
-#slowRankingPanel .slow-ranking-table col:nth-child(4) { width: 35%; }
-#slowRankingPanel .slow-ranking-table col:nth-child(5) { width: 15%; }
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table col:nth-child(1) { width: 6%; }
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table col:nth-child(2) { width: 19%; }
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table col:nth-child(3) { width: 25%; }
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table col:nth-child(4) { width: 35%; }
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table col:nth-child(5) { width: 15%; }
 
-#slowRankingPanel .slow-ranking-table th,
-#slowRankingPanel .slow-ranking-table td {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table th,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td {
   text-align: left;
 }
 
-#slowRankingPanel .slow-ranking-table td {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td {
   padding-top: 18px;
   padding-bottom: 18px;
 }
 
-#slowRankingPanel .slow-ranking-table .ranking-rank {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table .ranking-rank {
   padding-top: 24px;
   text-align: center;
 }
 
-#slowRankingPanel .slow-ranking-guide {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-guide {
   margin: 0;
   padding: 12px 14px 14px;
   color: var(--muted);
@@ -615,63 +623,63 @@ body.ranking-column-resizing {
   line-height: 1.65;
 }
 
-#slowRankingPanel .slow-display-filter {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-display-filter {
   grid-template-columns: minmax(0, 1fr) minmax(190px, 220px);
   gap: 14px 20px;
   align-items: start;
 }
 
-#slowRankingPanel .slow-filter-layout {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-layout {
   display: flex;
   flex-wrap: wrap;
   gap: 16px 24px;
   min-width: 0;
 }
 
-#slowRankingPanel .slow-filter-sort select {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort select {
   width: 100%;
   min-width: 0;
 }
 
-#slowRankingPanel .slow-filter-group legend,
-#slowRankingPanel .slow-filter-sort,
-#slowRankingPanel .slow-filter-option,
-#slowRankingPanel .slow-filter-sort select,
-#slowRankingPanel .slow-filter-sort option {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-group legend,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-option,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort select,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort option {
   font-size: 13px;
 }
 
-#slowRankingPanel .slow-filter-option {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-option {
   min-height: 36px;
   padding: 7px 12px;
 }
 
-#slowRankingPanel .slow-filter-option:focus-within {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-option:focus-within {
   outline: 2px solid var(--accent-2);
   outline-offset: 3px;
 }
 
-#slowRankingPanel .slow-filter-help {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-help {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.6;
 }
 
-#slowRankingPanel .slow-filter-status {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-status {
   border-top: 1px solid var(--line);
   padding-top: 10px;
   font-size: 12px;
 }
 
-#slowRankingPanel .slow-ranking-source {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-source {
   grid-template-columns: 48px minmax(0, 1fr);
   justify-items: start;
   align-items: center;
   gap: 10px;
 }
 
-#slowRankingPanel .slow-ranking-source-name {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-source-name {
   min-width: 0;
   color: var(--ink);
   font-size: 13px;
@@ -680,13 +688,13 @@ body.ranking-column-resizing {
   overflow-wrap: anywhere;
 }
 
-#slowRankingPanel .ranking-move {
+:is(#slowRankingPanel, #accelerationRankingPanel) .ranking-move {
   grid-template-columns: 52px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
 }
 
-#slowRankingPanel .ranking-name {
+:is(#slowRankingPanel, #accelerationRankingPanel) .ranking-name {
   display: block;
   padding-top: 4px;
   font-size: 13px;
@@ -696,7 +704,7 @@ body.ranking-column-resizing {
   white-space: normal;
 }
 
-#slowRankingPanel .ranking-note {
+:is(#slowRankingPanel, #accelerationRankingPanel) .ranking-note {
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.5;
@@ -705,7 +713,7 @@ body.ranking-column-resizing {
   white-space: normal;
 }
 
-#slowRankingPanel .slow-move-detail-trigger {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger {
   width: 52px;
   height: auto;
   min-height: 56px;
@@ -721,66 +729,66 @@ body.ranking-column-resizing {
   cursor: pointer;
 }
 
-#slowRankingPanel .slow-move-detail-trigger:hover,
-#slowRankingPanel .slow-move-detail-trigger:focus-visible,
-#slowRankingPanel .slow-move-detail-trigger[aria-expanded="true"] {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger:hover,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger:focus-visible,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger[aria-expanded="true"] {
   border-color: var(--accent-2);
   background: rgba(var(--accent-2-rgb), 0.1);
 }
 
-#slowRankingPanel .slow-move-detail-trigger:focus-visible {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger:focus-visible {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
 
-#slowRankingPanel .slow-effect-visual {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-visual {
   min-height: 0;
   gap: 9px;
   overflow: visible;
 }
 
-#slowRankingPanel .slow-effect-value {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-value {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 6px;
 }
 
-#slowRankingPanel .slow-effect-value-label {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-value-label {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
 }
 
-#slowRankingPanel .slow-effect-main,
-#slowRankingPanel .slow-duration-value {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-main,
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-value {
   font-size: 26px;
   font-weight: 900;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
 
-#slowRankingPanel .slow-effect-description {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-description {
   color: var(--label);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.55;
 }
 
-#slowRankingPanel .slow-effect-flow {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-flow {
   flex-wrap: wrap;
   gap: 6px 5px;
   font-size: 12px;
 }
 
-#slowRankingPanel .slow-effect-flow-group {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-flow-group {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   max-width: 100%;
 }
 
-#slowRankingPanel .slow-effect-step {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-step {
   display: grid;
   justify-items: center;
   gap: 3px;
@@ -791,30 +799,30 @@ body.ranking-column-resizing {
   background: var(--surface-3);
 }
 
-#slowRankingPanel .slow-effect-flow-value {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-flow-value {
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-#slowRankingPanel .slow-effect-step-label {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-step-label {
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.3;
 }
 
-#slowRankingPanel .slow-ranking-duration {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-duration {
   color: var(--ink);
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-#slowRankingPanel .slow-duration-value {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-value {
   display: block;
 }
 
-#slowRankingPanel .slow-duration-note {
+:is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-note {
   display: block;
   margin-top: 8px;
   color: var(--muted);

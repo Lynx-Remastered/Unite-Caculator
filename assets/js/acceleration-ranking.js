@@ -72,7 +72,7 @@ function accelerationDurationForMatch(text, match, matchEnd) {
   if (decay && decay.duration > 0) return number(decay.duration, 0);
   const preceding = text.slice(0, match.index);
   const before = preceding.split(/(?<!\bSp)\.(?=\s|$)|;/i).pop();
-  const activeEffect = /for the duration|until the move ends|while (?:this move|the [a-z ]+?|[a-z ]+?) is active|while (?:in|inside)|during mega evolution/i.test(`${before} ${exact} ${after}`);
+  const activeEffect = /for the duration|until the move ends|while (?:this move|the [a-z ]+?|[a-z ]+?) is active|while (?:[a-z'-]+ is )?(?:in|inside)\b|while flying\b|during mega evolution/i.test(`${before} ${exact} ${after}`);
   if (activeEffect) {
     const total = text.match(/\btotal\s+(?:[a-z-]+\s+){0,3}?duration\s+of\s+(\d+(?:\.\d+)?)s\b/i);
     if (total) return number(total[1], 0);
@@ -171,6 +171,20 @@ function accelerationDetailParts(node, rsb) {
 
 function accelerationTargetLabel(text) {
   const value = String(text || "");
+  // Decide from the speed effect's own sentence first. A nearby ally can be
+  // an activation condition or the recipient of healing, not of this speed buff.
+  const speedSentence = value.split(/(?<!\bSp)\.(?=\s|$)|;/i)
+    .find((sentence) => /movement speeds?/i.test(sentence)) || value;
+  const sentenceHasAlly = /\b(?:ally|allies|allied|teammates?)\b/i.test(speedSentence);
+  if (/both of their movement speeds?/i.test(speedSentence)
+      || /movement speed[^.;]{0,90}(?:themself|themselves|itself)[^.;]{0,40}(?:teammates?|allies)/i.test(speedSentence)) {
+    return "自分・味方";
+  }
+  if (/movement speeds?\s+of\s+(?:the\s+)?(?:ally|allies|allied|teammates?)/i.test(speedSentence)) return "味方";
+  if (/movement speeds?[^.;]{0,65}(?:when|while)\s+near\s+(?:an?\s+)?ally/i.test(speedSentence)) return "自分";
+  if (!sentenceHasAlly && /(?:\buser\b|themself|themselves|itself|[a-z]+['’]s\s+movement speed)/i.test(speedSentence)) {
+    return "自分";
+  }
   const hasAlly = /\b(?:ally|allies|allied|teammates?)\b|team members?/i.test(value);
   const hasSelf = /(?:the user|user['’]s|themself|themselves|itself|this pok(?:é|e)mon|the user and|nearby teammates|including the user)/i.test(value);
   if (hasAlly && hasSelf) return "自分・味方";
@@ -323,23 +337,25 @@ function japaneseAccelerationFallbackParts(row) {
   const duration = decay && decay.total && decay.duration > 0
     ? decay.duration
     : accelerationEffectDuration(row) || number(decay && decay.duration, 0);
-  if (duration > 0) effects.push(`加速の持続時間は${formatNumber(duration, 1)}秒です。`);
+  if (duration > 0) effects.push(`加速の持続時間は${row.accelerationDurationIsMaximum ? "最大" : ""}${formatNumber(duration, 2)}秒です。`);
+  if (row.accelerationDurationNote) effects.push(`${row.accelerationDurationNote}。`);
+  if (row.accelerationExtendedDuration > duration) effects.push(`条件を満たすと最大${formatNumber(row.accelerationExtendedDuration, 2)}秒まで延長されます。`);
   if (decay && decay.decrement > 0 && decay.interval > 0) {
     const floor = decay.minimum > 0 ? `、最低${formatNumber(decay.minimum, 1)}%まで` : "";
     const repeat = decay.times > 0 ? `、最大${formatNumber(decay.times, 0)}回` : "";
-    effects.push(`${formatNumber(decay.interval, 1)}秒ごとに${formatNumber(decay.decrement, 1)}%ずつ${floor}${repeat}減衰します。`);
+    effects.push(`${formatNumber(decay.interval, 2)}秒ごとに${formatNumber(decay.decrement, 1)}%ずつ${floor}${repeat}減衰します。`);
   } else if (decay && decay.decrement > 0 && decay.total) {
     const floor = decay.minimum > 0
       ? decay.minimum
       : Math.max(0, row.accelerationPercent - decay.decrement);
-    effects.push(`${formatNumber(decay.duration, 1)}秒かけて${formatNumber(floor, 1)}%まで減衰します。`);
+    effects.push(`${formatNumber(decay.duration, 2)}秒かけて${formatNumber(floor, 1)}%まで減衰します。`);
   } else if (decay && decay.minimum > 0 && decay.minimum < row.accelerationPercent) {
-    const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 1)}秒かけて` : "時間経過で";
+    const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 2)}秒かけて` : "時間経過で";
     effects.push(`${transition}${formatNumber(decay.minimum, 1)}%まで減衰します。`);
   }
   const growth = row.grows ? accelerationGrowthDetails(row.accelerationContext) : null;
   if (growth && growth.increment > 0 && growth.interval > 0) {
-    effects.push(`${formatNumber(growth.interval, 1)}秒ごとに${formatNumber(growth.increment, 1)}%ずつ加速が累積します。`);
+    effects.push(`${formatNumber(growth.interval, 2)}秒ごとに${formatNumber(growth.increment, 1)}%ずつ加速が累積します。`);
   }
   return [
     {
@@ -453,11 +469,30 @@ function pokemonAccelerationRankingRows(pokemon) {
         const normalCandidates = candidates.filter((candidate) => !candidate.enhanced);
         const enhancedCandidates = candidates.filter((candidate) => candidate.enhanced);
         const bestNormal = normalCandidates[0] || null;
-        const bestEnhanced = enhancedCandidates[0] || null;
+        let bestEnhanced = enhancedCandidates[0] || null;
+        const enhancedEffectText = SLOW_EFFECT_TEXT_FIELDS
+          .filter((field) => field.enhanced)
+          .map((field) => cleanSlowDescription(rsb[field.key]))
+          .filter(Boolean)
+          .join(" ");
+        // A duration-only upgrade still changes a speed buff tied to the whole
+        // active move. Do not inherit extensions of a clone, link, or enemy CC.
+        const durationUpgrade = enhancedEffectText.match(/increas\w* the duration of (?:its|this move['’]s) effects (by|to) (\d+(?:\.\d+)?)s\b/i);
+        if (!bestEnhanced && bestNormal && bestNormal.duration > 0 && durationUpgrade
+            && /while this move is active|for the duration of (?:this|the) move/i.test(bestNormal.context)) {
+          bestEnhanced = {
+            ...bestNormal,
+            enhanced: true,
+            duration: durationUpgrade[1].toLowerCase() === "by"
+              ? bestNormal.duration + number(durationUpgrade[2], 0)
+              : number(durationUpgrade[2], 0),
+            context: enhancedEffectText
+          };
+        }
         const enhancedAccelerationText = SLOW_EFFECT_TEXT_FIELDS
           .filter((field) => field.enhanced)
           .map((field) => cleanSlowDescription(rsb[field.key]))
-          .filter((text) => text && accelerationTextHasEffect(text))
+          .filter((text) => text && (accelerationTextHasEffect(text) || (durationUpgrade && bestEnhanced && bestEnhanced.context === enhancedEffectText)))
           .join(" ");
         const variants = [];
         if (bestNormal) {
@@ -533,6 +568,16 @@ function pokemonAccelerationRankingRows(pokemon) {
             targetLabel = accelerationTargetLabel(context);
           }
           const abilityNote = skill.ability === "Passive" ? "特性" : skill.ability === "Basic" ? "通常攻撃" : jpAbility(skill.ability);
+          const activeArea = /while (?:[a-z'-]+ is )?(?:in|inside) the aurora\b/i.test(context);
+          const activeFlight = /while (?:flying|in the air)\b/i.test(context);
+          const extensionText = [rsb.true_desc, rsb.notes].map(cleanSlowDescription).join(" ");
+          const movementExtension = extensionText.match(/This move['’]s duration increases by \d+(?:\.\d+)?s if the user moves or hits opposing Pok(?:é|e)mon with moves.{0,150}?maximum (\d+(?:\.\d+)?)s duration/i);
+          const damageExtension = extensionText.match(/Dealing or taking any damage extends this duration[^.]*?up to (\d+(?:\.\d+)?) seconds/i);
+          const attackExtension = extensionText.match(/\bThe vortex lasts (\d+(?:\.\d+)?)s, and its duration is increased by \d+(?:\.\d+)?s if the user hits opposing Pok(?:é|e)mon with an auto attack\.[\s\S]{0,150}?total vortex duration of (\d+(?:\.\d+)?)s\b/i);
+          const extendedDuration = number(attackExtension ? attackExtension[2] : (movementExtension || damageExtension || [])[1], 0);
+          const durationNote = activeArea ? "範囲内のみ" : activeFlight ? "飛行中" : movementExtension ? "移動・わざ命中で延長" : damageExtension ? "与ダメージ・被ダメージで延長"
+            : attackExtension ? "通常攻撃命中で延長"
+            : /lingering for [\d.]+s after leaving the path/i.test(context) ? "経路を離れてからの残存時間（経路上でも加速）" : "";
           rows.push({
             sourceType: "pokemon",
             sourceName: pokemon.name,
@@ -551,7 +596,10 @@ function pokemonAccelerationRankingRows(pokemon) {
             decays: candidate.decays,
             grows: candidate.grows,
             variable: typeof variant.variable === "boolean" ? variant.variable : candidate.variable,
-            accelerationDuration: candidate.duration,
+            accelerationDuration: attackExtension ? number(attackExtension[1], candidate.duration) : candidate.duration,
+            accelerationDurationIsMaximum: candidate.duration > 0 && (activeArea || activeFlight),
+            accelerationExtendedDuration: extendedDuration,
+            accelerationDurationNote: durationNote,
             accelerationContext: context,
             accelerationDecayContext: variant.decayContext,
             targetLabel,
@@ -602,12 +650,122 @@ function pokemonAccelerationRankingRows(pokemon) {
       descriptionKey: slowDescriptionKey(pokemon, skill, skill, "rsb"),
       accelerationDetailPartsJa: [
         { label: "加速条件", text: afterMove ? "ユナイトわざの効果が終了したとき。" : "ユナイトわざを使用したとき。" },
-        { label: "加速効果", text: `自分の移動速度を${formatNumber(percent, 1)}%上げます。${duration > 0 ? `持続時間は${formatNumber(duration, 1)}秒です。` : ""}` }
+        { label: "加速効果", text: `自分の移動速度を${formatNumber(percent, 1)}%上げます。${duration > 0 ? `持続時間は${formatNumber(duration, 2)}秒です。` : ""}` }
       ],
       detailParts: [{ label: "", text: buffs }]
     });
   });
-  return rows;
+  return separateAccelerationComponents(pokemon, rows);
+}
+
+// A few descriptions combine effects with different recipients or durations.
+// Keep those components separate instead of treating every percentage as a
+// possible value of the same buff. Values still come from the bundled source.
+function separateAccelerationComponents(pokemon, rows) {
+  const sources = new Map();
+  (pokemon.skills || []).forEach((skill) => {
+    [skill, ...(skill.upgrades || [])].forEach((node) => {
+      if (node.rsb) sources.set(slowDescriptionKey(pokemon, skill, node, "rsb"), { skill, node, rsb: node.rsb });
+    });
+  });
+  const component = (row, text, targetLabel, overrides = {}) => {
+    const candidates = accelerationPercentCandidates(text, row.enhanced)
+      .sort((a, b) => b.percent - a.percent || a.basePercent - b.basePercent);
+    const best = candidates[0];
+    if (!best) return row;
+    return {
+      ...row,
+      accelerationPercent: best.percent,
+      basePercent: best.basePercent,
+      minAccelerationPercent: best.minPercent,
+      stackMultiplier: best.multiplier,
+      variable: best.variable,
+      grows: best.grows,
+      decays: best.decays,
+      accelerationDuration: best.duration,
+      accelerationContext: text,
+      accelerationDecayContext: text,
+      targetLabel,
+      ...overrides
+    };
+  };
+  return rows.flatMap((row) => {
+    const source = sources.get(row.descriptionKey);
+    if (!source) return [row];
+    const { skill, node, rsb } = source;
+    if (pokemon.name === "Dragonite" && node.name === "Dragon Dance") {
+      // The three stacks belong to Attack/Hyper Beam. Movement speed is a
+      // one-second buff; the upgrade adds a separate conditional speed buff.
+      const speedClause = cleanSlowDescription(rsb.true_desc).match(/increasing movement speed by \d+(?:\.\d+)?% for \d+(?:\.\d+)?s/i);
+      if (!speedClause) return [row];
+      if (!row.enhanced) return [component(row, speedClause[0], "自分")];
+      const normal = component(row, speedClause[0], "自分");
+      const extra = component(row, cleanSlowDescription(rsb.enhanced_true_desc), "自分");
+      const result = {
+        ...extra,
+        accelerationPercent: normal.accelerationPercent + extra.accelerationPercent,
+        basePercent: normal.accelerationPercent,
+        minAccelerationPercent: normal.accelerationPercent,
+        variable: true,
+        accelerationDuration: normal.accelerationDuration,
+        accelerationDurationIsMaximum: true,
+        accelerationDurationNote: "通常の加速と追加効果が重なる間"
+      };
+      result.accelerationDetailPartsJa = [
+        { label: "加速条件", text: "強化後、移動が終わったとき周囲に相手ポケモンがいる場合。" },
+        { label: "加速効果", text: `通常の${formatNumber(normal.accelerationPercent, 1)}%加速に${formatNumber(extra.accelerationPercent, 1)}%を追加し、重なっている間は最大${formatNumber(result.accelerationPercent, 1)}%上がります。重複時間は最大${formatNumber(result.accelerationDuration, 1)}秒です。追加の${formatNumber(extra.accelerationPercent, 1)}%加速自体は${formatNumber(extra.accelerationDuration, 1)}秒続きます。` }
+      ];
+      return [result];
+    }
+    if (pokemon.name === "Mr.Mime" && node.name === "Power Swap") {
+      const own = component(row, cleanSlowDescription(rsb.true_desc), "自分", {
+        moveNote: `${jpAbility(skill.ability)}・自分`,
+        accelerationDurationLabel: "リンク中",
+        accelerationDurationNote: "リンクが続く間"
+      });
+      const allyText = cleanSlowDescription(rsb.notes).split(/If the linked target is an enemy/i)[0];
+      const ally = component(row, allyText, "味方", {
+        moveNote: `${jpAbility(skill.ability)}・味方`,
+        accelerationDurationLabel: "リンク中",
+        accelerationDurationNote: "味方とのリンクが続く間"
+      });
+      [own, ally].forEach((entry) => {
+        entry.accelerationDetailPartsJa = [
+          { label: "加速条件", text: entry.targetLabel === "自分" ? "相手または味方とリンクしている間。" : "味方ポケモンとリンクしている間。" },
+          { label: "加速効果", text: `${entry.targetLabel === "自分" ? "自分" : "リンクした味方"}の移動速度を${formatNumber(entry.accelerationPercent, 1)}%上げます。リンクが切れると終了します。` }
+        ];
+      });
+      return [own, ally];
+    }
+    if (pokemon.name === "Psyduck" && node.name === "Surf") {
+      const text = cleanSlowDescription(rsb.true_desc);
+      const ownText = text.match(/Rides the wave[\s\S]*?(?=Ally Pok)/i);
+      const allyText = text.match(/Ally Pok[\s\S]*?(?=When this move is used again|$)/i);
+      if (!ownText || !allyText) return [row];
+      const maximumDuration = ownText[0].match(/for up to (\d+(?:\.\d+)?)s/i);
+      const own = component(row, ownText[0], "自分", {
+        moveNote: `${jpAbility(skill.ability)}・自分`,
+        accelerationDuration: maximumDuration ? number(maximumDuration[1], 0) : 0,
+        accelerationDurationIsMaximum: true,
+        accelerationDurationNote: "波に乗っている間"
+      });
+      own.accelerationDetailPartsJa = [
+        { label: "加速条件", text: "自分が波に乗って移動している間。再使用すると終了します。" },
+        { label: "加速効果", text: `自分の移動速度を${formatNumber(own.accelerationPercent, 1)}%上げます。持続時間は最大${formatNumber(own.accelerationDuration, 1)}秒です。` }
+      ];
+      const ally = component(row, allyText[0], "味方", {
+        moveNote: `${jpAbility(skill.ability)}・味方`,
+        accelerationDurationIsMaximum: false,
+        accelerationDurationNote: "波に触れた味方への効果"
+      });
+      ally.accelerationDetailPartsJa = [
+        { label: "加速条件", text: "コダックが乗っている波に味方ポケモンが触れたとき。" },
+        ...japaneseAccelerationFallbackParts(ally).filter((part) => part.label === "加速効果")
+      ];
+      return [own, ally];
+    }
+    return [row];
+  });
 }
 
 function supplementalAccelerationRankingRows() {
@@ -635,7 +793,8 @@ function supplementalAccelerationRankingRows() {
       enhanced: false,
       decays: best.decays,
       grows: best.grows,
-      variable: best.variable || candidates.length > 1,
+      // Held items are compared at their maximum upgrade, not as a timed ramp.
+      variable: best.variable,
       accelerationDuration: best.duration,
       accelerationContext: descriptions.join(" "),
       targetLabel: "自分",
@@ -792,33 +951,82 @@ function accelerationEffectProfile(row) {
   return { kind, chips, steps };
 }
 
-function accelerationEffectVisualMarkup(row) {
+function accelerationEffectPresentation(row) {
   const profile = accelerationEffectProfile(row);
-  const mainValue = profile.steps.length > 1 && (profile.kind === "growth" || profile.kind === "decay" || profile.kind === "range")
-    ? `${formatNumber(profile.steps[0], 1)}～${formatNumber(profile.steps[profile.steps.length - 1], 1)}%`
-    : `${formatNumber(row.accelerationPercent, 1)}%`;
-  const chips = profile.chips.map((chip) => (
-    `<span class="slow-effect-chip ${escapeHtml(chip.className)}">${escapeHtml(chip.label)}</span>`
-  )).join("");
-  const meter = profile.steps.length > 1
-    ? `<span class="slow-effect-meter ${escapeHtml(profile.kind)}" aria-hidden="true">${profile.steps.map((value, index) => {
-      const progress = profile.steps.length > 1 ? index / (profile.steps.length - 1) : 1;
-      const opacity = profile.kind === "decay" ? 1 - progress * 0.72 : 0.35 + progress * 0.65;
-      return `<span style="opacity:${formatNumber(opacity, 2)}"></span>`;
+  const decay = accelerationDecayDetails(row.accelerationDecayContext || row.accelerationContext);
+  const growth = accelerationGrowthDetails(row.accelerationContext);
+  let label = "一定";
+  let description = "持続中の加速率は一定";
+  let steps = [];
+  if (profile.kind === "stack") {
+    label = "最大";
+    description = `累積 · ${formatNumber(row.stackMultiplier, 0)}段階で最大`;
+    steps = profile.steps.map((value, index) => ({ value, label: `${index + 1}段階` }));
+  } else if (profile.kind === "decay") {
+    label = "初期";
+    description = decay && decay.interval > 0 && decay.decrement > 0
+      ? `減衰 · ${formatNumber(decay.interval, 2)}秒ごとに弱まる`
+      : "減衰 · 時間とともに弱まる";
+    steps = profile.steps.map((value, index) => ({
+      value,
+      label: index === 0 ? "発動時"
+        : decay && decay.interval > 0 && decay.decrement > 0 ? `${formatNumber(index * decay.interval, 2)}秒後`
+        : decay && decay.total && decay.duration > 0 ? `${formatNumber(decay.duration, 2)}秒後`
+        : "減衰後"
+    }));
+  } else if (profile.kind === "growth") {
+    label = "最大";
+    description = growth && growth.interval > 0
+      ? `徐々に増加 · ${formatNumber(growth.interval, 2)}秒ごとに強まる`
+      : "徐々に増加 · 時間とともに強まる";
+    steps = profile.steps.map((value, index) => ({
+      value,
+      label: index === 0 ? "発動時"
+        : growth && growth.interval > 0 ? `${formatNumber(index * growth.interval, 2)}秒後` : "最大"
+    }));
+    if (growth && growth.interval * (steps.length - 1) > accelerationEffectDuration(row)
+        && row.accelerationExtendedDuration > 0) description += " · 最大値は延長時";
+  } else if (row.variable) {
+    label = "最大";
+    description = "発動条件などで加速率が変わる";
+    if (profile.steps.length > 1) steps = [
+      { value: profile.steps[0], label: "最小" },
+      { value: profile.steps.at(-1), label: "最大" }
+    ];
+  }
+  return { label, description, steps, variable: profile.kind === "range" };
+}
+
+function accelerationEffectVisualMarkup(row) {
+  const presentation = accelerationEffectPresentation(row);
+  const steps = presentation.steps;
+  const visibleIndices = steps.length > 5 ? [0, 1, steps.length - 1] : steps.map((_, index) => index);
+  const flow = steps.length > 1
+    ? `<span class="slow-effect-flow">${visibleIndices.map((index, position) => {
+      const step = steps[index];
+      const omitted = position > 0 && index > visibleIndices[position - 1] + 1;
+      const separator = omitted ? '<span class="slow-effect-flow-arrow" aria-label="途中の段階を省略">…</span>'
+        : position > 0 ? `<span class="slow-effect-flow-arrow" aria-hidden="true">${presentation.variable ? "〜" : "→"}</span>` : "";
+      return `<span class="slow-effect-flow-group">${separator}<span class="slow-effect-step"><span class="slow-effect-flow-value">${escapeHtml(formatNumber(step.value, 1))}%</span><span class="slow-effect-step-label">${escapeHtml(step.label)}</span></span></span>`;
     }).join("")}</span>`
     : "";
-  const flow = profile.steps.length > 1
-    ? `<span class="slow-effect-flow" aria-hidden="true">${profile.steps.map((value, index) => (
-      `${index ? '<span class="slow-effect-flow-arrow">→</span>' : ""}<span class="slow-effect-flow-value">${escapeHtml(formatNumber(value, 1))}%</span>`
-    )).join("")}</span>`
-    : "";
   return `<div class="slow-effect-visual acceleration-effect-visual">
-    <span class="slow-effect-main acceleration-effect-main">${escapeHtml(mainValue)}</span>
-    ${chips ? `<span class="slow-effect-chips">${chips}</span>` : ""}
-    ${meter}
+    <span class="slow-effect-value"><span class="slow-effect-value-label">${escapeHtml(presentation.label)}</span><strong class="slow-effect-main acceleration-effect-main">${escapeHtml(formatNumber(row.accelerationPercent, 1))}%</strong></span>
+    <span class="slow-effect-description">${escapeHtml(presentation.description)}</span>
     ${flow}
-    <span class="visually-hidden">${escapeHtml(accelerationPercentageLabel(row))}</span>
   </div>`;
+}
+
+function accelerationDurationMarkup(row) {
+  const duration = accelerationEffectDuration(row);
+  const notes = [];
+  if (row.accelerationDurationNote) notes.push(row.accelerationDurationNote);
+  if (row.decays || accelerationDecayDetails(row.accelerationDecayContext || row.accelerationContext)) notes.push("減衰する時間を含む");
+  if (row.accelerationExtendedDuration > duration) {
+    notes.push(`条件成立で最大${formatNumber(row.accelerationExtendedDuration, 2)}秒`);
+    if (row.accelerationExtensionCondition) notes.push(row.accelerationExtensionCondition);
+  }
+  return `<span class="slow-duration-value">${duration > 0 ? `${row.accelerationDurationIsMaximum ? "最大" : ""}${escapeHtml(formatNumber(duration, 2))}秒` : escapeHtml(row.accelerationDurationLabel || "未確認")}</span>${notes.map((note) => `<span class="slow-duration-note">${escapeHtml(note)}</span>`).join("")}`;
 }
 
 let activeAccelerationMoveTooltipTrigger = null;
@@ -881,26 +1089,36 @@ function selectedAccelerationFilterKeys() {
   );
 }
 
+const ACCELERATION_FILTER_LABELS = Object.freeze({ fixed: "一定", stack: "累積", decay: "減衰", growth: "徐々に増加", enhanced: "強化後" });
+const ACCELERATION_SORT_LABELS = Object.freeze({ desc: "最大加速率が高い順", asc: "最大加速率が低い順", duration: "持続時間が長い順" });
+
 function accelerationRowMatchesFilter(row, key) {
   const profile = accelerationEffectProfile(row);
   if (key === "stack") return row.stackMultiplier > 1;
   if (key === "decay") return Boolean(row.decays || profile.kind === "decay");
-  if (key === "instant") {
-    return row.stackMultiplier <= 1 && !row.decays && !row.grows && profile.kind === "fixed";
-  }
+  if (key === "fixed" || key === "instant") return profile.kind === "fixed" && !row.variable;
+  if (key === "growth") return profile.kind === "growth";
   if (key === "enhanced") return Boolean(row.enhanced);
   return true;
 }
 
 function syncAccelerationFilterStatus(selectedKeys, sortOrder, visibleCount, totalCount) {
   const selectedLabels = [...selectedKeys]
-    .map((key) => SLOW_FILTER_LABELS[key])
+    .map((key) => ACCELERATION_FILTER_LABELS[key])
     .filter(Boolean);
   const conditionText = selectedLabels.length
-    ? `効果タイプ: ${selectedLabels.join("・")}（AND）`
-    : "効果タイプ: すべて";
-  const orderText = sortOrder === "asc" ? "加速率の昇順" : "加速率の降順";
-  el.accelerationFilterStatus.textContent = `${conditionText} / ${orderText} / ${formatNumber(visibleCount, 0)}件表示（全${formatNumber(totalCount, 0)}件）`;
+    ? `条件: ${selectedLabels.join("・")}（選んだ条件をすべて満たす）`
+    : "条件: すべて（複数選択すると、選んだ条件をすべて満たす効果を表示）";
+  const durationNote = sortOrder === "duration" ? " / 基本の持続時間で比較・秒数のない効果は末尾" : "";
+  el.accelerationFilterStatus.textContent = `${formatNumber(visibleCount, 0)}件 / 全${formatNumber(totalCount, 0)}件 · ${ACCELERATION_SORT_LABELS[sortOrder]} · ${conditionText}${durationNote}`;
+}
+
+function compareAccelerationRankingRows(a, b, sortOrder) {
+  return (sortOrder === "duration" ? accelerationEffectDuration(b) - accelerationEffectDuration(a) : 0)
+    || (sortOrder === "asc" ? a.accelerationPercent - b.accelerationPercent : b.accelerationPercent - a.accelerationPercent)
+    || a.sourceType.localeCompare(b.sourceType)
+    || a.sourceLabel.localeCompare(b.sourceLabel, "ja")
+    || a.moveName.localeCompare(b.moveName, "ja");
 }
 
 function updateAccelerationRanking() {
@@ -926,23 +1144,18 @@ function updateAccelerationRanking() {
     uniqueRows.push(row);
   });
   const selectedFilters = selectedAccelerationFilterKeys();
-  const sortOrder = el.accelerationRankingSortOrder.value === "asc" ? "asc" : "desc";
+  const sortOrder = Object.hasOwn(ACCELERATION_SORT_LABELS, el.accelerationRankingSortOrder.value) ? el.accelerationRankingSortOrder.value : "desc";
   const visibleRows = selectedFilters.size
     ? uniqueRows.filter((row) => [...selectedFilters].every((key) => accelerationRowMatchesFilter(row, key)))
     : [...uniqueRows];
-  visibleRows.sort((a, b) => (
-    (sortOrder === "asc" ? a.accelerationPercent - b.accelerationPercent : b.accelerationPercent - a.accelerationPercent)
-    || a.sourceType.localeCompare(b.sourceType)
-    || a.sourceLabel.localeCompare(b.sourceLabel, "ja")
-    || a.moveName.localeCompare(b.moveName, "ja")
-  ));
+  visibleRows.sort((a, b) => compareAccelerationRankingRows(a, b, sortOrder));
   state.accelerationRankingRows = visibleRows;
 
   if (!visibleRows.length) {
     const message = uniqueRows.length
       ? "選択した条件に一致する加速効果がありません。"
       : "表示できる加速効果がありません。";
-    el.accelerationRankingBody.innerHTML = `<tr class="slow-ranking-empty"><td colspan="4">${message}</td></tr>`;
+    el.accelerationRankingBody.innerHTML = `<tr class="slow-ranking-empty"><td colspan="5">${message}</td></tr>`;
   } else {
     el.accelerationRankingBody.innerHTML = visibleRows.map((row, index) => {
       const badge = row.sourceBadge
@@ -956,26 +1169,29 @@ function updateAccelerationRanking() {
             <span class="slow-ranking-source-icon" title="${escapeHtml(row.sourceLabel)}">
               <img src="${escapeHtml(row.sourceIcon)}" alt="" loading="lazy" onerror="${imageFallback}">
               ${badge}
-              <span class="visually-hidden">${escapeHtml(row.sourceLabel)}</span>
             </span>
+            <span class="slow-ranking-source-name">${escapeHtml(row.sourceLabel)}</span>
           </div>
         </td>
         <td>
           <div class="ranking-move">
             <button
-              class="slow-move-icon-trigger acceleration-move-icon-trigger"
+              class="slow-move-icon-trigger slow-move-detail-trigger acceleration-move-icon-trigger"
               type="button"
               data-acceleration-row-index="${index}"
               aria-label="${escapeHtml(row.moveName)}の技概要と加速仕様を表示"
               aria-expanded="false"
+              aria-controls="accelerationMoveTooltip"
               aria-describedby="accelerationMoveTooltip"
             >
               <img src="${escapeHtml(row.moveIcon || brokenImageUrl())}" alt="" loading="lazy" onerror="${imageFallback}">
+              <span>詳細</span>
             </button>
-            <span><span class="ranking-name">${escapeHtml(row.moveName)}</span><span class="ranking-note">${escapeHtml(row.moveNote)}</span></span>
+            <span><span class="ranking-name">${escapeHtml(row.moveName)}</span><span class="ranking-note">${escapeHtml(row.moveNote)}${row.targetLabel && !row.moveNote.includes(row.targetLabel) ? ` · ${escapeHtml(row.targetLabel)}` : ""}${row.enhanced && !/強化後/.test(row.moveNote) ? " · 強化後" : ""}</span></span>
           </div>
         </td>
         <td class="slow-ranking-percent acceleration-ranking-percent">${accelerationEffectVisualMarkup(row)}</td>
+        <td class="slow-ranking-duration">${accelerationDurationMarkup(row)}</td>
       </tr>`;
     }).join("");
   }

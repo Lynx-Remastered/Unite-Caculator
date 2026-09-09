@@ -7,7 +7,11 @@ const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const readJson = (name) => JSON.parse(fs.readFileSync(path.join(root, "data", name), "utf8"));
-const state = { pokemon: readJson("pokemon.json"), heldItems: readJson("held_items.json") };
+const state = {
+  pokemon: readJson("pokemon.json"), heldItems: readJson("held_items.json"),
+  wikiMoveDescriptionsJa: readJson("wiki_move_descriptions_ja.json"),
+  slowDescriptionsJa: readJson("slow_descriptions_ja.json")
+};
 // These helpers only supply labels/icons; use the actual extraction and profile
 // functions together with the bundled game data for every numerical assertion.
 const context = vm.createContext({
@@ -17,6 +21,7 @@ const context = vm.createContext({
     return Number.isFinite(result) ? result : fallback;
   },
   formatNumber: (value, digits = 0) => String(Number(Number(value).toFixed(digits))),
+  escapeHtml: (value) => String(value),
   jpPokemonName: (pokemon) => pokemon.name,
   jpMoveName: (name) => name,
   jpAbility: (name) => name,
@@ -91,7 +96,7 @@ test("shared buff durations and decimal values remain intact", () => {
     ["Clefable", "Moonlight", 3],
     ["Machamp", "Barrage Blow", 8],
     ["Meowscarada", "Overgrow", 4],
-    ["Armarouge", "Fire Spin", 6],
+    ["Armarouge", "Fire Spin", 3],
     ["Glaceon", "Ice Shard", 1],
     ["Mega-Charizard-X", "Seismic Slam", 20]
   ]) {
@@ -161,6 +166,131 @@ test("Unite buff duplicates merge but distinct phases remain separate", () => {
   skill.buffs = "80% Movement Speed for 3s, 20% Max HP Shield";
   result = context.pokemonAccelerationRankingRows(pokemon);
   assert.equal(context.accelerationEffectDuration(result.find((row) => row.accelerationPercent === 80)), 3);
+});
+
+const details = (row) => (row.accelerationDetailPartsJa || context.japaneseAccelerationFallbackParts(row)).map(part => part.text).join(" ");
+
+test("Dragon Dance does not multiply movement speed by Attack stacks", () => {
+  const base = findRow("Dragonite", "Dragon Dance");
+  assert.equal(base.accelerationPercent, 30);
+  assert.equal(base.stackMultiplier, 1);
+  assert.equal(context.accelerationEffectDuration(base), 1);
+  assert.equal(profile(base).kind, "fixed");
+  const plus = findRow("Dragonite", "Dragon Dance+");
+  assert.equal(plus.accelerationPercent, 40);
+  assert.equal(context.accelerationEffectDuration(plus), 1);
+  assert.equal(plus.accelerationDurationIsMaximum, true);
+  assert.match(details(plus), /10%/);
+  assert.match(details(plus), /4\.5秒/);
+});
+
+test("duration-only Moonlight upgrades retain self acceleration for four seconds", () => {
+  for (const [move, duration] of [["Moonlight", 3], ["Moonlight+", 4]]) {
+    const row = findRow("Clefable", move);
+    assert.equal(row.accelerationPercent, 20);
+    assert.equal(row.targetLabel, "自分");
+    assert.equal(context.accelerationEffectDuration(row), duration);
+    assert.match(details(row), new RegExp(`${duration}秒`));
+  }
+  for (const [pokemon, move] of [["Meowscarada", "Double Team+"], ["Trevenant", "Pain Split+"], ["Hoopa", "Trick+"]]) {
+    assert.ok(!rows.some(row => row.sourceName === pokemon && row.moveName === move), `${pokemon}/${move} only upgrades another effect`);
+  }
+});
+
+test("nearby allies and ally healing do not change the recipient of a self buff", () => {
+  assert.equal(findRow("Comfey", "Triage").targetLabel, "自分");
+  const cotton = rows.find(row => row.sourceName === "Eldegoss" && row.moveName === "Cotton Cloud Crash" && row.accelerationPercent === 10);
+  assert.equal(cotton.targetLabel, "自分");
+  assert.equal(cotton.accelerationDurationIsMaximum, true);
+  assert.match(context.accelerationDurationMarkup(cotton), /最大3秒/);
+  assert.equal(findRow("Hoopa", "Trick").targetLabel, "自分・味方");
+  assert.equal(findRow("Blissey", "Helping Hand").targetLabel, "自分・味方");
+  assert.equal(findRow("Alcremie", "Recover").targetLabel, "味方");
+});
+
+test("Power Swap and Surf keep self and ally effects separate", () => {
+  const swap = rows.filter(row => row.sourceName === "Mr.Mime" && row.moveName === "Power Swap");
+  assert.equal(swap.length, 2);
+  assert.deepEqual(swap.map(row => [row.targetLabel, row.accelerationPercent]).sort(), [["味方", 8], ["自分", 10]].sort());
+  assert.ok(swap.every(row => profile(row).kind === "fixed"));
+  assert.ok(swap.every(row => context.accelerationDurationMarkup(row).includes("リンク中")));
+  const surf = rows.filter(row => row.sourceName === "Psyduck" && row.moveName === "Surf");
+  assert.equal(surf.length, 2);
+  const self = surf.find(row => row.targetLabel === "自分");
+  const ally = surf.find(row => row.targetLabel === "味方");
+  assert.equal(self.accelerationPercent, 30);
+  assert.equal(context.accelerationEffectDuration(self), 5);
+  assert.equal(self.accelerationDurationIsMaximum, true);
+  assert.equal(ally.accelerationPercent, 70);
+  assert.equal(context.accelerationEffectDuration(ally), 3);
+  assert.deepEqual(profile(ally).steps, [70, 60, 50, 40, 30]);
+});
+
+test("active areas and flight show maximum duration with their conditions", () => {
+  for (const [pokemon, move, seconds, condition] of [["Ninetales", "Aurora Veil", 5, "範囲内"], ["Ho-Oh", "Sacred Fire", 6, "飛行中"]]) {
+    const row = findRow(pokemon, move);
+    assert.equal(context.accelerationEffectDuration(row), seconds);
+    assert.match(context.accelerationDurationMarkup(row), new RegExp(`最大${seconds}秒`));
+    assert.match(context.accelerationDurationMarkup(row), new RegExp(condition));
+    assert.match(details(row), new RegExp(`最大${seconds}秒`));
+  }
+});
+
+test("conditional duration extensions are visible without changing the base time", () => {
+  for (const [pokemon, move, extended] of [["Rapidash", "Agility", 10.5], ["Zacian", "Agility", 6], ["Zacian", "Agility+", 6], ["Armarouge", "Fire Spin", 6]]) {
+    const row = findRow(pokemon, move);
+    assert.equal(context.accelerationEffectDuration(row), 3);
+    assert.equal(row.accelerationExtendedDuration, extended);
+    assert.match(context.accelerationDurationMarkup(row), new RegExp(`最大${String(extended).replace(".", "\\.")}秒`));
+    assert.match(details(row), /延長/);
+  }
+  assert.match(context.accelerationDurationMarkup(findRow("Armarouge", "Fire Spin")), /通常攻撃命中で延長/);
+  assert.match(context.accelerationEffectPresentation(findRow("Rapidash", "Agility")).description, /最大値は延長時/);
+});
+
+test("presentation separates initial, maximum, constant, and timed growth", () => {
+  const fixed = findRow("Absol", "Midnight Slash");
+  const stacked = findRow("Tyranitar", "Ancient Power");
+  const decay = findRow("Pikachu", "Volt Tackle");
+  const growth = findRow("Solgaleo", "Psyshock");
+  const range = findRow("Dragonite", "Dragon Dance+");
+  for (const [row, label] of [[fixed, "一定"], [stacked, "最大"], [decay, "初期"], [growth, "最大"], [range, "最大"]]) {
+    assert.equal(context.accelerationEffectPresentation(row).label, label);
+    assert.equal(context.accelerationRowMatchesFilter(row, "fixed"), row === fixed);
+  }
+  assert.equal(context.accelerationRowMatchesFilter(growth, "growth"), true);
+  assert.equal(context.accelerationRowMatchesFilter(stacked, "growth"), false);
+  assert.deepEqual(Array.from(context.accelerationEffectPresentation(range).steps, step => step.label), ["最小", "最大"]);
+  assert.equal(context.accelerationRowMatchesFilter(findRow("Float Stone", "Float Stone"), "fixed"), true);
+});
+
+test("step times and tooltip durations retain quarter-second precision", () => {
+  const flip = findRow("Vaporeon", "Flip Turn");
+  assert.deepEqual(Array.from(context.accelerationEffectPresentation(flip).steps, step => step.label), ["発動時", "0.25秒後", "0.5秒後", "0.75秒後", "1秒後"]);
+  assert.match(details(flip), /0\.25秒ごと/);
+  assert.equal(context.accelerationEffectPresentation(findRow("Solgaleo", "Psyshock")).steps.at(-1).label, "2.5秒後");
+  assert.match(context.accelerationDurationMarkup({ accelerationDuration: 0.75 }), />0\.75秒</);
+  assert.match(context.accelerationDurationMarkup(findRow("Blastoise", "Hydro Pump")), />未確認</);
+});
+
+test("duration sorting keeps unknown times last and compares base durations", () => {
+  const unknown = findRow("Gengar", "Levitate");
+  const short = findRow("Dragonite", "Dragon Dance");
+  const extended = findRow("Rapidash", "Agility");
+  const long = findRow("Clefable", "Moonlight+");
+  assert.deepEqual([unknown, short, long, extended].sort((a, b) => context.compareAccelerationRankingRows(a, b, "duration")), [long, extended, short, unknown]);
+});
+
+test("Japanese overviews agree with corrected speed effects and their timing", () => {
+  const overview = row => context.localizedAccelerationOverviewParts(row).map(part => part.text).join(" ");
+  const surf = rows.find(row => row.sourceName === "Psyduck" && row.moveName === "Surf" && row.targetLabel === "味方");
+  assert.match(overview(surf), /初期70%/);
+  assert.match(overview(surf), /3秒間/);
+  const cotton = findRow("Eldegoss", "Cotton Down");
+  assert.equal(context.accelerationEffectDuration(cotton), 1.5);
+  assert.match(overview(cotton), /1\.5秒間\)15%上がる/);
+  assert.doesNotMatch(overview(cotton), /2秒間/);
+  assert.match(context.accelerationDurationMarkup(findRow("Eldegoss", "Leaf Tornado")), /経路を離れてから/);
 });
 
 console.log(`Acceleration ranking: ${checks} regression checks passed (${rows.length} rows).`);

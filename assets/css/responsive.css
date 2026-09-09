@@ -406,47 +406,47 @@
 }
 
 /* Use the actual panel width, including when the app is in a narrow preview pane. */
-@container slow-ranking (max-width: 720px) {
-  #slowRankingPanel .slow-display-filter {
+@container speed-ranking (max-width: 720px) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-display-filter {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
 
-  #slowRankingPanel .slow-filter-sort select {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-filter-sort select {
     max-width: 100%;
   }
 
-  #slowRankingPanel .slow-ranking-guide {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-guide {
     padding: 12px;
     font-size: 12px;
   }
 }
 
 /* Five comparison columns need roughly 1040px, not just a phone-sized breakpoint. */
-@container slow-ranking (max-width: 1040px) {
-  #slowRankingPanel .slow-ranking-table-wrap {
+@container speed-ranking (max-width: 1040px) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table-wrap {
     overflow: visible;
     padding: 0 10px 12px;
   }
 
-  #slowRankingPanel .slow-ranking-table {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table {
     display: block;
     width: 100% !important;
     min-width: 0;
     table-layout: auto;
   }
 
-  #slowRankingPanel .slow-ranking-table colgroup,
-  #slowRankingPanel .slow-ranking-table thead {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table colgroup,
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table thead {
     display: none;
   }
 
-  #slowRankingPanel .slow-ranking-table tbody {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tbody {
     display: grid;
     gap: 12px;
   }
 
-  #slowRankingPanel .slow-ranking-table tr {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tr {
     display: grid;
     grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
@@ -460,46 +460,46 @@
     background: var(--surface-2);
   }
 
-  #slowRankingPanel .slow-ranking-table td {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td {
     display: block;
     min-width: 0;
     padding: 0;
     border: 0;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(1) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(1) {
     grid-area: rank;
     width: auto;
     padding-top: 12px;
     text-align: left;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(2) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(2) {
     grid-area: source;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(3) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(3) {
     grid-area: move;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(4),
-  #slowRankingPanel .slow-ranking-table td:nth-child(5) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(4),
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5) {
     margin: 0;
     border-top: 1px solid var(--line);
     padding-top: 12px;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(4) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(4) {
     grid-area: slow;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(5) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5) {
     grid-area: duration;
     padding-left: 10px;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(4)::before,
-  #slowRankingPanel .slow-ranking-table td:nth-child(5)::before {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(4)::before,
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5)::before {
     display: block;
     margin-bottom: 8px;
     color: var(--muted);
@@ -507,58 +507,58 @@
     font-weight: 700;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(4)::before {
-    content: "減速率と変化";
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(4)::before {
+    content: var(--speed-ranking-effect-label);
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(5)::before {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5)::before {
     content: "持続時間";
   }
 
-  #slowRankingPanel .slow-ranking-source {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-source {
     grid-template-columns: 44px minmax(0, 1fr);
     gap: 8px;
     min-height: 44px;
   }
 
-  #slowRankingPanel .slow-ranking-source-icon {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-source-icon {
     width: 44px;
     height: 44px;
     border-radius: 12px;
   }
 
-  #slowRankingPanel .slow-ranking-source-icon img {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-source-icon img {
     width: 38px;
     height: 38px;
   }
 
-  #slowRankingPanel .ranking-move {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .ranking-move {
     grid-template-columns: 44px minmax(0, 1fr);
     gap: 8px;
   }
 
-  #slowRankingPanel .slow-move-detail-trigger {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-move-detail-trigger {
     width: 44px;
     min-height: 54px;
   }
 
-  #slowRankingPanel .slow-effect-main,
-  #slowRankingPanel .slow-duration-value {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-main,
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-value {
     font-size: 24px;
   }
 
-  #slowRankingPanel .slow-ranking-table tr.slow-ranking-empty {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tr.slow-ranking-empty {
     display: block;
   }
 
-  #slowRankingPanel .slow-ranking-table tr.slow-ranking-empty td {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tr.slow-ranking-empty td {
     padding: 12px;
     text-align: center;
   }
 }
 
-@container slow-ranking (max-width: 600px) {
-  #slowRankingPanel .slow-ranking-table tr {
+@container speed-ranking (max-width: 600px) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tr {
     grid-template-columns: 26px minmax(0, 1fr) minmax(104px, 0.55fr);
     grid-template-areas:
       "rank source source"
@@ -568,27 +568,27 @@
     padding: 10px;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(3) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(3) {
     padding-top: 8px;
     border-top: 1px solid var(--line);
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(5) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5) {
     padding-left: 4px;
   }
 
-  #slowRankingPanel .slow-effect-description,
-  #slowRankingPanel .slow-duration-note {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-description,
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-note {
     font-size: 12px;
   }
 
-  #slowRankingPanel .slow-effect-step {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-effect-step {
     padding: 4px 5px;
   }
 }
 
-@container slow-ranking (max-width: 440px) {
-  #slowRankingPanel .slow-ranking-table tr {
+@container speed-ranking (max-width: 440px) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table tr {
     grid-template-columns: 26px minmax(0, 1fr);
     grid-template-areas:
       "rank source"
@@ -597,7 +597,7 @@
       "duration duration";
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(5) {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5) {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -605,12 +605,12 @@
     padding-left: 0;
   }
 
-  #slowRankingPanel .slow-ranking-table td:nth-child(5)::before,
-  #slowRankingPanel .slow-duration-note {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-ranking-table td:nth-child(5)::before,
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-note {
     margin: 0;
   }
 
-  #slowRankingPanel .slow-duration-value {
+  :is(#slowRankingPanel, #accelerationRankingPanel) .slow-duration-value {
     white-space: nowrap;
   }
 }
