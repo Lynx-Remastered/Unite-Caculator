@@ -7,7 +7,7 @@ const { test } = require("node:test");
 const root = path.resolve(__dirname, "..");
 const data = (name) => JSON.parse(fs.readFileSync(path.join(root, "data", name), "utf8"));
 const context = vm.createContext({ URL });
-for (const name of ["config", "patch-translations", "ui", "calculator-core", "slow-ranking"]) {
+for (const name of ["config", "patch-translations", "ui", "calculator-core", "feedback", "slow-ranking"]) {
   vm.runInContext(fs.readFileSync(path.join(root, "assets", "js", `${name}.js`), "utf8"), context, { filename: `${name}.js` });
 }
 context.fixtureData = {
@@ -28,7 +28,7 @@ const profile = (value) => JSON.parse(JSON.stringify(context.slowEffectProfile(v
 const details = (value) => context.localizedSlowDetailParts(value).map(part => part.text).join(" ");
 
 test("the full dataset excludes self/ally buffs and charge-time self slows", () => {
-  for (const [pokemon, move] of [["Alcremie", "Recover"], ["Greninja", "Torrent"], ["MewtwoY", "Pressure"], ["Lucario", "Power-Up Punch"], ["Mega-Lucario", "Power-Up Punch"]]) {
+  for (const [pokemon, move] of [["Alcremie", "Recover"], ["Greninja", "Torrent"], ["MewtwoY", "Pressure"], ["Lucario", "Power-Up Punch"], ["Mega-Lucario", "Power-Up Punch"], ["Psyduck", "Psychic"]]) {
     assert.equal(rows(pokemon, move).length, 0, `${pokemon}/${move}`);
   }
   const trailblaze = row("Meowscarada", "Trailblaze");
@@ -116,4 +116,118 @@ test("shared decay parsing recognizes an explicit decreasing rate, not ordinary 
   assert.equal(decay.amount, 15);
   assert.equal(decay.interval, 1);
   assert.equal(context.speedDecaySpec("Decreases opposing Pokémon movement speed by 30% for 2s."), null);
+});
+
+test("display labels distinguish fixed, initial, and conditional maximum slows", () => {
+  const fixed = row("Meowscarada", "Trailblaze");
+  const decay = row("Ho-Oh", "Fire Spin");
+  const stacked = row("Duraludon", "Stealth Rock");
+  const conditional = row("Dodrio", "Tri Attack");
+  const variableWithoutRange = { ...fixed, variable: true };
+  for (const [value, label] of [[fixed, "一定"], [decay, "初期"], [stacked, "最大"], [conditional, "最大"], [variableWithoutRange, "最大"]]) {
+    assert.equal(context.slowEffectPresentation(value).label, label, `${value.sourceName}/${value.moveName}`);
+    assert.equal(context.slowRowMatchesFilter(value, "fixed"), value === fixed);
+  }
+  assert.deepEqual(Array.from(context.slowEffectPresentation(conditional).steps, step => step.label), ["最小", "最大"]);
+});
+
+test("duration display preserves quarter seconds and does not present unknown times as zero", () => {
+  assert.match(context.slowDurationMarkup(row("Ninetales", "Snow Warning")), />0\.75秒</);
+  const unknown = context.slowDurationMarkup(row("Decidueye", "Astonish"));
+  assert.match(unknown, />未確認</);
+  assert.doesNotMatch(unknown, />0秒</);
+});
+
+test("decay step times use the tick interval rather than the total effect duration", () => {
+  const leafStorm = row("Decidueye", "Leaf Storm", true);
+  assert.equal(context.slowEffectPresentation(leafStorm).steps.at(-1).label, "2秒後");
+  assert.match(context.slowDurationMarkup(leafStorm), />3\.5秒</);
+  assert.deepEqual(
+    Array.from(context.slowEffectPresentation(row("Feraligatr", "Crunch")).steps, step => step.label),
+    ["付与時", "0.25秒後", "0.5秒後", "0.75秒後", "1秒後"]
+  );
+});
+
+test("duration sorting places longer effects first and unknown times last regardless of slow strength", () => {
+  const unknown = row("Decidueye", "Astonish");
+  const short = row("Ninetales", "Snow Warning");
+  const medium = row("Meowscarada", "Trailblaze");
+  const long = row("Decidueye", "Leaf Storm", true);
+  const sorted = [unknown, short, long, medium].sort((a, b) => context.compareSlowRankingRows(a, b, "duration"));
+  assert.deepEqual(sorted, [long, medium, short, unknown]);
+});
+
+test("Mammoth Mash uses each stomp's slow duration, not the final knock-up", () => {
+  const value = row("Mamoswine", "Mammoth Mash");
+  assert.equal(value.slowPercent, 40);
+  assert.equal(context.slowEffectDuration(value), 0.5);
+  assert.match(details(value), /0\.5秒/);
+  assert.doesNotMatch(details(value), /持続時間は1\.5秒/);
+  assert.equal(context.slowEffectDuration({ slowContext: "Slows enemies by 40% and throws them in the air for 1.5s." }), 0);
+  assert.equal(context.slowEffectDuration({ slowContext: "Slows enemies by 40% and stuns them for 1.5s." }), 0);
+  assert.equal(context.slowEffectDuration(row("Umbreon", "Moonlight Prance")), 5);
+});
+
+test("Muddy Water's upgrade adds one second to the base slow", () => {
+  for (const plus of [false, true]) {
+    const value = row("Vaporeon", "Muddy Water", plus);
+    assert.equal(value.slowPercent, 30);
+    assert.equal(context.slowEffectDuration(value), plus ? 2 : 1);
+    assert.match(details(value), new RegExp(`持続時間は${plus ? 2 : 1}秒`));
+  }
+});
+
+test("shared debuff durations survive long clauses and Sp. Def abbreviations", () => {
+  for (const [pokemon, move, duration] of [
+    ["Pikachu", "Attack", 1], ["Pikachu", "Thunder Shock", 2], ["Pikachu", "Electro Ball", 2],
+    ["Psyduck", "Tail Whip", 2], ["Zapdos", "Thunderbolt", 2.5],
+    ["Zapdos", "Discharge", 2.5], ["Zapdos", "High-Voltage Siege", 2.5]
+  ]) {
+    const value = row(pokemon, move);
+    assert.equal(context.slowEffectDuration(value), duration, `${pokemon}/${move}`);
+    assert.match(details(value), new RegExp(`${String(duration).replace(".", "\\.")}秒`));
+  }
+  // Static gives its movement and attack-speed debuffs different durations.
+  assert.equal(context.slowEffectDuration(row("Pikachu", "Static")), 2.5);
+});
+
+test("Japanese details agree with Glacial Stage and Articuno Ice Beam", () => {
+  const stage = row("Glaceon", "Glacial Stage");
+  assert.equal(context.slowEffectDuration(stage), 2);
+  assert.match(details(stage), /2秒/);
+  assert.match(details(stage), /6秒/);
+  assert.doesNotMatch(details(stage), /持続時間は6秒/);
+  const beam = row("Articuno", "Ice Beam");
+  assert.equal(beam.slowPercent, 40);
+  assert.match(details(beam), /40%/);
+  assert.doesNotMatch(details(beam), /30%/);
+  assert.match(context.localizedSlowOverviewParts(beam).map(part => part.text).join(" "), /40%/);
+});
+
+test("Sableye separates its ordinary boosted attack from the stealth fear", () => {
+  const effects = rows("Sableye", "Attack");
+  assert.equal(effects.length, 2);
+  assert.deepEqual(effects.map(value => [value.slowPercent, context.slowEffectDuration(value)]), [[20, 2], [40, 1]]);
+  for (const value of effects) {
+    assert.equal(profile(value).kind, "fixed");
+    assert.deepEqual(profile(value).steps, []);
+    assert.match(details(value), new RegExp(`${value.slowPercent}%`));
+  }
+  assert.match(effects[1].moveNote, /ステルス.*恐怖/);
+  assert.match(details(effects[1]), /1秒間恐怖/);
+});
+
+test("generated details preserve quarter-second durations and decay intervals", () => {
+  assert.match(details(row("Delphox", "Fanciful Fireworks")), /1\.75秒/);
+  assert.match(context.japaneseSlowFallbackParts(row("Feraligatr", "Crunch"))[0].text, /0\.25秒ごと/);
+});
+
+test("Sludge Bomb distinguishes the impact duration from the persistent area", () => {
+  const value = row("Venusaur", "Sludge Bomb");
+  assert.equal(value.slowPercent, 50);
+  assert.equal(context.slowEffectDuration(value), 2);
+  assert.equal(value.moveNote, "着弾時");
+  assert.match(details(value), /2秒/);
+  assert.match(details(value), /5秒/);
+  assert.doesNotMatch(details(value), /100%/);
 });

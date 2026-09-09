@@ -163,16 +163,21 @@ function slowStackMultiplier(text, match) {
   return Math.max(1, multiplier);
 }
 
+function slowSentenceEnd(text) {
+  // Abbreviations are not sentence boundaries; preserve indices for slicing.
+  return text.replace(/\bSp\./gi, "Sp ").search(/[.;!?](?=\s|$)/);
+}
+
 function slowMatchContext(text, match) {
   // Keep other effects (especially the user's buffs) out of duration/decay parsing.
   const start = match.index;
   const tail = text.slice(match.index + match[0].length);
-  const end = tail.search(/[.;!?](?=\s|$)/);
+  const end = slowSentenceEnd(tail);
   const length = match.index + match[0].length + (end < 0 ? tail.length : end + 1);
   let context = text.slice(start, length).trim();
   const following = text.slice(length).trim();
   if (/^(?:the slow\b|this movement speed (?:decrease|reduction)\b|then the \d+(?:\.\d+)?% slow\b)/i.test(following)) {
-    const nextEnd = following.search(/[.;!?](?=\s|$)/);
+    const nextEnd = slowSentenceEnd(following);
     context += ` ${nextEnd < 0 ? following : following.slice(0, nextEnd + 1)}`;
   }
   return context;
@@ -180,6 +185,8 @@ function slowMatchContext(text, match) {
 
 function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
   const text = cleanSlowDescription(value);
+  // A move may state one duration for every hit before listing each hit's rate.
+  const sharedDuration = text.match(/(?:movement speed|slow(?:s|ed|ing)?)[^.;!?]{0,80}?\bfor\s+(\d+(?:\.\d+)?|\.\d+)s\s+with each\b/i);
   const candidates = [];
   SLOW_PERCENT_PATTERNS.forEach((pattern) => {
     pattern.lastIndex = 0;
@@ -202,7 +209,7 @@ function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
         decays: Boolean(speedDecaySpec(context)),
         duration: slowEffectDuration({ slowContext: context }) || slowEffectDuration({
           slowContext: text.slice(Math.max(0, match.index - 120), pattern.lastIndex)
-        }),
+        }) || (sharedDuration ? number(sharedDuration[1], 0) : 0),
         context
       });
     }
@@ -252,14 +259,19 @@ function slowDescriptionKey(pokemon, skill, node, rsbKey) {
 function slowEffectDuration(row) {
   const explicit = number(row && row.slowDuration, 0);
   if (explicit > 0) return explicit;
-  const context = String(row && row.slowContext || "");
+  // A subsequent knock-up/stun has its own duration, separate from the slow.
+  const context = String(row && row.slowContext || "")
+    .replace(/\bSp\./gi, "Sp")
+    .split(/(?<=[.;!?])\s+/)
+    .map((sentence) => sentence.split(/\b(?:throws?|throwing|stuns?|stunning|knocks?\s+(?:them|enemies|targets?)\s+(?:up|back))\b/i)[0])
+    .join(". ");
   const twoPhases = context.match(/\bslow\s+to\s+\d+(?:\.\d+)?%\s+for\s+([\d.]+)s\s+decaying\s+to\s+\d+(?:\.\d+)?%\s+for\s+([\d.]+)s/i);
   if (twoPhases) return number(twoPhases[1], 0) + number(twoPhases[2], 0);
   const lingering = context.match(/\bslow\s+over\s+([\d.]+)s[\s\S]{0,80}?slow lingers for an additional\s+(?:(\d+(?:\.\d+)?)s|second)\b/i);
   if (lingering) return number(lingering[1], 0) + number(lingering[2], 1);
   const patterns = [
     /(?:movement speed|slow(?:s|ed|ing)?)[^.;]{0,100}?\bduration\s+to\s+(\d+(?:\.\d+)?|\.\d+)s\b/i,
-    /(?:movement speed|slow(?:s|ed|ing)?)[^.]{0,100}?(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?|\.\d+)s\b/i,
+    /(?:movement speed|slow(?:s|ed|ing)?)[^.;!?]*?(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?|\.\d+)s\b/i,
     /(?:for|lasting|lasts?(?:\s+for)?)\s+(\d+(?:\.\d+)?|\.\d+)s\b[^.]{0,80}(?:movement speed|slow)/i,
     /\b(?:decay\w*|diminish\w*)[\s\S]{0,80}?\bover\s+(\d+(?:\.\d+)?|\.\d+)s\b/i
   ];
@@ -406,7 +418,7 @@ function japaneseSlowFallbackParts(row) {
   if (row.enhanced) details.push("この数値は強化後の最大効果です。");
   if (row.variable) details.push("複数段階または時間経過で変化するため、ランキングには到達可能な最大値を使用しています。");
   const duration = slowEffectDuration(row);
-  if (duration > 0) details.push(`減速の持続時間は${formatNumber(duration, 1)}秒です。`);
+  if (duration > 0) details.push(`減速の持続時間は${formatNumber(duration, 2)}秒です。`);
   const decay = slowDecaySpec(row);
   if (decay) {
     const repeat = decay.times > 0 ? `、最大${formatNumber(decay.times, 0)}回` : "";
@@ -417,9 +429,9 @@ function japaneseSlowFallbackParts(row) {
         : 0;
     const remaining = finalPercent > 0 ? `最終的に${formatNumber(finalPercent, 1)}%になります。` : "";
     if (decay.amount > 0 && decay.interval > 0) {
-      details.push(`${formatNumber(decay.interval, 1)}秒ごとに${formatNumber(decay.amount, 1)}%ずつ${repeat}減衰します。${remaining}`);
+      details.push(`${formatNumber(decay.interval, 2)}秒ごとに${formatNumber(decay.amount, 1)}%ずつ${repeat}減衰します。${remaining}`);
     } else if (finalPercent > 0) {
-      const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 1)}秒かけて` : "時間経過で";
+      const transition = decay.duration > 0 ? `${formatNumber(decay.duration, 2)}秒かけて` : "時間経過で";
       details.push(`${transition}${formatNumber(finalPercent, 1)}%まで減衰します。`);
     }
   }
@@ -476,6 +488,9 @@ function pokemonSlowRankingRows(pokemon) {
     [skill, ...((skill && skill.upgrades) || [])].filter(Boolean).forEach((node) => {
       [["rsb", node.rsb], ["boosted_rsb", node.boosted_rsb]].forEach(([rsbKey, rsb]) => {
         if (!rsb) return;
+        // Psychic slows Psyduck itself (official balance notes, 2024-12-26).
+        // https://www.pokemonunite.jp/archive/ja/news/304/
+        if (pokemon.name === "Psyduck" && node.name === "Psychic") return;
         const candidates = SLOW_EFFECT_TEXT_FIELDS.flatMap((field) => (
           slowPercentCandidates(rsb[field.key], pokemon.name, field.enhanced)
         ));
@@ -488,9 +503,12 @@ function pokemonSlowRankingRows(pokemon) {
         const detailParts = slowDetailParts(node, rsb);
         const moveName = slowMoveDisplayName(skill, node, rsbKey, detailParts);
         const isSweetScent = pokemon.name === "Alcremie" && node.name === "Sweet Scent" && rsbKey === "rsb";
+        const isSludgeBomb = pokemon.name === "Venusaur" && node.name === "Sludge Bomb" && rsbKey === "rsb";
         const normalCandidates = candidates.filter((candidate) => !candidate.enhanced);
         const enhancedCandidates = candidates.filter((candidate) => candidate.enhanced);
-        const bestNormal = normalCandidates[0] || null;
+        // Rank Sludge Bomb's impact; the persistent area is described separately.
+        const bestNormal = (isSludgeBomb && normalCandidates.find((candidate) => /stacking with the radius slow/i.test(candidate.context)))
+          || normalCandidates[0] || null;
         const bestEnhanced = enhancedCandidates[0] || null;
         const enhancedSlowText = SLOW_EFFECT_TEXT_FIELDS
           .filter((field) => field.enhanced)
@@ -507,6 +525,7 @@ function pokemonSlowRankingRows(pokemon) {
         if (bestNormal) {
           generalVariants.push({
             candidate: bestNormal,
+            moveNote: isSludgeBomb ? "着弾時" : undefined,
             minSlowPercent: Math.min(...normalCandidates.map((candidate) => candidate.percent)),
             variable: bestNormal.decays || new Set(normalCandidates.map((candidate) => candidate.percent)).size > 1,
             slowDuration: bestNormal.duration,
@@ -527,8 +546,11 @@ function pokemonSlowRankingRows(pokemon) {
             plusCandidate.basePercent = bestNormal.basePercent + addedPercent;
             plusCandidate.percent = plusCandidate.basePercent * plusCandidate.multiplier;
           }
-          const enhancedDuration = slowEffectDuration({ slowContext: enhancedSlowText });
           const inheritedDuration = bestNormal ? bestNormal.duration : 0;
+          const durationIncrease = enhancedSlowText.match(/\b(?:increases?|extends?)\s+(?:the\s+)?(?:duration of (?:the )?slow|slow duration)\s+by\s+(\d+(?:\.\d+)?|\.\d+)s\b/i);
+          const enhancedDuration = durationIncrease && inheritedDuration > 0
+            ? inheritedDuration + number(durationIncrease[1], 0)
+            : slowEffectDuration({ slowContext: enhancedSlowText });
           const plusSourceCandidates = enhancedCandidates.length ? enhancedCandidates : normalCandidates;
           generalVariants.push({
             candidate: plusCandidate,
@@ -551,6 +573,7 @@ function pokemonSlowRankingRows(pokemon) {
           variant.useGeneratedSlowDetail = splitByUpgrade;
         });
         const isScald = pokemon.name === "Slowbro" && node.name === "Scald" && rsbKey === "rsb";
+        const isSableyeAttack = pokemon.name === "Sableye" && skill.ability === "Basic" && rsbKey === "rsb";
         const variants = isSweetScent
           ? [
             {
@@ -602,7 +625,24 @@ function pokemonSlowRankingRows(pokemon) {
                 slowDetailPartsJa: [{ label: "減速仕様", text: "蒸気の範囲内にいる相手の移動速度を30%低下させます。持続時間は3秒です。着弾時の80%減速とは別の効果です。" }]
               }
             ]
-            : generalVariants;
+            : isSableyeAttack
+              ? [
+                {
+                  candidate: { basePercent: 20, multiplier: 1, percent: 20, enhanced: false, decays: false },
+                  moveNote: "通常の強化攻撃",
+                  slowDuration: 2,
+                  slowContext: "Boosted attacks decrease enemy movement speed by 20% for 2s.",
+                  slowDetailPartsJa: [{ label: "減速仕様", text: "通常の強化攻撃が命中した相手の移動速度を20%低下させます。持続時間は2秒です。" }]
+                },
+                {
+                  candidate: { basePercent: 40, multiplier: 1, percent: 40, enhanced: false, decays: false },
+                  moveNote: "ステルスからの強化攻撃・恐怖中",
+                  slowDuration: 1,
+                  slowContext: "A boosted attack from stealth fears enemies for 1s, with 40% reduced movement speed during fear.",
+                  slowDetailPartsJa: [{ label: "減速仕様", text: "ステルス状態から強化攻撃を当てると、相手を1秒間恐怖状態にします。恐怖中の相手は移動速度が40%低下した状態でヤミラミから遠ざかります。" }]
+                }
+              ]
+              : generalVariants;
         variants.forEach((variant) => {
           const bestCandidate = variant.candidate;
           rows.push({
@@ -803,30 +843,71 @@ function slowEffectProfile(row) {
   return { kind, chips, steps };
 }
 
-function slowEffectVisualMarkup(row) {
+function slowEffectPresentation(row) {
   const profile = slowEffectProfile(row);
-  const chips = profile.chips.map((chip) => (
-    `<span class="slow-effect-chip ${escapeHtml(chip.className)}">${escapeHtml(chip.label)}</span>`
-  )).join("");
-  const meter = profile.steps.length > 1
-    ? `<span class="slow-effect-meter ${escapeHtml(profile.kind)}" aria-hidden="true">${profile.steps.map((value, index) => {
-      const progress = profile.steps.length > 1 ? index / (profile.steps.length - 1) : 1;
-      const opacity = profile.kind === "decay" ? 1 - progress * 0.72 : 0.35 + progress * 0.65;
-      return `<span style="opacity:${formatNumber(opacity, 2)}"></span>`;
+  const decay = slowDecaySpec(row);
+  let label = "一定";
+  let description = "持続中の減速率は一定";
+  let steps = [];
+  if (profile.kind === "stack") {
+    label = "最大";
+    description = `累積 · ${formatNumber(row.stackMultiplier, 0)}段階で最大`;
+    if (row.decays || decay) description += " · 時間で減衰";
+    steps = profile.steps.map((value, index) => ({ value, label: `${index + 1}段階` }));
+  } else if (profile.kind === "decay") {
+    label = "初期";
+    description = decay && decay.interval > 0 && decay.amount > 0
+      ? `減衰 · ${formatNumber(decay.interval, 2)}秒ごとに弱まる`
+      : "減衰 · 時間とともに弱まる";
+    steps = profile.steps.map((value, index) => ({
+      value,
+      label: index === 0 ? "付与時"
+        : decay && decay.interval > 0 && decay.amount > 0 ? `${formatNumber(index * decay.interval, 2)}秒後`
+        : decay && decay.total && decay.duration > 0 ? `${formatNumber(decay.duration, 2)}秒後`
+        : "減衰後"
+    }));
+  } else if (row.variable) {
+    label = "最大";
+    description = "発動条件などで減速率が変わる";
+    // Different conditions do not necessarily form a time-based growth curve.
+    if (profile.steps.length > 1) {
+      steps = [
+        { value: profile.steps[0], label: "最小" },
+        { value: profile.steps.at(-1), label: "最大" }
+      ];
+    }
+  }
+  return { label, description, steps, variable: profile.kind !== "stack" && profile.kind !== "decay" && row.variable };
+}
+
+function slowEffectVisualMarkup(row) {
+  const presentation = slowEffectPresentation(row);
+  const steps = presentation.steps;
+  // Keep long decay sequences readable; preserve the original indices for times.
+  const visibleIndices = steps.length > 5 ? [0, 1, steps.length - 1] : steps.map((_, index) => index);
+  const flow = steps.length > 1
+    ? `<span class="slow-effect-flow">${visibleIndices.map((index, position) => {
+      const step = steps[index];
+      const omitted = position > 0 && index > visibleIndices[position - 1] + 1;
+      const separator = omitted ? '<span class="slow-effect-flow-arrow" aria-label="途中の段階を省略">…</span>'
+        : position > 0 ? `<span class="slow-effect-flow-arrow" aria-hidden="true">${presentation.variable ? "〜" : "→"}</span>` : "";
+      return `<span class="slow-effect-flow-group">${separator}<span class="slow-effect-step"><span class="slow-effect-flow-value">${escapeHtml(formatNumber(step.value, 1))}%</span><span class="slow-effect-step-label">${escapeHtml(step.label)}</span></span></span>`;
     }).join("")}</span>`
     : "";
-  const flow = profile.steps.length > 1
-    ? `<span class="slow-effect-flow" aria-hidden="true">${profile.steps.map((value, index) => (
-      `${index ? '<span class="slow-effect-flow-arrow">→</span>' : ""}<span class="slow-effect-flow-value">${escapeHtml(formatNumber(value, 1))}%</span>`
-    )).join("")}</span>`
-    : "";
   return `<div class="slow-effect-visual">
-    <span class="slow-effect-main">${escapeHtml(formatNumber(row.slowPercent, 1))}%</span>
-    ${chips ? `<span class="slow-effect-chips">${chips}</span>` : ""}
-    ${meter}
+    <span class="slow-effect-value"><span class="slow-effect-value-label">${escapeHtml(presentation.label)}</span><strong class="slow-effect-main">${escapeHtml(formatNumber(row.slowPercent, 1))}%</strong></span>
+    <span class="slow-effect-description">${escapeHtml(presentation.description)}</span>
     ${flow}
-    <span class="visually-hidden">${escapeHtml(slowPercentageLabel(row))}</span>
   </div>`;
+}
+
+function slowDurationMarkup(row) {
+  const duration = slowEffectDuration(row);
+  const enhancedDuration = number(row.enhancedSlowDuration, 0);
+  const notes = [];
+  if (row.decays || slowDecaySpec(row)) notes.push("減衰する時間を含む");
+  if (enhancedDuration > duration) notes.push(`強化後 ${formatNumber(enhancedDuration, 2)}秒`);
+  return `<span class="slow-duration-value">${duration > 0 ? `${escapeHtml(formatNumber(duration, 2))}秒` : "未確認"}</span>${notes.map((note) => `<span class="slow-duration-note">${escapeHtml(note)}</span>`).join("")}`;
 }
 
 let activeSlowMoveTooltipTrigger = null;
@@ -848,10 +929,12 @@ function positionSlowMoveTooltip(trigger, tooltip) {
   const triggerRect = trigger.getBoundingClientRect();
   const tooltipRect = tooltip.getBoundingClientRect();
   const gutter = 12;
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = document.documentElement.clientHeight;
   const preferredLeft = triggerRect.left;
-  const left = clamp(preferredLeft, gutter, window.innerWidth - tooltipRect.width - gutter);
+  const left = clamp(preferredLeft, gutter, viewportWidth - tooltipRect.width - gutter);
   let top = triggerRect.bottom + 8;
-  if (top + tooltipRect.height > window.innerHeight - gutter) {
+  if (top + tooltipRect.height > viewportHeight - gutter) {
     top = Math.max(gutter, triggerRect.top - tooltipRect.height - 8);
   }
   tooltip.style.left = `${Math.round(left)}px`;
@@ -897,10 +980,16 @@ function hideSlowMoveTooltip(force = false) {
 }
 
 const SLOW_FILTER_LABELS = Object.freeze({
+  fixed: "一定",
   stack: "累積",
   decay: "減衰",
-  instant: "即効",
   enhanced: "強化後"
+});
+
+const SLOW_SORT_LABELS = Object.freeze({
+  desc: "最大減速率が高い順",
+  asc: "最大減速率が低い順",
+  duration: "持続時間が長い順"
 });
 
 function selectedSlowFilterKeys() {
@@ -914,11 +1003,7 @@ function slowRowMatchesFilter(row, key) {
   const profile = slowEffectProfile(row);
   if (key === "stack") return row.stackMultiplier > 1;
   if (key === "decay") return Boolean(row.decays || profile.kind === "decay");
-  if (key === "instant") {
-    const stacks = row.stackMultiplier > 1;
-    const decays = Boolean(row.decays || profile.kind === "decay");
-    return !stacks && !decays;
-  }
+  if (key === "fixed") return profile.kind === "fixed" && !row.variable;
   if (key === "enhanced") return Boolean(row.enhanced || number(row.enhancedSlowDuration, 0) > 0);
   return true;
 }
@@ -928,10 +1013,19 @@ function syncSlowFilterStatus(selectedKeys, sortOrder, visibleCount, totalCount)
     .map((key) => SLOW_FILTER_LABELS[key])
     .filter(Boolean);
   const conditionText = selectedLabels.length
-    ? `効果タイプ: ${selectedLabels.join("・")}（AND）`
-    : "効果タイプ: すべて";
-  const orderText = sortOrder === "asc" ? "減速率の昇順" : "減速率の降順";
-  el.slowFilterStatus.textContent = `${conditionText} / ${orderText} / ${formatNumber(visibleCount, 0)}件表示（全${formatNumber(totalCount, 0)}件）`;
+    ? `条件: ${selectedLabels.join("・")}（選んだ条件をすべて満たす）`
+    : "条件: すべて（複数選択すると、選んだ条件をすべて満たす効果を表示）";
+  const durationNote = sortOrder === "duration" ? " / 持続時間が未確認の効果は末尾に表示" : "";
+  el.slowFilterStatus.textContent = `${formatNumber(visibleCount, 0)}件 / 全${formatNumber(totalCount, 0)}件 · ${SLOW_SORT_LABELS[sortOrder]} · ${conditionText}${durationNote}`;
+}
+
+function compareSlowRankingRows(a, b, sortOrder) {
+  const durationDifference = sortOrder === "duration" ? slowEffectDuration(b) - slowEffectDuration(a) : 0;
+  return durationDifference
+    || (sortOrder === "asc" ? a.slowPercent - b.slowPercent : b.slowPercent - a.slowPercent)
+    || a.sourceType.localeCompare(b.sourceType)
+    || a.sourceLabel.localeCompare(b.sourceLabel, "ja")
+    || a.moveName.localeCompare(b.moveName, "ja");
 }
 
 function updateSlowRanking() {
@@ -957,23 +1051,18 @@ function updateSlowRanking() {
     uniqueRows.push(row);
   });
   const selectedFilters = selectedSlowFilterKeys();
-  const sortOrder = el.slowRankingSortOrder.value === "asc" ? "asc" : "desc";
+  const sortOrder = Object.hasOwn(SLOW_SORT_LABELS, el.slowRankingSortOrder.value) ? el.slowRankingSortOrder.value : "desc";
   const visibleRows = selectedFilters.size
     ? uniqueRows.filter((row) => [...selectedFilters].every((key) => slowRowMatchesFilter(row, key)))
     : [...uniqueRows];
-  visibleRows.sort((a, b) => (
-    (sortOrder === "asc" ? a.slowPercent - b.slowPercent : b.slowPercent - a.slowPercent)
-    || a.sourceType.localeCompare(b.sourceType)
-    || a.sourceLabel.localeCompare(b.sourceLabel, "ja")
-    || a.moveName.localeCompare(b.moveName, "ja")
-  ));
+  visibleRows.sort((a, b) => compareSlowRankingRows(a, b, sortOrder));
   state.slowRankingRows = visibleRows;
 
   if (!visibleRows.length) {
     const message = uniqueRows.length
       ? "選択した条件に一致する減速効果がありません。"
       : "表示できる減速効果がありません。";
-    el.slowRankingBody.innerHTML = `<tr class="slow-ranking-empty"><td colspan="4">${message}</td></tr>`;
+    el.slowRankingBody.innerHTML = `<tr class="slow-ranking-empty"><td colspan="5">${message}</td></tr>`;
   } else {
     el.slowRankingBody.innerHTML = visibleRows.map((row, index) => {
       const badge = row.sourceBadge
@@ -987,26 +1076,29 @@ function updateSlowRanking() {
             <span class="slow-ranking-source-icon" title="${escapeHtml(row.sourceLabel)}">
               <img src="${escapeHtml(row.sourceIcon)}" alt="" loading="lazy" onerror="${imageFallback}">
               ${badge}
-              <span class="visually-hidden">${escapeHtml(row.sourceLabel)}</span>
             </span>
+            <span class="slow-ranking-source-name">${escapeHtml(row.sourceLabel)}</span>
           </div>
         </td>
         <td>
           <div class="ranking-move">
             <button
-              class="slow-move-icon-trigger"
+              class="slow-move-icon-trigger slow-move-detail-trigger"
               type="button"
               data-slow-row-index="${index}"
               aria-label="${escapeHtml(row.moveName)}の技概要と減速仕様を表示"
               aria-expanded="false"
+              aria-controls="slowMoveTooltip"
               aria-describedby="slowMoveTooltip"
             >
               <img src="${escapeHtml(row.moveIcon || brokenImageUrl())}" alt="" loading="lazy" onerror="${imageFallback}">
+              <span>詳細</span>
             </button>
-            <span><span class="ranking-name">${escapeHtml(row.moveName)}</span><span class="ranking-note">${escapeHtml(row.moveNote)}</span></span>
+            <span><span class="ranking-name">${escapeHtml(row.moveName)}</span><span class="ranking-note">${escapeHtml(row.moveNote)}${row.enhanced && !/強化後/.test(row.moveNote) ? " · 強化後" : ""}</span></span>
           </div>
         </td>
         <td class="slow-ranking-percent">${slowEffectVisualMarkup(row)}</td>
+        <td class="slow-ranking-duration">${slowDurationMarkup(row)}</td>
       </tr>`;
     }).join("");
   }

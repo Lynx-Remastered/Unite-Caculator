@@ -483,7 +483,7 @@ body.ranking-column-resizing {
   position: fixed;
   z-index: 250;
   box-sizing: border-box;
-  width: min(430px, calc(100vw - 24px));
+  width: min(430px, calc(100% - 24px));
   max-height: min(320px, calc(100vh - 24px));
   overflow: auto;
   border: 1px solid var(--accent-2);
@@ -561,6 +561,266 @@ body.ranking-column-resizing {
 .acceleration-move-tooltip .slow-move-tooltip-title,
 .acceleration-move-tooltip .slow-move-tooltip-part strong {
   color: var(--success);
+}
+
+/* Give the slow ranking its own comparison layout; acceleration shares the base classes. */
+#slowRankingPanel {
+  container: slow-ranking / inline-size;
+  min-width: 0;
+}
+
+#slowRankingPanel > .stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#slowRankingPanel .panel,
+#slowRankingPanel .panel-body,
+#slowRankingPanel .slow-ranking-table-wrap,
+#slowRankingPanel .slow-filter-sort {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#slowRankingPanel .slow-ranking-table {
+  width: 100%;
+  min-width: 0;
+}
+
+#slowRankingPanel .slow-ranking-table col:nth-child(1) { width: 6%; }
+#slowRankingPanel .slow-ranking-table col:nth-child(2) { width: 19%; }
+#slowRankingPanel .slow-ranking-table col:nth-child(3) { width: 25%; }
+#slowRankingPanel .slow-ranking-table col:nth-child(4) { width: 35%; }
+#slowRankingPanel .slow-ranking-table col:nth-child(5) { width: 15%; }
+
+#slowRankingPanel .slow-ranking-table th,
+#slowRankingPanel .slow-ranking-table td {
+  text-align: left;
+}
+
+#slowRankingPanel .slow-ranking-table td {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+#slowRankingPanel .slow-ranking-table .ranking-rank {
+  padding-top: 24px;
+  text-align: center;
+}
+
+#slowRankingPanel .slow-ranking-guide {
+  margin: 0;
+  padding: 12px 14px 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+#slowRankingPanel .slow-display-filter {
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 220px);
+  gap: 14px 20px;
+  align-items: start;
+}
+
+#slowRankingPanel .slow-filter-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  min-width: 0;
+}
+
+#slowRankingPanel .slow-filter-sort select {
+  width: 100%;
+  min-width: 0;
+}
+
+#slowRankingPanel .slow-filter-group legend,
+#slowRankingPanel .slow-filter-sort,
+#slowRankingPanel .slow-filter-option,
+#slowRankingPanel .slow-filter-sort select,
+#slowRankingPanel .slow-filter-sort option {
+  font-size: 13px;
+}
+
+#slowRankingPanel .slow-filter-option {
+  min-height: 36px;
+  padding: 7px 12px;
+}
+
+#slowRankingPanel .slow-filter-option:focus-within {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+#slowRankingPanel .slow-filter-help {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#slowRankingPanel .slow-filter-status {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-size: 12px;
+}
+
+#slowRankingPanel .slow-ranking-source {
+  grid-template-columns: 48px minmax(0, 1fr);
+  justify-items: start;
+  align-items: center;
+  gap: 10px;
+}
+
+#slowRankingPanel .slow-ranking-source-name {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+#slowRankingPanel .ranking-move {
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+#slowRankingPanel .ranking-name {
+  display: block;
+  padding-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+#slowRankingPanel .ranking-note {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+#slowRankingPanel .slow-move-detail-trigger {
+  width: 52px;
+  height: auto;
+  min-height: 56px;
+  gap: 3px;
+  border-color: var(--line);
+  border-radius: 8px;
+  padding: 5px;
+  background: var(--surface-3);
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+#slowRankingPanel .slow-move-detail-trigger:hover,
+#slowRankingPanel .slow-move-detail-trigger:focus-visible,
+#slowRankingPanel .slow-move-detail-trigger[aria-expanded="true"] {
+  border-color: var(--accent-2);
+  background: rgba(var(--accent-2-rgb), 0.1);
+}
+
+#slowRankingPanel .slow-move-detail-trigger:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+#slowRankingPanel .slow-effect-visual {
+  min-height: 0;
+  gap: 9px;
+  overflow: visible;
+}
+
+#slowRankingPanel .slow-effect-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+#slowRankingPanel .slow-effect-value-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#slowRankingPanel .slow-effect-main,
+#slowRankingPanel .slow-duration-value {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+#slowRankingPanel .slow-effect-description {
+  color: var(--label);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+#slowRankingPanel .slow-effect-flow {
+  flex-wrap: wrap;
+  gap: 6px 5px;
+  font-size: 12px;
+}
+
+#slowRankingPanel .slow-effect-flow-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+}
+
+#slowRankingPanel .slow-effect-step {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 7px;
+  background: var(--surface-3);
+}
+
+#slowRankingPanel .slow-effect-flow-value {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+#slowRankingPanel .slow-effect-step-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+#slowRankingPanel .slow-ranking-duration {
+  color: var(--ink);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#slowRankingPanel .slow-duration-value {
+  display: block;
+}
+
+#slowRankingPanel .slow-duration-note {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
 }
 
 .visually-hidden {
