@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "node scripts/serve_static_app.js",
-    "test": "node scripts/validate_static_app.js && node scripts/test_ranking_damage.js && node scripts/test_ranking_healing.js && node scripts/test_ranking_shield.js && node scripts/test_ranking_slow.js && node scripts/test_ranking_acceleration.js",
+    "test": "node scripts/validate_static_app.js && node scripts/test_update_unitedb_data.js && node scripts/test_ranking_damage.js && node scripts/test_ranking_healing.js && node scripts/test_ranking_shield.js && node scripts/test_ranking_slow.js && node scripts/test_ranking_acceleration.js",
     "validate": "node scripts/validate_static_app.js"
   }
 }

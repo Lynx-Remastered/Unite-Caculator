@@ -59,6 +59,18 @@ const zacian = attack("Zacian", "通常攻撃", 15, "basic");
 assert.equal(zacian.parts[0].targetHpRatio, 0, "uncharged attack cannot inherit a conditional HP ratio");
 assert.equal(api.calculateRankingDamage(zacian).totalRaw, 645);
 
+// Red/purple Crunch fangs use the September formula both before and after Lv11.
+for (const [level, ratio, base, expectedRaw] of [[10, 198.7, 596, 1589], [11, 232, 695, 1855]]) {
+  const input = attack("Feraligatr", "Crunch", level);
+  const part = input.parts.find((entry) => entry.label === "Damage - Bonus");
+  assert.ok(part, `Crunch red/purple damage must be available at Lv${level}`);
+  assert.equal(part.ratio, ratio);
+  assert.equal(part.base, base);
+  assert.equal(api.calculateRankingDamage({
+    ...input, parts: [part], stats: { ...input.stats, attack: 500 }, itemRows: []
+  }).totalRaw, expectedRaw);
+}
+
 assert.equal(api.calculateRankingDamage(attack("Greninja", "Water Shuriken", 10)).totalHits, 4);
 assert.equal(api.calculateRankingDamage(attack("Greninja", "Water Shuriken", 15)).totalHits, 5);
 const raichu = attack("Raichu", "Electro Ball");

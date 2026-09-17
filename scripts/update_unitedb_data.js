@@ -92,13 +92,8 @@ function applyAeosSummerRushPokemon(rows) {
     add1_ratio: "89.25", add1_slider: "10", add1_base: "293"
   });
 
-  const feraligatr = pokemonByName(rows, "Feraligatr");
-  setRsb(moveByName(feraligatr, "Crunch"), {
-    ratio: "220.8", base: "662",
-    add1_ratio: "256.7", add1_base: "770",
-    enhanced_ratio: "253.9", enhanced_base: "762",
-    enhanced_add1_ratio: "294", enhanced_add1_base: "888"
-  });
+  // Crunch is current in UniteDB. The old August override reverted its
+  // September nerf, so preserve the fetched values (including future updates).
 
   const megaLucario = pokemonByName(rows, "Mega-Lucario");
   const auraCannon = moveByName(megaLucario, "Aura Cannon");
@@ -221,7 +216,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+module.exports = { applyDatasetOverrides };
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
