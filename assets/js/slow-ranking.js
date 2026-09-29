@@ -49,6 +49,7 @@ const SLOW_PERCENT_PATTERNS = [
   /(\d+(?:\.\d+)?)%\s+movement speed\s+(?:decrease|reduction)\b/gi,
   /\bmovement speed (?:decrease|reduction)\s+for\s+[\d.]+s,\s*(\d+(?:\.\d+)?)%\s+if\s+Sprint empowered/gi,
   /\bslow(?:s|ed|ing)?\s+by\s+(\d+(?:\.\d+)?)%/gi,
+  /\bslow(?:s|ed|ing)?\s+(?:the\s+)?targets?\s+(\d+(?:\.\d+)?)%/gi,
   /slow(?:s|ed|ing)?(?:\s+movement speed)?\s+[^.;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
   /\bslow(?:s|ed|ing)?\s+(\d+(?:\.\d+)?)%/gi,
   /(?:appl(?:y|ies|ying)|inflict(?:s|ed|ing)?)\s+(?:a\s+)?(\d+(?:\.\d+)?)%\s+slow/gi,

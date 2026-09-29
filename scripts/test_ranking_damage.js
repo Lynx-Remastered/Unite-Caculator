@@ -77,6 +77,37 @@ const raichu = attack("Raichu", "Electro Ball");
 assert.equal(raichu.parts.find((part) => /Activated by Thunderbolt/.test(part.label)).hitCount, 1, "the upgrade's 8 DoT ticks do not repeat the separate linked attack");
 assert.equal(api.calculateRankingDamage(raichu).totalRaw, 5012);
 
+// Toxtricity: alternative timbres and direct/splash targets cannot be added
+// together. One fresh poison stack deals six true-damage ticks of 0.6% max HP.
+for (const [move, expected] of [
+  ["通常攻撃", [["poison", 516, 366], ["electric", 300, 150]]],
+  ["強化攻撃", [["poison", 741, 478], ["electric", 300, 150]]],
+  ["Overdrive", [["poison-direct", 1760, 880], ["poison-area", 1040, 520], ["electric-wave", 320, 160], ["electric-feedback", 1200, 600]]],
+  ["Venom Distortion", [["sound-waves", 4000, 2000]]]
+]) {
+  const input = attack("Toxtricity", move);
+  const variants = api.rankingVariantsForChoice(input.pokemon, input.choice, 15);
+  assert.equal(variants.length, expected.length);
+  for (const [key, totalRaw, totalReduced] of expected) {
+    const variant = variants.find((entry) => entry.key === key);
+    assert.ok(variant, `${move}/${key} must be selectable`);
+    const result = api.calculateRankingDamage({ ...input, parts: variant.parts,
+      stats: { ...input.stats, spAttack: 500 }, itemRows: [], targetMaxHp: 6000,
+      targetDefense: 600, targetSpDefense: 600 });
+    assert.equal(result.totalRaw, totalRaw, `${move}/${key} raw damage`);
+    assert.equal(result.totalReduced, totalReduced, `${move}/${key} reduced damage`);
+    api.el.levelRange = { value: "15" };
+    api.el.pokemonSelect = { value: "Toxtricity" };
+    api.state.selectedDamageVariantKey = key;
+    assert.deepEqual(api.selectedMoveParts(input.choice), variant.parts, "Detailed calculator and ranking must use the same parts");
+  }
+}
+const earlyToxtricity = attack("Toxtricity", "通常攻撃", 4);
+assert.equal(api.rankingVariantsForChoice(earlyToxtricity.pokemon, earlyToxtricity.choice, 4).length, 1, "Electric timbre requires Shift Gear at Lv5");
+const toxtricityAtLv8 = api.damageChoicesForPokemon(earlyToxtricity.pokemon, 8);
+assert.equal(toxtricityAtLv8.find((choice) => choice.slotKey === "unite").disabled, true);
+assert.equal(api.calculateRankingDamage(attack("Toxtricity", "Venom Distortion", 9)).totalHits, 5);
+
 // Preserve actual enemy-HP formulas while rejecting self costs and unresolved
 // alternatives. These examples deliberately vary the surrounding wording.
 assert.equal(api.parseTargetHpDamage("Deals 8% of the target's max HP as damage").ratio, 8);

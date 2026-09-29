@@ -346,6 +346,8 @@ function translatePatchTokens(value) {
   if (PATCH_TEXT_JA[text]) return PATCH_TEXT_JA[text];
 
   currentPatchMoveTranslationEntries().forEach(([name, translated]) => {
+    // Charge is also a generic charge level, not always Toxtricity's move.
+    if (name === "Charge" && text !== name) return;
     if (name.length < 4 || !text.toLowerCase().includes(name.toLowerCase())) return;
     text = text.replace(new RegExp(`(?<![A-Za-z])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z])`, "gi"), translated);
   });

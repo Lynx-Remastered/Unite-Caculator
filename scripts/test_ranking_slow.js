@@ -56,6 +56,14 @@ test("Fire Spin ranks its initial slow, with the decay amount used only for its 
   assert.match(details(value), /0\.5秒ごとに10%/);
 });
 
+test("Toxtricity Charge keeps the target slow separate from its self acceleration", () => {
+  const charge = row("Toxtricity", "Charge");
+  assert.equal(charge.slowPercent, 20);
+  assert.equal(context.slowEffectDuration(charge), 2);
+  assert.equal(profile(charge).kind, "fixed");
+  assert.equal(rows("Toxtricity", "Shift Gear").length, 0);
+});
+
 test("projectile caps and explicit stacks both rank their attainable maximum", () => {
   for (const [pokemon, move, percent, stacks] of [["Espeon", "Psyshock", 75, 5], ["Espeon", "Stored Power", 50, 5], ["Duraludon", "Stealth Rock", 100, 4], ["Lapras", "Ice Beam", 90, 6], ["Wigglytuff", "Sing", 60, 4]]) {
     const value = row(pokemon, move);

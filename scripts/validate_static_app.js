@@ -142,6 +142,10 @@ function validatePatchNoteTranslations() {
   if (api.translatePatchTokens("10% target missing HP") !== "相手の減少HPの10%") {
     fail("A move name must not replace part of another word, such as Sing in missing");
   }
+  const lowCharge = api.jpPatchDetail("Damage - Low Charge:", "nerf");
+  if (lowCharge.includes("じゅうでん") || api.hasUntranslatedPatchText(lowCharge)) {
+    fail("Charge in a charge-level label must not become Toxtricity's move name");
+  }
   const unknownDetails = api.jpPatchDetails(["An undocumented celestial interaction was altered."], "adjustment");
   const unknownFormula = api.jpPatchDetails(["Old: 10% UntranslatedCoefficient", "New: 20% UntranslatedCoefficient"], "buff");
   if (![...unknownDetails, ...unknownFormula].every((row) => row.untranslated && !row.comparison && !api.hasUntranslatedPatchText(row.text))) {

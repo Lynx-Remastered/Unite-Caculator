@@ -377,6 +377,39 @@ function progressiveDamageEntries(entry, key, scales, labelPrefix) {
 }
 
 function specificDamageVariantOptionsForChoice(pokemon, choice, entries, level) {
+  if (pokemon?.name === "Toxtricity") {
+    if (choice.displayName === "Overdrive") {
+      const wave = entriesForMovePartLabels(entries, ["Damage"]);
+      // The direct hit and splash affect different targets. Electric feedback
+      // requires another attack; it is not part of the wave's own damage.
+      return [
+        variantOption("poison-direct", "どく：直撃（継続ダメージ除外）", [...wave, ...entriesForMovePartLabels(entries, ["Damage - Poison Timbre sludge"])]),
+        variantOption("poison-area", "どく：周囲（継続ダメージ除外）", [...wave, ...entriesForMovePartLabels(entries, ["Damage - Poison Timbre sludge (Area)"])]),
+        variantOption("electric-wave", "でんき：音波のみ", wave),
+        variantOption("electric-feedback", "でんき：連鎖1回のみ", entriesForMovePartLabels(entries, ["Damage - Electric Timbre feedback"]))
+      ].filter((variant) => variant.entries.length);
+    }
+    if (choice.slotKey === "basic" || choice.slotKey === "boosted") {
+      const basic = pokemon.skills.find((skill) => skill.ability === "Basic");
+      const basicEntries = [];
+      addRsbEntries(basicEntries, basic.rsb, choice.displayName, "Basic", 1, "", { slotKey: choice.slotKey, displayName: choice.displayName });
+      const poison = basicEntries.find((entry) => entry.label === "Damage - Poison DoT");
+      const basicHit = basicEntries.find((entry) => entry.label === "Basic");
+      const poisonHit = choice.slotKey === "basic" ? basicHit : entries.find((entry) => entry.label === "Boosted - Poison Timbre");
+      if (poison && basicHit && poisonHit) {
+        const dot = { ...poison, bypassDefense: true, hitCountOverride: 6,
+          hitNoteOverride: "どく1段階・6回（付与時と0.5秒ごと、2.5秒間）" };
+        const variants = [variantOption("poison", "どくの音色（どく1段階・全6回）", [poisonHit, dot])];
+        // Electric boosted attacks add healing/slow, not the poison damage bonus.
+        if (level >= 5) variants.push(variantOption("electric", "でんきの音色", [basicHit]));
+        return variants;
+      }
+    }
+    if (choice.displayName === "Venom Distortion") {
+      return [variantOption("sound-waves", "音波5回（どくの継続ダメージ除外）", entries.filter(isAutoIncludedDamageEntry))];
+    }
+  }
+
   if (isDarkraiShadowClaw(pokemon, choice)) {
     return [
       variantOption("normal", "通常", entriesForMovePartLabels(entries, ["Damage", "Damage - Huge Claw"])),

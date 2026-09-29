@@ -6,7 +6,7 @@ const DATA_SOURCES = {
   emblems: ["./data/emblems.json"],
   emblemSets: ["./data/emblem_sets.json"],
   emblemNamesJa: ["./data/emblem_names_ja.json"],
-  moveNamesJa: ["./data/move_names_ja.json?v=20260906-morpeko"],
+  moveNamesJa: ["./data/move_names_ja.json?v=20260929-toxtricity"],
   wikiMoveDescriptionsJa: ["./data/wiki_move_descriptions_ja.json"],
   slowDescriptionsJa: ["./data/slow_descriptions_ja.json"],
   patchNotes: ["./data/patch_notes.json"]
@@ -109,6 +109,7 @@ const POKEMON_JA = {
   "Sylveon": "ニンフィア",
   "Talonflame": "ファイアロー",
   "Tinkaton": "デカヌチャン",
+  "Toxtricity": "ストリンダー",
   "Trevenant": "オーロット",
   "Tsareena": "アマージョ",
   "Typhlosion": "バクフーン",
@@ -200,6 +201,13 @@ const STAT_JA = {
 };
 
 const LABEL_EXACT_JA = {
+  "Damage - Poison DoT": "ダメージ - どくの継続ダメージ",
+  "Boosted - Poison Timbre": "強化攻撃 - どくの音色",
+  "Boosted (Healing) - Electric Timbre": "強化攻撃の回復 - でんきの音色",
+  "Damage - Auto Attack Bonus": "ダメージ - 次の通常攻撃への追加分",
+  "Damage - Poison Timbre sludge": "ダメージ - どくの音色（直撃）",
+  "Damage - Poison Timbre sludge (Area)": "ダメージ - どくの音色（周囲）",
+  "Damage - Electric Timbre feedback": "ダメージ - でんきの音色（連鎖）",
   "Healing (4x)": "回復（4回）",
   "Damage - Mark": "ダメージ - マーク",
   "Healing - Mark": "回復 - マーク",
