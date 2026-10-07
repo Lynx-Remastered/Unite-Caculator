@@ -49,6 +49,7 @@ const SLOW_PERCENT_PATTERNS = [
   /(\d+(?:\.\d+)?)%\s+movement speed\s+(?:decrease|reduction)\b/gi,
   /\bmovement speed (?:decrease|reduction)\s+for\s+[\d.]+s,\s*(\d+(?:\.\d+)?)%\s+if\s+Sprint empowered/gi,
   /\bslow(?:s|ed|ing)?\s+by\s+(\d+(?:\.\d+)?)%/gi,
+  /\bslow(?:s|ed|ing)?\s+movement speed\s+by\s+(\d+(?:\.\d+)?)%/gi,
   /\bslow(?:s|ed|ing)?\s+(?:the\s+)?targets?\s+(\d+(?:\.\d+)?)%/gi,
   /slow(?:s|ed|ing)?(?:\s+movement speed)?\s+[^.;,%]{0,75}?\sby\s+(\d+(?:\.\d+)?)%/gi,
   /\bslow(?:s|ed|ing)?\s+(\d+(?:\.\d+)?)%/gi,
@@ -103,6 +104,11 @@ function slowMatchTargetsOpponent(text, match, pokemonName = "") {
     return false;
   }
   if (/^\s*(?:for\s+\d+(?:\.\d+)?s\s+)?(?:to|on)\s+(?:opposing|enem(?:y|ies)|targets?|pok(?:é|e)mon)/i.test(after)) {
+    return true;
+  }
+  if (/^slow(?:s|ed|ing)?\s+movement speed\s+by/i.test(exact)
+      && /\b(?:damaging|hitting),\s*$/i.test(text.slice(Math.max(0, match.index - 60), match.index))
+      && /,\s+and\s+(?:poisoning|damaging|hitting)\s+(?:all\s+)?(?:opposing|enem(?:y|ies))\b/i.test(after.split(/[.;!?]/)[0])) {
     return true;
   }
   const before = text.slice(Math.max(0, match.index - 180), match.index).toLowerCase();
@@ -199,6 +205,10 @@ function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
       if (hardStopOnly) continue;
       if (basePercent <= 0 || !slowMatchTargetsOpponent(text, match, pokemonName)) continue;
       const multiplier = slowStackMultiplier(text, match);
+      // Some descriptions define paralysis first, then its slow in the next sentence.
+      const paralysisDuration = text.slice(0, match.index).match(
+        /\bparaly[sz](?:es|ed|ing)[^.!?]*?\bfor\s+(\d+(?:\.\d+)?|\.\d+)s\.\s*This paralysis\b[^.!?]*$/i
+      );
       const key = `${match.index}:${basePercent}:${multiplier}`;
       if (candidates.some((candidate) => candidate.key === key)) continue;
       candidates.push({
@@ -210,11 +220,23 @@ function slowPercentCandidates(value, pokemonName = "", enhanced = false) {
         decays: Boolean(speedDecaySpec(context)),
         duration: slowEffectDuration({ slowContext: context }) || slowEffectDuration({
           slowContext: text.slice(Math.max(0, match.index - 120), pattern.lastIndex)
-        }) || (sharedDuration ? number(sharedDuration[1], 0) : 0),
+        }) || (sharedDuration ? number(sharedDuration[1], 0) : 0)
+          || (paralysisDuration ? number(paralysisDuration[1], 0) : 0),
         context
       });
     }
   });
+  // A stronger conditional slow keeps the duration of the same move's base slow.
+  if (/\b(?:greater|stronger)\s+(?:decrease|reduction)\s+in\s+movement speed/i.test(text)) {
+    const timed = candidates.filter((candidate) => candidate.duration > 0);
+    if (new Set(timed.map((candidate) => candidate.duration)).size === 1) {
+      candidates.forEach((candidate) => {
+        if (!candidate.duration && /^(?:decrease|reduction)\s+in\s+movement speed\s+to/i.test(candidate.context)) {
+          candidate.duration = timed[0].duration;
+        }
+      });
+    }
+  }
   return candidates;
 }
 
@@ -496,6 +518,13 @@ function pokemonSlowRankingRows(pokemon) {
           slowPercentCandidates(rsb[field.key], pokemon.name, field.enhanced)
         ));
         if (!candidates.length) return;
+        // Standalone rate definitions, such as Curse's HP tiers, share the main slow timer.
+        const sharedSlowDuration = slowEffectDuration({ slowContext: rsb.true_desc });
+        candidates.forEach((candidate) => {
+          if (!candidate.duration && /^\d+(?:\.\d+)?%\s+Slow$/i.test(candidate.context)) {
+            candidate.duration = sharedSlowDuration;
+          }
+        });
         candidates.sort((a, b) => (
           b.percent - a.percent
           || a.basePercent - b.basePercent
@@ -516,11 +545,13 @@ function pokemonSlowRankingRows(pokemon) {
           .map((field) => cleanSlowDescription(rsb[field.key]))
           .filter((text) => text && slowTextHasEffect(text))
           .join(" ");
+        const escapedPokemonName = String(pokemon.name || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const ownMovementSpeed = new RegExp("(?:the user|user['’]s|its own|their own|" + escapedPokemonName + "['’]s)\\s+movement speed", "i");
         const durationOnlyEnhanced = Boolean(
           bestNormal
           && !bestEnhanced
           && /(?:movement speed (?:decrease|reduction)|\bslow(?:ing)?\b)/i.test(enhancedSlowText)
-          && !/(?:the user|user['’]s|its own|their own)\s+movement speed/i.test(enhancedSlowText)
+          && !ownMovementSpeed.test(enhancedSlowText)
         );
         const generalVariants = [];
         if (bestNormal) {
@@ -575,7 +606,75 @@ function pokemonSlowRankingRows(pokemon) {
         });
         const isScald = pokemon.name === "Slowbro" && node.name === "Scald" && rsbKey === "rsb";
         const isSableyeAttack = pokemon.name === "Sableye" && skill.ability === "Basic" && rsbKey === "rsb";
-        const variants = isSweetScent
+        const separateEffects = [];
+        const addSeparateEffect = (candidate, moveNote, detailText, duration = candidate && candidate.duration, context = candidate && candidate.context) => {
+          if (!candidate) return;
+          separateEffects.push({
+            candidate,
+            moveNote,
+            slowDuration: duration,
+            slowContext: context,
+            slowDecayContext: context,
+            minSlowPercent: candidate.percent,
+            variable: false,
+            slowDetailPartsJa: [{ label: "減速仕様", text: detailText }]
+          });
+        };
+        if (pokemon.name === "Snorlax" && node.name === "Flail" && rsbKey === "rsb") {
+          const attackClauses = cleanSlowDescription(rsb.notes).split(/(?<=[.;!?])\s+/);
+          const phases = [
+            [rsb.true_desc, "技を使った時"],
+            [attackClauses.find((clause) => /^Basic attacks\b/i.test(clause)), "じたばた中の通常攻撃"],
+            [attackClauses.find((clause) => /^boosted attacks\b/i.test(clause)), "じたばた中の強化攻撃"]
+          ];
+          phases.forEach(([source, phaseLabel]) => {
+            const candidate = slowPercentCandidates(source, pokemon.name)[0];
+            if (candidate) addSeparateEffect(candidate, phaseLabel,
+              phaseLabel + "で相手の移動速度を" + formatNumber(candidate.percent, 1) + "%低下させます。持続時間は" + formatNumber(candidate.duration, 2) + "秒です。");
+          });
+        }
+        if (pokemon.name === "Zapdos" && skill.ability === "Passive" && node.name === "Static" && rsbKey === "rsb") {
+          const field = slowPercentCandidates(rsb.true_desc, pokemon.name)[0];
+          const paralysis = slowPercentCandidates(rsb.notes, pokemon.name)[0];
+          if (field) addSeparateEffect(field, "電気の場の範囲内",
+            "電気の場の範囲内にいる相手の移動速度を" + formatNumber(field.percent, 1) + "%低下させます。電気の場は" + formatNumber(field.duration, 2) + "秒間残り、場を離れた後の減速時間は未確認です。");
+          if (paralysis) addSeparateEffect(paralysis, "近くの相手から攻撃を受けた時",
+            "近くから攻撃してきた相手をまひさせ、移動速度を" + formatNumber(paralysis.percent, 1) + "%低下させます。持続時間は" + formatNumber(paralysis.duration, 2) + "秒です。");
+        }
+        if (isSludgeBomb) {
+          const impact = normalCandidates.find((candidate) => /stacking with the radius slow/i.test(candidate.context));
+          const radius = normalCandidates.find((candidate) => /reducing their Sp\. Defense/i.test(candidate.context));
+          if (impact) addSeparateEffect(impact, "着弾時",
+            "着弾時、相手の移動速度を" + formatNumber(impact.percent, 1) + "%低下させます。持続時間は" + formatNumber(impact.duration, 2) + "秒です。残った範囲の減速と重なります。");
+          if (radius) addSeparateEffect(radius, "残った範囲内",
+            "残った範囲内にいる相手の移動速度を" + formatNumber(radius.percent, 1) + "%低下させます。減速の持続時間は未確認です。着弾時の減速と重なります。",
+            0, radius.context.split(/,\s+and reducing/i)[0]);
+        }
+        const isRockTomb = pokemon.name === "Crustle" && node.name === "Rock Tomb" && rsbKey === "rsb";
+        const rockTombPhases = isRockTomb
+          ? cleanSlowDescription(rsb.true_desc).split(/(?<=[.!?])\s+/)
+            .map((sentence) => slowPercentCandidates(sentence, pokemon.name)[0])
+            .filter(Boolean)
+          : [];
+        const variants = separateEffects.length
+          ? separateEffects
+          : isRockTomb && rockTombPhases.length === 2
+          ? generalVariants.flatMap((variant) => rockTombPhases.map((phase, phaseIndex) => {
+            const candidate = variant.isPlus ? variant.candidate : phase;
+            const phaseLabel = phaseIndex === 0 ? "地面を割る攻撃" : "岩の壁を作る時・壊す時";
+            return {
+              ...variant,
+              candidate,
+              moveNote: phaseLabel + (variant.isPlus ? "・レベル" + node.level2 + "以降" : ""),
+              slowDuration: phase.duration,
+              slowContext: "Slows opposing Pokémon by " + candidate.percent + "% for " + phase.duration + "s.",
+              slowDetailPartsJa: [{
+                label: "減速仕様",
+                text: (phaseIndex === 0 ? "地面を割って進む攻撃が命中した" : "岩の壁を作る時・壊す時に周囲の") + "相手の移動速度を" + formatNumber(candidate.percent, 1) + "%低下させます。持続時間は" + formatNumber(phase.duration, 2) + "秒です。"
+              }]
+            };
+          }))
+          : isSweetScent
           ? [
             {
               candidate: { basePercent: 100, multiplier: 1, percent: 100, enhanced: false, decays: false },

@@ -151,18 +151,6 @@ function applyAeosSummerRushPokemon(rows) {
   setRsb(moveByName(zoroark, "Cut"), { ratio: "97.75", slider: "13", base: "287" });
 }
 
-function applyDriveToVictoryPokemon(rows) {
-  // September 3, 2026: Rock Tomb's slow duration increased from 2s to 3s.
-  // https://www.pokemonunite.jp/ja/topics/battle/20260902-1/
-  // Correct only the stale projectile description; preserve future source changes.
-  const rockTomb = moveByName(pokemonByName(rows, "Crustle"), "Rock Tomb");
-  rockTomb.rsb.true_desc = replaceNumberedText(
-    rockTomb.rsb.true_desc,
-    /decreasing their movement speed by 60% for 2s\./,
-    "decreasing their movement speed by 60% for 3s."
-  );
-}
-
 function setStatSeries(rows, name, field, values) {
   const levels = pokemonByName(rows, name).level || [];
   if (levels.length !== values.length) throw new Error(`Unexpected stat level count: ${name} / ${field}`);
@@ -182,7 +170,6 @@ function applyAeosSummerRushStats(rows) {
 function applyDatasetOverrides(dataset, rows) {
   if (dataset.output === "pokemon.json") {
     applyAeosSummerRushPokemon(rows);
-    applyDriveToVictoryPokemon(rows);
     return true;
   }
   if (dataset.output === "stats.json") {

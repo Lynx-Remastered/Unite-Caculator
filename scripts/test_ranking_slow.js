@@ -43,8 +43,9 @@ test("opponent effects survive references to the user in the same sentence", () 
   assert.equal(row("Ho-Oh", "Flamethrower").slowPercent, 15);
   assert.equal(context.slowEffectDuration(row("Ho-Oh", "Flamethrower")), 1.5);
   assert.equal(context.slowEffectDuration(row("Greninja", "Water Shuriken")), 1);
-  assert.equal(context.slowEffectDuration(row("Snorlax", "Flail")), 1.5);
-  assert.match(details(row("Snorlax", "Flail")), /1\.5秒/);
+  const flailActivation = rows("Snorlax", "Flail").find(value => context.slowEffectDuration(value) === 1.5);
+  assert.ok(flailActivation);
+  assert.match(details(flailActivation), /1\.5秒/);
 });
 
 test("Fire Spin ranks its initial slow, with the decay amount used only for its profile", () => {
@@ -95,18 +96,25 @@ test("duration upgrades, leading decimal points, and multi-phase slows retain th
   assert.deepEqual(profile(row("Chandelure", "Poltergeist", true)).steps, [80, 50]);
 });
 
-test("Rock Tomb uses the September 3 slow duration before and after upgrading", () => {
+test("Rock Tomb separates projectile and wall durations before and after upgrading", () => {
+  const effects = rows("Crustle", "Rock Tomb");
+  assert.equal(effects.length, 4);
   for (const plus of [false, true]) {
-    const value = row("Crustle", "Rock Tomb", plus);
-    assert.equal(value.slowPercent, plus ? 80 : 60);
-    assert.equal(context.slowEffectDuration(value), 3);
-    assert.equal(profile(value).kind, "fixed");
-    assert.match(context.slowDurationMarkup(value), />3秒</);
-    assert.match(details(value), /持続時間は3秒/);
-    const overview = context.localizedSlowOverviewParts(value).map(part => part.text).join(" ");
-    assert.match(overview, /3秒間60%/);
-    assert.doesNotMatch(overview, /2秒/);
-    assert.ok(context.compareSlowRankingRows(value, row("Meowscarada", "Trailblaze"), "duration") < 0);
+    const phases = effects.filter(value => value.enhanced === plus);
+    assert.deepEqual(phases.map(value => context.slowEffectDuration(value)).sort(), [2, 3]);
+    for (const value of phases) {
+      const duration = context.slowEffectDuration(value);
+      assert.equal(value.slowPercent, plus ? 80 : 60);
+      assert.equal(profile(value).kind, "fixed");
+      assert.match(context.slowDurationMarkup(value), new RegExp(">" + duration + "秒<"));
+      assert.match(details(value), new RegExp("持続時間は" + duration + "秒"));
+      const overview = context.localizedSlowOverviewParts(value).map(part => part.text).join(" ");
+      assert.match(overview, /2秒/);
+      assert.match(overview, /3秒/);
+    }
+    const sorted = phases.slice().sort((a, b) => context.compareSlowRankingRows(a, b, "duration"));
+    assert.equal(context.slowEffectDuration(sorted[0]), 3);
+    assert.notEqual(phases[0].moveNote, phases[1].moveNote);
   }
 });
 
@@ -245,12 +253,98 @@ test("generated details preserve quarter-second durations and decay intervals", 
   assert.match(context.japaneseSlowFallbackParts(row("Feraligatr", "Crunch"))[0].text, /0\.25秒ごと/);
 });
 
-test("Sludge Bomb distinguishes the impact duration from the persistent area", () => {
-  const value = row("Venusaur", "Sludge Bomb");
-  assert.equal(value.slowPercent, 50);
-  assert.equal(context.slowEffectDuration(value), 2);
-  assert.equal(value.moveNote, "着弾時");
-  assert.match(details(value), /2秒/);
-  assert.match(details(value), /5秒/);
-  assert.doesNotMatch(details(value), /100%/);
+test("Sludge Bomb does not use the Sp. Def timer as the area slow duration", () => {
+  const effects = rows("Venusaur", "Sludge Bomb");
+  assert.equal(effects.length, 2);
+  const impact = effects.find(value => value.moveNote === "着弾時");
+  const area = effects.find(value => value !== impact);
+  assert.ok(impact);
+  assert.equal(impact.slowPercent, 50);
+  assert.equal(context.slowEffectDuration(impact), 2);
+  assert.match(details(impact), /2秒/);
+  assert.equal(area.slowPercent, 50);
+  assert.equal(context.slowEffectDuration(area), 0);
+  assert.match(context.slowDurationMarkup(area), /未確認/);
+  assert.doesNotMatch(details(area), /持続時間は2秒|100%/);
+});
+
+
+test("paralysis slows inherit only their linked paralysis duration", () => {
+  for (const [pokemon, move, duration] of [
+    ["Morpeko", "Thunder Shock", 1], ["Morpeko", "Spark", 4],
+    ["Morpeko", "Hungry Supercharge Wheel", 4], ["Reshiram", "Dragon Breath", 2]
+  ]) {
+    const value = row(pokemon, move);
+    assert.equal(context.slowEffectDuration(value), duration, pokemon + "/" + move);
+    assert.match(context.slowDurationMarkup(value), new RegExp(">" + duration + "秒<"));
+  }
+  const unrelated = context.slowPercentCandidates("The user is shielded for 6s. Decreases opposing Pokémon movement speed by 30%.");
+  assert.ok(unrelated.length);
+  assert.ok(unrelated.every(value => value.duration === 0));
+});
+
+test("conditional slow strength retains an explicitly shared duration", () => {
+  for (const [pokemon, move, percent, duration] of [["Trevenant", "Curse", 22, 1], ["Sableye", "Astonish", 60, 2]]) {
+    const value = row(pokemon, move);
+    assert.equal(value.slowPercent, percent);
+    assert.equal(context.slowEffectDuration(value), duration);
+    assert.match(details(value), new RegExp(duration + "秒"));
+  }
+});
+
+test("conditional duration inheritance does not leak into a separate effect", () => {
+  const candidates = context.slowPercentCandidates("Decreases opposing Pokémon movement speed by 30% for 2s. If this move hits from behind, it applies a greater decrease in movement speed to 60%. The explosion slows enemies by 10%.");
+  assert.ok(candidates.some(value => value.percent === 60 && value.duration === 2));
+  const explosion = candidates.filter(value => value.percent === 10);
+  assert.ok(explosion.length);
+  assert.ok(explosion.every(value => value.duration === 0));
+  assert.equal(context.slowPercentCandidates("The user is slowing movement speed by 30% for 2s while enemies are nearby.").length, 0);
+});
+
+test("removing Dragonite's own slow does not invent an upgraded opponent slow", () => {
+  assert.equal(rows("Dragonite", "Extreme Speed").length, 1);
+  assert.equal(row("Dragonite", "Extreme Speed").slowPercent, 50);
+  assert.equal(context.slowEffectDuration(row("Dragonite", "Extreme Speed")), 2);
+});
+
+test("Flail activation and attacks retain separate rates and durations", () => {
+  const effects = rows("Snorlax", "Flail");
+  assert.equal(effects.length, 3);
+  assert.deepEqual(effects.map(value => [value.slowPercent, context.slowEffectDuration(value)]).sort((a, b) => a[0] - b[0] || a[1] - b[1]), [[20, 1], [50, 1], [50, 1.5]]);
+  assert.equal(new Set(effects.map(value => value.moveNote)).size, 3);
+  for (const value of effects) {
+    assert.equal(profile(value).kind, "fixed");
+    assert.match(details(value), new RegExp(value.slowPercent + "%"));
+    assert.match(details(value), new RegExp(String(context.slowEffectDuration(value)).replace(".", "\\.") + "秒"));
+  }
+});
+
+test("Zapdos Static distinguishes electric fields from retaliation paralysis", () => {
+  const effects = rows("Zapdos", "Static");
+  assert.equal(effects.length, 2);
+  assert.deepEqual(effects.map(value => context.slowEffectDuration(value)).sort(), [2.5, 3]);
+  assert.equal(new Set(effects.map(value => value.moveNote)).size, 2);
+  for (const value of effects) {
+    assert.equal(value.slowPercent, 30);
+    assert.equal(profile(value).kind, "fixed");
+    assert.match(details(value), new RegExp(String(context.slowEffectDuration(value)).replace(".", "\\.") + "秒"));
+  }
+});
+
+test("Japanese overviews preserve current slow rates and durations", () => {
+  const wiki = data("wiki_move_descriptions_ja.json").entries;
+  for (const [pokemon, move, expected, stale] of [
+    ["Delphox", "Fire Spin", /4秒/, /(?<![.\d])5秒/],
+    ["Eldegoss", "Cotton Spore", /40%/, /30%/],
+    ["Falinks", "Iron Head", /1\.5秒/, /(?<![.\d])1秒/],
+    ["Meowscarada", "Leafage", /2\.5秒/, /(?<![.\d])2秒/]
+  ]) {
+    const value = row(pokemon, move);
+    const overview = context.localizedSlowOverviewParts(value).map(part => part.text).join(" ");
+    const wikiOverview = wiki[value.descriptionKey].map(part => part.text).join(" ");
+    for (const text of [overview, wikiOverview]) {
+      assert.match(text, expected, pokemon + "/" + move);
+      assert.doesNotMatch(text, stale, pokemon + "/" + move);
+    }
+  }
 });
