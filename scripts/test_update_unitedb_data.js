@@ -9,6 +9,11 @@ function crunch(data) {
     .flatMap((skill) => skill.upgrades || []).find((move) => move.name === "Crunch").rsb;
 }
 
+function rockTomb(data) {
+  return data.find((pokemon) => pokemon.name === "Crustle").skills
+    .flatMap((skill) => skill.upgrades || []).find((move) => move.name === "Rock Tomb").rsb;
+}
+
 const current = crunch(rows);
 // September 3 nerf affects the red/purple fangs, not the yellow fangs.
 for (const [field, expected] of Object.entries({
@@ -31,4 +36,19 @@ for (const simulateFutureUpdate of [false, true]) {
   assert.deepEqual(crunch(fetched), expected, "Legacy overrides must preserve all fetched Crunch values");
 }
 
-console.log("UniteDB update regression tests passed (current and future Crunch values preserved).");
+for (const [duration, slowPercent, expectedDuration] of [[2, 60, 3], [3, 60, 3], [4, 60, 4], [2, 50, 2]]) {
+  const fetched = structuredClone(rows);
+  const sourceRockTomb = rockTomb(fetched);
+  const prefix = "The user splits open the ground in a line towards the designated location, damaging opposing Pokémon in the path and ";
+  const suffix = " A curved wall of rock is then created at the designated location that remains for up to 3s. When the wall of rock is created or destroyed, opposing Pokémon near the wall are damaged and their movement speed is decreased by 60% for 3s.";
+  sourceRockTomb.true_desc = `${prefix}decreasing their movement speed by ${slowPercent}% for ${duration}s.${suffix}`;
+  const expected = structuredClone(sourceRockTomb);
+  expected.true_desc = `${prefix}decreasing their movement speed by ${slowPercent}% for ${expectedDuration}s.${suffix}`;
+
+  applyDatasetOverrides({ output: "pokemon.json" }, fetched);
+  assert.deepEqual(rockTomb(fetched), expected, `Rock Tomb ${slowPercent}% for ${duration}s must receive only the known September correction`);
+  applyDatasetOverrides({ output: "pokemon.json" }, fetched);
+  assert.deepEqual(rockTomb(fetched), expected, "Rock Tomb correction must be idempotent");
+}
+
+console.log("UniteDB update regression tests passed (Crunch source values preserved; Rock Tomb September correction and future values verified).");

@@ -95,6 +95,21 @@ test("duration upgrades, leading decimal points, and multi-phase slows retain th
   assert.deepEqual(profile(row("Chandelure", "Poltergeist", true)).steps, [80, 50]);
 });
 
+test("Rock Tomb uses the September 3 slow duration before and after upgrading", () => {
+  for (const plus of [false, true]) {
+    const value = row("Crustle", "Rock Tomb", plus);
+    assert.equal(value.slowPercent, plus ? 80 : 60);
+    assert.equal(context.slowEffectDuration(value), 3);
+    assert.equal(profile(value).kind, "fixed");
+    assert.match(context.slowDurationMarkup(value), />3秒</);
+    assert.match(details(value), /持続時間は3秒/);
+    const overview = context.localizedSlowOverviewParts(value).map(part => part.text).join(" ");
+    assert.match(overview, /3秒間60%/);
+    assert.doesNotMatch(overview, /2秒/);
+    assert.ok(context.compareSlowRankingRows(value, row("Meowscarada", "Trailblaze"), "duration") < 0);
+  }
+});
+
 test("Scald shows independent impact and steam effects without a fictitious growth curve", () => {
   const effects = rows("Slowbro", "Scald");
   assert.equal(effects.length, 2);
