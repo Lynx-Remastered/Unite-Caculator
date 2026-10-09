@@ -530,8 +530,8 @@ function specificDamageVariantOptionsForChoice(pokemon, choice, entries, level) 
     ].filter((variant) => variant.entries.length);
   }
 
-  if (pokemon?.name === "Latios" && choice?.displayName === "Dragon Pulse") {
-    const boosted = entriesForMovePartLabels(entries, ["Damage - Boosted Attack"]);
+  if (["Latios", "Latias"].includes(pokemon?.name) && choice?.displayName === "Dragon Pulse") {
+    const boosted = entriesForMovePartLabels(entries, [pokemon.name === "Latias" ? "Damage" : "Damage - Boosted Attack"]);
     const projectile = entriesForMovePartLabels(entries, ["Damage - Projectile (per Projectile)"])[0];
     if (projectile) {
       const projectileScales = [1, 0.85, 0.7, 0.55, 0.4, 0.25];
@@ -584,6 +584,145 @@ function specificDamageVariantOptionsForChoice(pokemon, choice, entries, level) 
         variantOption("green-illusion-second-use", "初撃＋再発動＋分身5体", [fullHits(3, "initial-dash-copy", "初撃＋再発動＋最初の分身"), reducedCopies])
       ];
     }
+  }
+
+  if (pokemon?.name === "Buzzwole" && choice?.displayName === "Leech Life") {
+    const tick = entriesForMovePartLabels(entries, ["Damage - per Tick"])[0];
+    const unstoppable = entriesForMovePartLabels(entries, ["Damage - Unstoppable Target"])[0];
+    if (tick) {
+      const variants = Array.from({ length: 7 }, (_, gauge) => {
+        const hits = 4 + Math.floor(gauge / 2);
+        const scales = Array.from({ length: hits }, (_, hit) => 1 + gauge * 0.015 + (level >= 11 ? hit * 0.05 : 0));
+        return variantOption("leech-life-" + gauge, "マッスルゲージ" + gauge + "（" + hits + "ヒット）",
+          progressiveDamageEntries(tick, "leech-life-" + gauge, scales, ""));
+      });
+      if (unstoppable) variants.push(variantOption("leech-life-unstoppable", "妨害無効の相手（1ヒット）", [
+        { ...unstoppable, hitCountOverride: 1 }
+      ]));
+      return variants;
+    }
+  }
+
+  if (pokemon?.name === "Dodrio" && choice?.displayName === "Drill Peck") {
+    return [
+      variantOption("drill-peck-normal", "ダッシュゲージなし（3ヒット）", entriesForMovePartLabels(entries, ["Damage - 3x (No Gauge)"])),
+      variantOption("drill-peck-full", "ダッシュゲージ最大（5ヒット＋HP割合ダメージ3回）", entriesForMovePartLabels(entries, ["Damage - 5x (Full Gauge)", "Damage - 3x (Full Gauge)"]))
+    ].filter((variant) => variant.entries.length);
+  }
+
+  if (pokemon?.name === "Empoleon" && choice?.displayName === "Whirlpool") {
+    return [
+      variantOption("whirlpool-normal", "通常（4ヒット）", entriesForMovePartLabels(entries, ["Damage (4 hits)"])),
+      variantOption("whirlpool-torrent", "げきりゅう（渦4回＋斬撃1回）", entriesForMovePartLabels(entries, ["Damage (Torrent) [4 hits]", "Damage - Slash (Torrent)"]))
+    ].filter((variant) => variant.entries.length);
+  }
+
+  if (pokemon?.name === "Pawmot" && choice?.displayName === "Mach Punch") {
+    return [
+      variantOption("mach-punch-normal", "通常（1ヒット）", entriesForMovePartLabels(entries, ["Damage"])),
+      variantOption("mach-punch-fighter", "ファイターモード（3ヒット）", entriesForMovePartLabels(entries, ["Damage (Fighter Mode)"]))
+    ].filter((variant) => variant.entries.length);
+  }
+
+  if (pokemon?.name === "Suicune" && choice?.slotKey === "boosted") {
+    const water = entriesForMovePartLabels(entries, ["Damage - per tick"]);
+    return [
+      variantOption("boosted-normal", "こおり状態でない相手（4ヒット）", water),
+      variantOption("boosted-frozen", "こおり状態の相手（4ヒット＋追加ダメージ）", [...water, ...entriesForMovePartLabels(entries, ["Damage - Frozen Bonus"])])
+    ].filter((variant) => variant.entries.length);
+  }
+
+  if (pokemon?.name === "Typhlosion" && choice?.displayName === "Ember") {
+    const initial = entriesForMovePartLabels(entries, ["Damage"]);
+    return [
+      variantOption("ember-normal", "通常（相手1体）", initial),
+      variantOption("ember-peak", "ふんかゲージ最大（相手1体・やけど3回）", [...initial, ...entriesForMovePartLabels(entries, ["Damage - Burn"])])
+    ].filter((variant) => variant.entries.length);
+  }
+
+  if (pokemon?.name === "Chandelure" && choice?.displayName === "Overheat") {
+    const initial = entriesForMovePartLabels(entries, ["Damage"])[0];
+    const burn = entriesForMovePartLabels(entries, ["Damage - Burn (5 Ticks)"]);
+    const variants = [];
+    for (let heat = 0; heat <= 3; heat += 1) {
+      const explosion = entriesForMovePartLabels(entries, ["Exploding Flame level " + heat])[0];
+      if (!explosion) continue;
+      const final = { ...explosion, hitCountOverride: 1 };
+      variants.push(variantOption("overheat-" + heat + "-explosion", "ヒート" + heat + "・爆発のみ", [final, ...burn]));
+      if (heat && initial) variants.push(variantOption("overheat-" + heat + "-combo", "初段" + heat + "回＋ヒート" + heat + "の爆発", [
+        { ...initial, hitCountOverride: heat, hitNoteOverride: heat + "ヒット（同じ相手への初段命中）" }, final, ...burn
+      ]));
+    }
+    return variants;
+  }
+
+  if (pokemon?.name === "Mimikyu" && choice?.displayName === "Shadow Claw") {
+    const final = entriesForMovePartLabels(entries, ["Damage - Last Hit"])[0];
+    const leading = entriesForMovePartLabels(entries, ["Damage - Leading Additional Hits"])[0];
+    if (final && leading) return Array.from({ length: 5 }, (_, stacks) => variantOption(
+      "shadow-claw-" + stacks, "追加斬撃" + stacks + "回＋最後の1回", [
+        ...(stacks ? [{ ...leading, hitCountOverride: stacks, hitNoteOverride: stacks + "ヒット（蓄積した追加斬撃）" }] : []),
+        { ...final, hitCountOverride: 1 },
+        ...entries.filter((entry) => entry !== final && entry !== leading && isAutoIncludedDamageEntry(entry))
+      ]
+    ));
+  }
+
+  if (pokemon?.name === "Palkia" && choice?.displayName === "Multi Dimensional Rend") {
+    const flurry = entriesForMovePartLabels(entries, ["Damage - Flurry"])[0];
+    if (flurry) return Array.from({ length: 5 }, (_, stacks) => variantOption(
+      "dimensional-" + stacks, "蓄積" + stacks + "（連撃" + (3 + stacks) + "回＋終撃）",
+      entries.filter(isAutoIncludedDamageEntry).map((entry) => entry === flurry
+        ? { ...entry, hitCountOverride: 3 + stacks, hitNoteOverride: (3 + stacks) + "ヒット（連撃部分）" } : entry)
+    ));
+  }
+
+  if (pokemon?.name === "Glaceon" && ["Icicle Spear", "Icy Wind"].includes(choice?.displayName)) {
+    const crystal = entriesForMovePartLabels(entries, ["Damage - per Ice Crystal"])[0];
+    if (crystal) {
+      const spear = choice.displayName === "Icicle Spear";
+      const max = spear ? 12 : 8;
+      return Array.from({ length: max - 1 }, (_, index) => {
+        const count = index + 2;
+        const parts = spear ? progressiveDamageEntries(crystal, "ice-crystals-" + count,
+          Array.from({ length: count }, (_, hit) => 1 + Math.min(hit, 7) * 0.05), "つらら")
+          : [{ ...crystal, hitCountOverride: count, hitNoteOverride: count + "ヒット（保有結晶数）" }];
+        return variantOption("ice-crystals-" + count, "氷の結晶" + count + "個", parts);
+      });
+    }
+  }
+
+  if (pokemon?.name === "Greedent" && choice?.displayName === "Bullet Seed") {
+    const seed = entriesForMovePartLabels(entries, ["Damage - per Seed"])[0];
+    if (seed) {
+      const variants = Array.from({ length: 6 }, (_, berries) => {
+        // Eight waves start within 6s. The last wave has time for four seeds;
+        // without replenishment its berry stock is already exhausted.
+        const hits = Array.from({ length: 8 }, (_, wave) => Math.min(wave === 7 ? 4 : 8, 3 + Math.max(0, berries - wave)))
+          .reduce((sum, count) => sum + count, 0);
+        return variantOption("bullet-seed-" + berries, "開始時きのみ" + berries + "個（途中補充なし）", [
+          { ...seed, hitCountOverride: hits, hitNoteOverride: hits + "ヒット（6秒間・途中補充なし）" }
+        ]);
+      });
+      variants.push(variantOption("bullet-seed-unite", "ユナイト効果中（きのみ最大を維持）", [
+        { ...seed, hitCountOverride: 60, hitNoteOverride: "最大60ヒット（6秒間・きのみ最大を維持）" }
+      ]));
+      return variants;
+    }
+  }
+
+  if ((pokemon?.name === "Scizor" && choice?.displayName === "Bullet Punch")
+    || (pokemon?.name === "Zeraora" && choice?.displayName === "Wild Charge")) {
+    const bulletPunch = pokemon.name === "Scizor";
+    const first = entriesForMovePartLabels(entries, [bulletPunch ? "Damage - Initial Punch" : "Damage - Initial Hit"])[0];
+    if (first) return Array.from({ length: bulletPunch ? 3 : 4 }, (_, index) => {
+      const count = index + 3;
+      const scale = bulletPunch ? 0.3 : 0.5;
+      return variantOption((bulletPunch ? "bullet-punch-" : "wild-charge-") + count, count + "ヒット（初撃＋後続" + (count - 1) + "回）", [
+        { ...first, hitCountOverride: 1 },
+        scaledDamageEntry(first, "subsequent-" + count, "後続ヒット（" + (scale * 100) + "%）", scale, count - 1, (count - 1) + "ヒット（初撃を除く）")
+      ]);
+    });
   }
 
   if (pokemon?.name === "Typhlosion" && choice?.displayName === "Eruption") {
@@ -739,6 +878,17 @@ function reducedSubsequentDamageEntries(entries, level) {
 }
 
 function damageSequenceEntries(pokemon, choice, level, entries) {
+  const fixedSequence = {
+    "Armarouge|Psyshock": [1, 0.75, 0.5],
+    "Articuno|Ice Wing Whiteout": [1, 1.05, 1.1, 1.15, 2],
+    "Meowscarada|Night Slash": [1, 0.7, 0.7]
+  }[[pokemon?.name, choice?.displayName].join("|")];
+  if (fixedSequence) {
+    const anchor = entries.find((entry) => entry.basePartKey === "base" && isAutoIncludedDamageEntry(entry));
+    if (anchor) return entries.flatMap((entry) => entry === anchor
+      ? progressiveDamageEntries(entry, "move-sequence", fixedSequence, "") : [entry]);
+  }
+
   if (pokemon?.name === "Crustle" && choice?.displayName === "Stealth Rock") {
     const perTick = entries.find((entry) => /Damage\s*\(\d+ Ticks\)/i.test(String(entry.label || "")));
     if (perTick) {
@@ -769,6 +919,11 @@ function damageSequenceEntries(pokemon, choice, level, entries) {
   }
 
   if (pokemon?.name === "Duraludon" && choice?.displayName === "Revolving Ruin") {
+    const beam = entries.find((entry) => entry.label === "Damage - per Hit");
+    if (beam) entries = entries.flatMap((entry) => entry === beam ? [
+      { ...beam, label: "回転ビーム", hitCountOverride: 1 },
+      { ...beam, partKey: beam.partKey + "-final", label: "終撃", hitCountOverride: 1 }
+    ] : [entry]);
     return entries.map((entry) => /Burning Ring\s*\(per Tick\)/i.test(String(entry.label || "")) ? {
       ...entry,
       hitCountOverride: 20,
@@ -787,15 +942,45 @@ function damageSequenceEntries(pokemon, choice, level, entries) {
   return reducedSubsequentDamageEntries(entries, level);
 }
 
+// Verified per-part counts from the bundled Unite-DB descriptions. These
+// cannot be inferred from the whole move text without mixing separate effects.
+const DAMAGE_HIT_COUNT_PROFILES = Object.freeze({
+  "Articuno|Blizzard|Damage - (6x)": { regular: 6, upgraded: 8 },
+  "Crustle|Rubble Rouser|Damage - Aura": { regular: 10 },
+  "Delphox|Fanciful Fireworks|Damage - per Tick": { regular: 16 },
+  "Falinks|Iron Head|Damage (Dispatch formation per Trooper)": { regular: 5, note: "最大5ヒット（ヘイ5体の帰還）" },
+  "Ho-Oh|Flamethrower|Damage": { regular: 16, upgraded: 20 },
+  "Ho-Oh|Flamethrower|Burn Damage": { regular: 6, note: "6ヒット（やけど1回の付与分・更新延長は含まない）" },
+  "Inteleon|Liquidation|Damage (per bullet)": { regular: 8, upgraded: 10 },
+  "Lapras|Water Pulse|Damage (Subsequent pulses)": { regular: 2, upgraded: 3 },
+  "MewtwoX|Future Sight|Damage - Pull and Explosion": { regular: 2 },
+  "Palkia|Slash|Damage": { regular: 2 },
+  "Pawmot|Mach Punch|Damage (Fighter Mode)": { regular: 3 },
+  "Scyther|Dual Wingbeat|Damage - Slash": { regular: 2 },
+  "Solgaleo|Iron Head|Damage - Barrage (per hit)": { regular: 4, upgraded: 5 },
+  "Suicune|boosted|Damage - per tick": { regular: 4 },
+  "Suicune|boosted|Damage - Frozen Bonus": { regular: 4 },
+  "Tsareena|Grassy Glide|Damage": { regular: 2 },
+  "Tsareena|Grassy Glide|Damage (Queenly Majesty buff)": { regular: 2 },
+  "Typhlosion|Ember|Damage - Burn": { regular: 3 },
+  "Typhlosion|Flame Wheel|Damage - per Hit": { regular: 2 },
+  "Umbreon|Swift|Damage (Subsequent Stars)": { regular: 3 }
+});
+
 function entriesWithHitInfo(entries, pokemon = null, choice = null, level = 1) {
   const profiledEntries = damageSequenceEntries(pokemon, choice, level, entries);
   return profiledEntries.map((entry) => {
     const hitInfo = inferHitInfo(entry, level);
-    const hitCountOverride = number(entry.hitCountOverride, 0);
+    const moveKey = /^(?:basic|boosted)$/.test(choice?.slotKey || "") ? choice.slotKey : choice?.displayName;
+    const profile = DAMAGE_HIT_COUNT_PROFILES[[pokemon?.name, moveKey, entry.label].join("|")];
+    const profileCount = profile
+      ? number(level >= number(entry.enhancedMinLevel, 99) && profile.upgraded || profile.regular, 1)
+      : 0;
+    const hitCountOverride = number(entry.hitCountOverride, profileCount);
     return {
       ...entry,
       hitCount: hitCountOverride > 0 ? hitCountOverride : hitInfo.count,
-      hitNote: entry.hitNoteOverride || hitInfo.note
+      hitNote: entry.hitNoteOverride || (profile ? profile.note || (profileCount > 1 ? profileCount + "ヒット" : "") : hitInfo.note)
     };
   });
 }
@@ -1521,11 +1706,14 @@ function inferHitInfo(entry, level = 1) {
   const labelCount = inferHitCountFromText(label, true);
   if (labelCount.count > 1) return labelCount;
 
-  if (/\b(?:first|initial|second|third|fourth|fifth|final)\s+(?:hit|flame|star|wave|bolt|pulse|projectile|punch|kick|slash|leaf|seed|meteorite)\b/i.test(label)) {
+  if (/\b(?:first|initial|second|third|fourth|fifth|final|last)\s+(?:hit|tick|flame|star|wave|bolt|pulse|projectile|punch|kick|slash|leaf|seed|meteorite)\b/i.test(label)) {
     return { count: 1, note: "" };
   }
 
-  if (!/\bper\b|hit|tick|wave|bolt|pulse|shockwave|projectile|quill|star|seed|leaf|flame|comet|meteor|shuriken|blade|slash|punch|kick|slap/i.test(label)) {
+  // Only explicitly repeated parts may inherit a count from the move text.
+  // A singular flame, slash, or shockwave must not inherit another phase's
+  // hits, a slow stack cap, or the duration of an attack-speed buff.
+  if (!/\bper\b|subsequent|\b(?:hits|ticks|waves|pulses|flames|projectiles|slashes|punches|kicks|slaps|blades|stars|leaves|seeds|shurikens|comets|meteorites)\b/i.test(label)) {
     return { count: 1, note: "" };
   }
 
@@ -1615,9 +1803,14 @@ function inferHealingHitInfo(entry, level = 15) {
 }
 
 function inferHitCountFromText(value, preferLabel) {
-  const text = normalizeCountWords(String(value || ""));
-  const units = "(?:hits?|ticks?|attacks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shurikens?|comets?|meteorites?|creams?|copies|targets?|diagonals?|times)";
+  const text = normalizeCountWords(String(value || "")).replace(/\[/g, "(").replace(/\]/g, ")");
+  const units = "(?:hits?|ticks?|attacks?|blades?|shards?|stars?|leaves|leaf|seeds?|waves?|bolts?|pulses?|shockwaves?|quills?|slaps?|punches?|kicks?|flames?|projectiles?|shurikens?|comets?|meteorites?|creams?|copies|targets?|diagonals?|stomps?|chunks?|times)";
   const checks = [
+    ...(preferLabel ? [
+      { regex: /(?<![\d.])\b(\d+)\s*(?:x|×)\b/i, group: 1 },
+      { regex: /(?:\bx|×)\s*(\d+)\b/i, group: 1 }
+    ] : []),
+    { regex: /\b(?:maximum\s+)?number of (?:hits|attacks|projectiles|pulses)\s+(?:is|to)\s+(\d+)\b/i, group: 1 },
     { regex: /\((?:[^)]*?)(\d+)\s+max[^)]*\)/i, group: 1, suffix: "最大" },
     { regex: new RegExp(`\\\((?:[^)]*?)(\\d+)\\s*-\\s*(\\d+)\\s*${units}[^)]*\\\)`, "i"), group: 2, suffix: "最大" },
     { regex: /\((?:[^)]*?)(?:x|×)\s*(\d+)[^)]*\)/i, group: 1 },
@@ -1632,6 +1825,7 @@ function inferHitCountFromText(value, preferLabel) {
   for (const check of checks) {
     const match = text.match(check.regex);
     if (!match) continue;
+    if (/^\d/.test(match[0]) && /[\d.]$/.test(text.slice(0, match.index))) continue;
     const count = Math.max(1, number(match[check.group], 1));
     if (count > 1) {
       const note = `${formatNumber(count, 0)}ヒット${check.suffix ? `（${check.suffix}）` : ""}`;
@@ -1640,6 +1834,7 @@ function inferHitCountFromText(value, preferLabel) {
   }
 
   if (!preferLabel) {
+    if (/\btwice\b/i.test(text)) return { count: 2, note: "2ヒット" };
     const duration = text.match(/\bevery\s+(\d*\.?\d+)s\s+(?:over|for)\s+(\d*\.?\d+)s\b/i);
     if (duration) {
       const count = Math.max(1, Math.floor(number(duration[2], 0) / number(duration[1], 1)));
